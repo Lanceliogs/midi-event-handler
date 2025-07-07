@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MIDI App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            text-align: center;
+            margin-top: 100px;
+        }
+        h1 {
+            color: #d9534f;
+        }
+    </style>
+</head>
+<body>
+    <h1>MIDI App is Running!</h1>
+    <p>If you see this page, your static files are working.</p>
+
+    <script>
+        const ws = new WebSocket(`ws://${location.host}/events`);
+        ws.onopen = () => {
+            console.log("[WebSocket] Connected");
+        };
+        ws.onmessage = (event) => {
+            console.log("[WebSocket] Message received:", event.data);
+        };
+        ws.onclose = () => {
+            console.log("[WebSocket] Connection closed");
+        };
+        ws.onerror = (error) => {
+            console.error("[WebSocket] Error:", error);
+        };
+    </script>
+
+</body>
+</html>
+
+
