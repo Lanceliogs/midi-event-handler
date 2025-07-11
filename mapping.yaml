@@ -30,8 +30,9 @@ events:
       - {port: OutputDevice1, message: [note_off, 66, 0]}
     duration_min: 0 # Duration in seconds
     duration_max: 600 # Duration in seconds
+    fallback_event: mon_evenement # selected automatically after duration_max seconds
 
-  # event_234
+  # mon_evenement
   - name: mon_evenement
     type: music
     port: InputDevice2
@@ -53,3 +54,4 @@ events:
       - {port: LoopMIDI Port 5, message: [note_on, 128, 127]}
     end_messages:
       - {port: LoopMIDI Port 5, message: [note_off, 128, 0]}
+
