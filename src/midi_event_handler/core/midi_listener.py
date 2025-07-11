@@ -17,7 +17,6 @@ class MIDIListener:
 
     async def _listen(self):
         def loop():
-            event_index: MidiEventIndex = MidiEventIndex.get()
             with mido.open_input(self.port_name) as port:
                 for msg in port:
                     if msg.type == "note_on" and msg.velocity > 0:
@@ -25,9 +24,12 @@ class MIDIListener:
                     elif (msg.type == "note_off") or (msg.type == "note_on" and msg.velocity == 0):
                         if not self.buffer:
                             continue
-                        chord = MidiChord(notes=[msg.note for msg in self.buffer])
+                        chord = MidiChord(
+                            notes=[msg.note for msg in self.buffer],
+                            port=self.buffer[0].port
+                        )
                         self.buffer.clear()
-                        event = event_index.lookup(self.port_name, chord)
+                        event = MidiEventIndex.lookup_by_chord(chord)
                         if not event:
                             continue
                         asyncio.get_event_loop().call_soon_threadsafe(self.event_queue.put_nowait, event)      

@@ -4,6 +4,10 @@ from typing import Optional, Dict, List, Tuple
 import mido
 from midi_event_handler.core.midi_outputs import MidiOutputs
 
+from midi_event_handler.tools import logtools
+
+log = logtools.get_logger(__name__)
+
 @dataclass
 class MidiMessage:
     type: str
@@ -31,6 +35,7 @@ class MidiMessage:
         port = MidiOutputs.get(self.port)
         if not port:
             return
+        log.info(f"[SEND] {self}")
         port.send(self.to_mido())
 
 
@@ -70,6 +75,6 @@ class MidiEvent:
         for msg in self.start_messages:
             msg.send()
 
-    def send_stop_messages(self):
+    def send_end_messages(self):
         for msg in self.end_messages:
             msg.send()

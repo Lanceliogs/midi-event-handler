@@ -6,24 +6,24 @@ import yaml
 
 from midi_event_handler.core.event_models import MidiEvent, MidiMessage, MidiChord
 
+from midi_event_handler.tools import logtools
+log = logtools.get_logger(__name__)
 
-@dataclass
 class MidiEventIndex:
-    _index: Dict[Tuple[str, Tuple[int, ...]], List[MidiEvent]]
+    _index_by_signatures: Dict[Tuple[str, Tuple[int, ...]], List[MidiEvent]] = {}
+    _index_by_names: Dict[str, List[MidiEvent]] = {}
 
-    # Global registry of named sets
-    registry: ClassVar[Dict[str, "MidiEventIndex"]] = {}
-
-    @classmethod
-    def from_events(cls, events: List[MidiEvent]) -> "MidiEventIndex":
-        index: Dict[Tuple[str, Tuple[int, ...]], List[MidiEvent]] = defaultdict(list)
+    @staticmethod
+    def from_events(events: List[MidiEvent]) -> "MidiEventIndex":
+        MidiEventIndex._index_by_signatures.clear()
+        MidiEventIndex._index_by_names.clear()
         for event in events:
             key = event.chord_signature()
-            index[key].append(event)
-        return cls(index)
+            MidiEventIndex._index_by_signatures[key].append(event)
+            MidiEventIndex._index_by_names[event.name].append(event)
 
-    @classmethod
-    def from_yaml(cls, path: Union[str, Path], name: Optional[str] = "__root__") -> "MidiEventIndex":
+    @staticmethod
+    def from_yaml(path: Union[str, Path]):
         with open(path, "r") as f:
             raw = yaml.safe_load(f)
 
@@ -49,26 +49,13 @@ class MidiEventIndex:
             )
             events.append(event)
 
-        index = cls.from_events(events)
+        MidiEventIndex.from_events(events)
 
-        # Optional registration
-        if name:
-            cls.registry[name] = index
-        else:
-            cls.registry["__root__"] = index
+    @staticmethod
+    def lookup_by_chord(chord: MidiChord) -> Optional[MidiEvent]:
+        return MidiEventIndex._index_by_signatures.get(chord.signature())
+    
+    @staticmethod
+    def lookup_by_name(name: str) -> Optional[MidiEvent]:
+        return MidiEventIndex._index_by_names.get(name)
 
-        return index
-
-    @classmethod
-    def get(cls, name: str) -> Optional["MidiEventIndex"]:
-        return cls.registry.get(name)
-
-    @classmethod
-    def lookup_from(cls, name: str, chord: MidiChord) -> Optional[MidiEvent]:
-        index = cls.get(name)
-        if index:
-            return index.lookup(chord)
-        return None
-
-    def lookup(self, chord: MidiChord) -> Optional[MidiEvent]:
-        return self._index.get(chord.signature())
