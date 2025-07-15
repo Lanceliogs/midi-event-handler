@@ -2,14 +2,14 @@ import asyncio
 from collections import deque
 
 import mido
-from midi_event_handler.core.event_models import MidiMessage, MidiChord
-from midi_event_handler.core.event_indexer import MidiEventIndex
+from midi_event_handler.core.events.models import MidiMessage, MidiChord
+from midi_event_handler.core.events.indexer import MidiEventIndex
 
 
-class MIDIListener:
-    def __init__(self, port_name: str, event_queue: asyncio.Queue):
+class MidiListener:
+    def __init__(self, port_name: str, chord_queue: asyncio.Queue):
         self.port_name = port_name
-        self.event_queue = event_queue
+        self.chord_queue = chord_queue
         self.buffer: deque[MidiMessage] = deque()
 
     async def start(self):
@@ -29,10 +29,7 @@ class MIDIListener:
                             port=self.buffer[0].port
                         )
                         self.buffer.clear()
-                        event = MidiEventIndex.lookup_by_chord(chord)
-                        if not event:
-                            continue
-                        asyncio.get_event_loop().call_soon_threadsafe(self.event_queue.put_nowait, event)      
+                        asyncio.get_event_loop().call_soon_threadsafe(self.chord_queue.put_nowait, chord)      
         
         await asyncio.to_thread(loop)
 

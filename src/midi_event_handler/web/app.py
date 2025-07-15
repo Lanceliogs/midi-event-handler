@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from midi_event_handler.web.connection import ConnectionManager
 from midi_event_handler.tools import logtools
+from midi_event_handler.core.app import MidiApp
 
 import uvicorn
 
@@ -14,6 +15,7 @@ log = logtools.get_logger()
 log.info("this is a test!")
 
 app = FastAPI()
+
 
 class GlobalState(BaseModel):
     connections: int

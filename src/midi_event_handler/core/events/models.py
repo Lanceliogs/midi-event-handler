@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Optional, Dict, List, Tuple
 
 import mido
-from midi_event_handler.core.midi_outputs import MidiOutputs
+from midi_event_handler.core.midi.outputs import MidiOutputManager
 
 from midi_event_handler.tools import logtools
 
@@ -30,13 +30,6 @@ class MidiMessage:
             note=self.note,
             velocity=self.velocity,
         )
-    
-    def send(self):
-        port = MidiOutputs.get(self.port)
-        if not port:
-            return
-        log.info(f"[SEND] {self}")
-        port.send(self.to_mido())
 
 
 @dataclass
@@ -70,11 +63,3 @@ class MidiEvent:
 
     def chord_signature(self) -> Tuple[str, Tuple[int, ...]]:
         return self.keys.signature()
-    
-    def send_start_messages(self):
-        for msg in self.start_messages:
-            msg.send()
-
-    def send_end_messages(self):
-        for msg in self.end_messages:
-            msg.send()
