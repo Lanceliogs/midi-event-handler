@@ -1,27 +1,30 @@
 import asyncio
-from typing import List, Optional
+from typing import List, Dict, Any, Optional
 from pathlib import Path
 
 from midi_event_handler.core.config import *
 from midi_event_handler.core.events.handlers import MidiEventHandler, MidiChordProcessor
 from midi_event_handler.core.events.indexer import MidiEventIndex
 from midi_event_handler.core.midi.listener import MidiListener
-from midi_event_handler.core.midi.outputs import MidiOutputs
+from midi_event_handler.core.midi.outputs import MidiOutputManager
+
+from midi_event_handler.tools import logtools
+log = logtools.get_logger(__name__)
 
 
 class MidiApp:
-    def __init__(self, config_path: Path):
+    def __init__(self):
         self.running = False
         self._tasks: List[asyncio.Task] = []
 
         self.chord_queue = asyncio.Queue()
-        self.event_queues = {t: asyncio.Queue() for t in get_event_types(config_path)}
-        self.index = MidiEventIndex(get_event_list(config_path))
-        self.outputs = MidiOutputs.from_config(config_path)
+        self.event_queues = {t: asyncio.Queue() for t in get_event_types()}
+        self.index = MidiEventIndex(get_event_list())
+        self.outputs = MidiOutputManager(get_configured_outputs())
 
         self.listeners = [
             MidiListener(name, self.chord_queue)
-            for name in get_configured_inputs(config_path)
+            for name in get_configured_inputs()
         ]
 
         self.handlers = {
@@ -37,11 +40,12 @@ class MidiApp:
 
     async def start(self):
         if self.running:
+            log.info("[Start] Already running")
             return
         self.running = True
 
         self._tasks = [
-            asyncio.create_task(handler.start())
+            asyncio.create_task(handler.run())
             for handler in self.handlers.values()
         ] + [
             asyncio.create_task(listener.run())
@@ -49,13 +53,23 @@ class MidiApp:
         ] + [
             asyncio.create_task(self.chord_processor.run())
         ]
+        log.info("[Start] Tasks spawned!")
 
     async def stop(self):
         if not self.running:
+            log.info("[Stop] Not running")
             return
         self.running = False
 
+        log.info("[Stop] Cancelling the tasks...")
         for task in self._tasks:
             task.cancel()
         await asyncio.gather(*self._tasks, return_exceptions=True)
         self._tasks.clear()
+        log.info("[Stop] Stopped!")
+
+    def get_status(self) -> Dict[str, Any]:
+        return {
+            "running": self.running,
+            "events": [ h.event._asdict() for h in self.handlers.values() ]
+        }

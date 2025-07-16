@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import Optional, Dict, List, Tuple
 
 import mido
@@ -62,4 +62,7 @@ class MidiEvent:
     fallback_event: Optional[str] = None
 
     def chord_signature(self) -> Tuple[str, Tuple[int, ...]]:
-        return self.keys.signature()
+        return self.chord.signature()
+
+    def _asdict(self):
+        return asdict(self)

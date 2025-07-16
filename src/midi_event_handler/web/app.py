@@ -9,24 +9,29 @@ from midi_event_handler.web.connection import ConnectionManager
 from midi_event_handler.tools import logtools
 from midi_event_handler.core.app import MidiApp
 
-import uvicorn
-
-log = logtools.get_logger()
-log.info("this is a test!")
+log = logtools.get_logger(__name__)
 
 app = FastAPI()
+midiapp = MidiApp()
 
+@app.post("/start")
+async def start_show():
+    await midiapp.start()
+    return {
+        "running": midiapp.running
+    }
 
-class GlobalState(BaseModel):
-    connections: int
+@app.post("/stop")
+async def stop_show():
+    await midiapp.stop()
+    return {
+        "running": midiapp.running
+    }
 
-@app.get("/globalstate")
-async def get_global_state():
-    manager = ConnectionManager("meh-app")
-    return GlobalState(
-        connections=manager.connections_num
-    )
-
+@app.get("/status")
+async def get_status():
+    return midiapp.get_status()
+    
 @app.websocket("/events")
 async def ws_endpoint_events(ws: WebSocket):
     manager = ConnectionManager("meh-app")

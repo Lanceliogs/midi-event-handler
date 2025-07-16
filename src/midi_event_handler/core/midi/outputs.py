@@ -5,8 +5,10 @@ from midi_event_handler.core.events.models import MidiMessage
 
 
 class MidiOutputManager:
-    def __init__(self):
+    def __init__(self, names: Optional[List[str]] = None):
         self._outputs: Dict[str, mido.ports.BaseOutput] = {}
+        if names:
+            self.register_multiple(names)
 
     def register_all(self):
         for name in mido.get_output_names():

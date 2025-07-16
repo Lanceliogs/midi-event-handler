@@ -8,6 +8,8 @@ from midi_event_handler.core.midi.outputs import MidiOutputManager
 from midi_event_handler.tools import logtools 
 
 log = logtools.get_logger(__name__)
+def _log_event_state(flag: str, event: MidiEvent):
+    log.debug(f"[{flag.upper()}] name={event.name} type={event.type}")
 
 
 class MidiChordProcessor:
@@ -36,9 +38,10 @@ class MidiEventHandler:
         self.event: Optional[MidiEvent] = None
         self.locked: bool = False
         self._min_duration_task: Optional[asyncio.Task] = None
-        self.fallback_scheduler_task: Optional[asyncio.Task] = None
+        self._fallback_scheduler_task: Optional[asyncio.Task] = None
 
     async def _end_current_event(self):
+        _log_event_state("END", self.event)
         if not self.event:
             return
         self.midiout.send_multiple(self.event.end_messages)
@@ -46,17 +49,18 @@ class MidiEventHandler:
         if self._min_duration_task and not self._min_duration_task.done():
             self._min_duration_task.cancel()
         # Will happen if the full duration is not expanded
-        if self.fallback_scheduler_task and not self.fallback_scheduler_task.done():
-            self.fallback_scheduler_task.cancel()
+        if self._fallback_scheduler_task and not self._fallback_scheduler_task.done():
+            self._fallback_scheduler_task.cancel()
 
     async def _start_next_event(self):
+        _log_event_state("START", self.event)
         self.midiout.send_multiple(self.event.start_messages)
         if self.event.duration_min:
             self.locked = True
             self._min_duration_task = asyncio.create_task(self._unlock_after_min_duration())
             await asyncio.sleep(0.001)
         if self.event.duration_max:
-            self.fallback_scheduler_task = asyncio.create_task(self._schedule_fallback_event())
+            self._fallback_scheduler_task = asyncio.create_task(self._schedule_fallback_event())
             await asyncio.sleep(0.001)
 
     async def _unlock_after_min_duration(self):
@@ -72,12 +76,27 @@ class MidiEventHandler:
         except asyncio.CancelledError:
             log.info(f"[CANCELLED] Fallback task was cancelled")
 
-    async def start(self):
-        while True:
-            next_event: MidiEvent = await self.event_queue.get()
-            if self.locked or not next_event:
-                continue
-            await self._end_current_event()
-            self.event = next_event
-            await self._start_next_event()
+    async def _cleanup_tasks(self):
+        if self._min_duration_task and not self._min_duration_task.done():
+            self._min_duration_task.cancel()
+        if self._fallback_scheduler_task and not self._fallback_scheduler_task.done():
+            self._fallback_scheduler_task.cancel()
+        await asyncio.gather(self._min_duration_task, self._fallback_scheduler_task, return_exceptions=True)
+
+    async def run(self):
+        log.debug(f"[STARTED] handler main task running")
+        try:
+            while True:
+                next_event: MidiEvent = await self.event_queue.get()
+                _log_event_state("NEXT", next_event)
+                if self.locked or not next_event:
+                    _log_event_state("DISCARDED", next_event)
+                    continue
+                await self._end_current_event()
+                self.event = next_event
+                await self._start_next_event()
+        except asyncio.CancelledError:
+            log.debug(f"[CANCELLED] Handler main task stopped")
+        finally:
+            self._cleanup_tasks()
 

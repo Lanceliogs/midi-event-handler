@@ -1,5 +1,6 @@
 import asyncio
 from collections import deque
+from typing import Optional
 
 import mido
 from midi_event_handler.core.events.models import MidiMessage, MidiChord
@@ -12,10 +13,7 @@ class MidiListener:
         self.chord_queue = chord_queue
         self.buffer: deque[MidiMessage] = deque()
 
-    async def start(self):
-        self.task = asyncio.create_task(self._listen())
-
-    async def _listen(self):
+    async def run(self):
         def loop():
             with mido.open_input(self.port_name) as port:
                 for msg in port:
