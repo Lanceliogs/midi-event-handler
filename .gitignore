@@ -11,3 +11,6 @@
 
 # VSCode settings (recommended to exclude from repo)
 .vscode/
+
+# Downloadable assets
+htmx.min.js
