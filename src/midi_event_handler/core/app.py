@@ -28,7 +28,7 @@ class MidiApp:
         ]
 
         self.handlers = {
-            t: MidiEventHandler(self.event_queues[t])
+            t: MidiEventHandler(self.event_queues[t], self.index, self.outputs)
             for t in self.event_queues
         }
 
@@ -69,7 +69,13 @@ class MidiApp:
         log.info("[Stop] Stopped!")
 
     def get_status(self) -> Dict[str, Any]:
+
         return {
             "running": self.running,
-            "events": [ h.event._asdict() for h in self.handlers.values() ]
+            "active_events": [ None if not h.event else h.event._asdict() for h in self.handlers.values() ],
+            "midi_ports": {
+                "inputs": [ l.port_name for l in self.listeners ],
+                "outputs": self.outputs.get_open_ports()
+            },
+            "tasks": len(self._tasks)
         }

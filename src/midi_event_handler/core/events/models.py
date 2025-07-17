@@ -1,9 +1,6 @@
 from dataclasses import dataclass, field, asdict
 from typing import Optional, Dict, List, Tuple
-
 import mido
-from midi_event_handler.core.midi.outputs import MidiOutputManager
-
 from midi_event_handler.tools import logtools
 
 log = logtools.get_logger(__name__)

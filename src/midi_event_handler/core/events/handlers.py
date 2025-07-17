@@ -1,21 +1,29 @@
 import asyncio
-from typing import Optional
+from typing import Optional, Dict
 
 from midi_event_handler.core.events.models import MidiEvent, MidiChord
 from midi_event_handler.core.events.indexer import MidiEventIndex
 from midi_event_handler.core.midi.outputs import MidiOutputManager
 
-from midi_event_handler.tools import logtools 
+from midi_event_handler.tools import logtools
+from midi_event_handler.tools.connection import ConnectionManager
 
 log = logtools.get_logger(__name__)
 def _log_event_state(flag: str, event: MidiEvent):
     log.debug(f"[{flag.upper()}] name={event.name} type={event.type}")
 
+manager = ConnectionManager("meh-app")
+async def notify_new_event(event: MidiEvent):
+    await manager.notify({"notify": "status"})
 
 class MidiChordProcessor:
-    def __init__(self, chord_queue: asyncio.Queue, event_queue: asyncio.Queue, event_index: MidiEventIndex):
+    def __init__(
+            self, chord_queue: asyncio.Queue,
+            event_queues: Dict[str, asyncio.Queue],
+            event_index: MidiEventIndex
+        ):
         self.chord_queue = chord_queue
-        self.event_queue = event_queue
+        self.event_queues = event_queues
         self.event_index = event_index
 
     async def run(self):
@@ -23,7 +31,7 @@ class MidiChordProcessor:
             chord: MidiChord = await self.chord_queue.get()
             event: MidiEvent = self.event_index.lookup_by_signature(chord.signature())
             if event:
-                await self.event_queue.put(event)
+                await self.event_queues[event.type].put(event)
             else:
                 log.warning(f"No event found for chord: {chord}")
 
@@ -84,6 +92,7 @@ class MidiEventHandler:
         await asyncio.gather(self._min_duration_task, self._fallback_scheduler_task, return_exceptions=True)
 
     async def run(self):
+        manager
         log.debug(f"[STARTED] handler main task running")
         try:
             while True:
@@ -94,6 +103,7 @@ class MidiEventHandler:
                     continue
                 await self._end_current_event()
                 self.event = next_event
+                await notify_new_event()
                 await self._start_next_event()
         except asyncio.CancelledError:
             log.debug(f"[CANCELLED] Handler main task stopped")

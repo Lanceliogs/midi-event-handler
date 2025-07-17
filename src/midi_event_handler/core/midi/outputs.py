@@ -2,7 +2,9 @@ import mido
 from typing import Dict, Optional, List
 
 from midi_event_handler.core.events.models import MidiMessage
+from midi_event_handler.tools import logtools
 
+log = logtools.get_logger(__name__)
 
 class MidiOutputManager:
     def __init__(self, names: Optional[List[str]] = None):
@@ -19,6 +21,10 @@ class MidiOutputManager:
             self.register(name)
 
     def register(self, name: str):
+        available_outputs = mido.get_output_names()
+        if not name in available_outputs:
+            log.info(f"Unavailable MIDI output: {name}")
+            return
         if name not in self._outputs:
             self._outputs[name] = mido.open_output(name)
 
@@ -40,3 +46,6 @@ class MidiOutputManager:
         for port in self._outputs.values():
             port.close()
         self._outputs.clear()
+
+    def get_open_ports(self) -> List[str]:
+        return list(self._outputs.keys())

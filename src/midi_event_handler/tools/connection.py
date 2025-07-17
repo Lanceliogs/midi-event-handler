@@ -9,10 +9,10 @@ class ConnectionManager():
     _instances = {}
 
     def __new__(cls, key: str):
-        if key in cls._instances:    
-            return cls._instances[key]    
-        cls._instances[key] = super().__new__(cls)    
-        return cls._instances[key] 
+        if key in cls._instances:
+            return cls._instances[key]
+        cls._instances[key] = super().__new__(cls) 
+        return cls._instances[key]
 
     def __init__(self, key: str):
         if hasattr(self, "initialized"):
@@ -26,6 +26,9 @@ class ConnectionManager():
     @property
     def connections_num(self):
         return len(self._websockets)
+    
+    async def notify(self, item):
+        await self._queue.put(item)
 
     async def manage_until_death(self, ws: WebSocket):
         log = logtools.get_logger()
@@ -51,7 +54,7 @@ class ConnectionManager():
             websockets = self._websockets.copy()
             for ws in websockets:
                 try:
-                    ws.send_json(item)
+                    await ws.send_json(item)
                 except WebSocketDisconnect:
                     self._websockets.discard(ws)
                     log.info(f"Connection removed from manager: {self._name}")
