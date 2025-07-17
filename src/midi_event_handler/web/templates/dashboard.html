@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MIDI Event Handler Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/htmx.min.js"></script>
+    <script src="/static/js/main.js" defer></script>
+</head>
+<body class="page-body">
+
+    <header class="topbar">
+        <div class="topbar-inner">
+            <h1 class="topbar-title">🎹 MIDI Event Handler</h1>
+        </div>
+    </header>
+
+    <div class="page-container">
+
+        <!-- Status Card -->
+        <div id="status-area"
+             hx-get="/dashboard/status"
+             hx-trigger="load, event:update from:body"
+             hx-swap="innerHTML"
+             class="status-card">
+
+            <!-- Fallback content while loading -->
+            <p class="status-loading">Loading status...</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<div class="status-container">
+  <div><strong>Status:</strong> {{ '🟢 Running' if status.running else '🔴 Stopped' }}</div>
+
+  <div>
+    <strong>Active Events:</strong>
+    <ul class="status-list">
+      {% for event in status.active_events %}
+        <li>{{ event.name }} ({{ event.type }})</li>
+      {% else %}
+        <li class="status-none">None</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div>
+    <strong>MIDI Ports:</strong>
+    <div class="status-ports">
+      <div>🎛️ Inputs:
+        <ul class="status-list">
+          {% for i in status.midi_ports.inputs %}
+            <li>{{ i }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div>🔊 Outputs:
+        <ul class="status-list">
+          {% for o in status.midi_ports.outputs %}
+            <li>{{ o }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div><strong>Async Tasks:</strong> {{ status.tasks }}</div>
+</div>

@@ -1,0 +1,84 @@
+/* General Layout */
+.page-body {
+  background: #f0f2f5;
+  color: #333;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.page-container {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* Top Bar */
+.topbar {
+  background: #222;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.topbar-inner {
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topbar-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px #222;
+}
+
+/* Status Card */
+.status-card {
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  margin-top: 2rem;
+}
+
+.status-loading {
+  font-style: italic;
+  color: #888;
+}
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.status-card {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  margin: 1rem;
+  border-radius: 8px;
+}
+
+.status-container {
+  padding: 1rem;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin: 1rem 0;
+}
+
+.status-list {
+  padding-left: 1.2rem;
+  list-style-type: disc;
+}
+
+.status-none {
+  font-style: italic;
+  color: #999;
+}
+
+.status-ports {
+  margin-left: 1rem;
+}
