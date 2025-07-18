@@ -20,7 +20,7 @@ class MidiApp:
         self.chord_queue = asyncio.Queue()
         self.event_queues = {t: asyncio.Queue() for t in get_event_types()}
         self.index = MidiEventIndex(get_event_list())
-        self.outputs = MidiOutputManager(get_configured_outputs())
+        self.outputs = MidiOutputManager()
 
         self.listeners = [
             MidiListener(name, self.chord_queue)
@@ -44,6 +44,8 @@ class MidiApp:
             return
         self.running = True
 
+        self.outputs.register_multiple(get_configured_outputs())
+
         self._tasks = [
             asyncio.create_task(handler.run())
             for handler in self.handlers.values()
@@ -66,6 +68,7 @@ class MidiApp:
             task.cancel()
         await asyncio.gather(*self._tasks, return_exceptions=True)
         self._tasks.clear()
+        self.outputs.close_all()
         log.info("[Stop] Stopped!")
 
     def get_status(self) -> Dict[str, Any]:
