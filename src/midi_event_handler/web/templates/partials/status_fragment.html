@@ -4,8 +4,8 @@
   <div>
     <strong>Active Events:</strong>
     <ul class="status-list">
-      {% for event in status.active_events %}
-        <li>{{ event.name }} ({{ event.type }})</li>
+      {% for k in status.active_events %}
+        <li>{{ k }} ({{ status.active_events[k] }})</li>
       {% else %}
         <li class="status-none">None</li>
       {% endfor %}

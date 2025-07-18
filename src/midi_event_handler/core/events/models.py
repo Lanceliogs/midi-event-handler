@@ -63,3 +63,9 @@ class MidiEvent:
 
     def _asdict(self):
         return asdict(self)
+    
+# Handles None values as well
+def dump_event(event: Optional[MidiEvent]) -> dict:
+            if not event:
+                return None
+            return event._asdict()
