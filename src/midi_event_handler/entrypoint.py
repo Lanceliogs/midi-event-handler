@@ -1,5 +1,10 @@
 import uvicorn
 from argparse import ArgumentParser
+from pathlib import Path
+from midi_event_handler.core.config.loader import load_mapping_yaml
+from midi_event_handler.tools import logtools
+
+log = logtools.get_logger(__name__)
 
 def main():
      parser = ArgumentParser(prog="meh-app")
@@ -7,10 +12,17 @@ def main():
      parser.add_argument("--port", type=int, default=8000)
      parser.add_argument("--reload", action="store_true")
      parser.add_argument("--local", action="store_true", help="Short for host=127.0.0.1 and port=8000")
+     parser.add_argument("--mapping", type=Path, help="Path to mapping.yaml")
 
      args = parser.parse_args()
      host = args.host if not args.local else "127.0.0.1"
      port = args.port if not args.local else 8000
+
+     try:
+          load_mapping_yaml(args.mapping)
+     except Exception:
+        log.exception(f"Exception while loading mapping file.")
+        return
 
      uvicorn.run(
           "midi_event_handler.web.app:app",

@@ -1,15 +1,27 @@
 import yaml
 import os
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from midi_event_handler.core.events.models import MidiChord, MidiEvent, MidiMessage
+from midi_event_handler.tools import logtools
 
+log = logtools.get_logger(__name__)
 
-# Load mapping.yaml once
-_config_path = Path(os.getenv("MEHAPP_MAPPING_YAML", "mapping.yaml"))
-with _config_path.open("r") as f:
-    _raw: Dict = yaml.safe_load(f)
+_raw: Optional[Dict] = None
+
+def load_mapping_yaml(path: Optional[Path] = None):
+    global _raw
+
+    if path is None:
+        path = Path(os.getenv("MEH_MAPPING_YAML", "mapping.yaml"))
+
+    if not path.exists():
+        raise FileNotFoundError(f"Mapping file not found: {path}")
+
+    log.info("Loading mapping file: %s", path)
+    with path.open("r") as f:
+        _raw = yaml.safe_load(f)
 
 
 def get_configured_inputs() -> List[str]:
