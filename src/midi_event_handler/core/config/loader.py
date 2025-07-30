@@ -8,7 +8,9 @@ from midi_event_handler.tools import logtools
 
 log = logtools.get_logger(__name__)
 
-RUNTIME_MAPPING_PATH = Path(".runtime/mapping.yaml")
+RUNTIME_PATH = Path(".runtime")
+RUNTIME_MAPPING_PATH = RUNTIME_PATH / "mapping.yaml"
+
 _raw: Optional[Dict] = None
 
 def load_mapping_yaml(path: Optional[Path]):

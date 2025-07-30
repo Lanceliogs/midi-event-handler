@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 import psutil, os, shutil
 
+from midi_event_handler.core.config.loader import RUNTIME_PATH
 from midi_event_handler.tools.connection import ConnectionManager
 from midi_event_handler.tools import logtools
 from midi_event_handler.core.app import MidiApp
@@ -35,9 +36,8 @@ async def upload_mapping(file: UploadFile = File(...)):
     if not file.filename.endswith(".yaml"):
         raise HTTPException(status_code=400, detail="File must be a .yaml")
 
-    runtime_path = Path(".runtime")
-    runtime_path.mkdir(exist_ok=True)
-    mapping_path = runtime_path / "mapping.yaml"
+    RUNTIME_PATH.mkdir(exist_ok=True)
+    mapping_path = RUNTIME_PATH / "mapping.yaml"
 
     try:
         with mapping_path.open("wb") as f:

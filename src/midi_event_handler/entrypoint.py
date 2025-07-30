@@ -1,7 +1,9 @@
 import uvicorn
 from argparse import ArgumentParser
 from pathlib import Path
-from midi_event_handler.core.config.loader import load_mapping_yaml
+from midi_event_handler.core.config.loader import (
+     RUNTIME_PATH, load_mapping_yaml
+)
 from midi_event_handler.tools import logtools
 import shutil
 
@@ -19,10 +21,10 @@ def main():
      host = args.host if not args.local else "127.0.0.1"
      port = args.port if not args.local else 8000
 
-     runtime_dir = Path(".runtime")
-     runtime_dir.mkdir(exist_ok=True)
+     RUNTIME_PATH.mkdir(exist_ok=True)
      if args.mapping:
-          shutil.copy(args.mapping, runtime_dir / "mapping.yaml")
+          log.info("Using mapping from CLI: %s", args.mapping)
+          shutil.copy(args.mapping, RUNTIME_PATH / "mapping.yaml")
 
      uvicorn.run(
           "midi_event_handler.web.app:app",
