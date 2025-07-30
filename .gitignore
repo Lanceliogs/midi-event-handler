@@ -15,3 +15,6 @@
 
 # Downloadable assets
 htmx.min.js
+
+# Ignore runtime files
+.runtime/
