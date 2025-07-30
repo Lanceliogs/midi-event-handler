@@ -18,6 +18,9 @@ class MidiApp:
         self.running = False
         self._tasks: List[asyncio.Task] = []
 
+        self._setup_from_mapping()
+
+    def _setup_from_mapping(self):
         self.chord_queue = asyncio.Queue()
         self.event_queues = {t: asyncio.Queue() for t in get_event_types()}
         self.index = MidiEventIndex(get_event_list())
@@ -38,6 +41,13 @@ class MidiApp:
             event_queues=self.event_queues,
             event_index=self.index
         )
+
+    def reload_mapping(self):
+        if self.running:
+            log.warning("[Reload-Mapping] Can't reload while the app is running!")
+            return
+        load_mapping_yaml()
+        self._setup_from_mapping()
 
     async def start(self):
         if self.running:

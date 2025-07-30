@@ -8,14 +8,13 @@ from midi_event_handler.tools import logtools
 
 log = logtools.get_logger(__name__)
 
+RUNTIME_MAPPING_PATH = Path(".runtime/mapping.yaml")
 _raw: Optional[Dict] = None
 
-def load_mapping_yaml(path: Optional[Path] = None):
+def load_mapping_yaml(path: Optional[Path]):
     global _raw
 
-    if path is None:
-        path = Path(os.getenv("MEH_MAPPING_YAML", "mapping.yaml"))
-
+    path = path or RUNTIME_MAPPING_PATH
     if not path.exists():
         raise FileNotFoundError(f"Mapping file not found: {path}")
 

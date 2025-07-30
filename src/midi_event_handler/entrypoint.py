@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from midi_event_handler.core.config.loader import load_mapping_yaml
 from midi_event_handler.tools import logtools
+import shutil
 
 log = logtools.get_logger(__name__)
 
@@ -18,11 +19,10 @@ def main():
      host = args.host if not args.local else "127.0.0.1"
      port = args.port if not args.local else 8000
 
-     try:
-          load_mapping_yaml(args.mapping)
-     except Exception:
-        log.exception(f"Exception while loading mapping file.")
-        return
+     runtime_dir = Path(".runtime")
+     runtime_dir.mkdir(exist_ok=True)
+     if args.mapping:
+          shutil.copy(args.mapping, runtime_dir / "mapping.yaml")
 
      uvicorn.run(
           "midi_event_handler.web.app:app",

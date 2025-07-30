@@ -1,4 +1,9 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import (
+    FastAPI, 
+    WebSocket, WebSocketDisconnect,
+    File, UploadFile,
+    HTTPException
+)
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -6,6 +11,8 @@ from fastapi.templating import Jinja2Templates
 
 from pathlib import Path
 from pydantic import BaseModel
+
+import psutil, os, shutil
 
 from midi_event_handler.tools.connection import ConnectionManager
 from midi_event_handler.tools import logtools
@@ -19,6 +26,27 @@ app = FastAPI()
 midiapp = MidiApp()
 
 # --- JSON API routes -------------------------------------------------------------
+
+@app.post("/upload-mapping")
+async def upload_mapping(file: UploadFile = File(...)):
+
+    if midiapp.running:
+        raise HTTPException(status_code=400, detail="Can't reload while the app is running")
+    if not file.filename.endswith(".yaml"):
+        raise HTTPException(status_code=400, detail="File must be a .yaml")
+
+    runtime_path = Path(".runtime")
+    runtime_path.mkdir(exist_ok=True)
+    mapping_path = runtime_path / "mapping.yaml"
+
+    try:
+        with mapping_path.open("wb") as f:
+            shutil.copyfileobj(file.file, f)
+        midiapp.reload_mapping()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload or reload mapping: {e}")
+
+    return {"status": "ok", "mapping": file.filename}
 
 @app.post("/start")
 async def start_show():
@@ -61,6 +89,20 @@ async def status_fragment(request: Request):
         "request": request,
         "status": midiapp.get_status(),
     })
+
+# --- ADMIN routes -------------------------------------------------------------
+
+@app.post("/admin/restart")
+async def request_restart():
+    Path(".runtime").mkdir(exist_ok=True)
+    Path(".runtime/restart.flag").touch()
+    return {"status": "restart requested"}
+
+@app.post("/admin/exit")
+async def exit_and_let_launcher_restart():
+    pid = os.getpid()
+    psutil.Process(pid).terminate()  # launcher will relaunch
+
 
 # Mount static as html at the end
 static_path = Path(__file__).parent / "static"
