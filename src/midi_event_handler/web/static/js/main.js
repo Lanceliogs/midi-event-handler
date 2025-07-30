@@ -4,8 +4,6 @@ socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     console.log(data)
     if (data.notify) {
-        console.log("Dispatching update event to trigger HTMX");
-        console.log(document.getElementById("status-area"));
         document.body.dispatchEvent(new CustomEvent("update"));
     }
 };
