@@ -44,6 +44,7 @@ async def upload_mapping(file: UploadFile = File(...)):
             shutil.copyfileobj(file.file, f)
         midiapp.reload_mapping()
     except Exception as e:
+        log.exception("Failed to upload or reload mapping")
         raise HTTPException(status_code=500, detail=f"Failed to upload or reload mapping: {e}")
 
     return {"status": "ok", "mapping": file.filename}

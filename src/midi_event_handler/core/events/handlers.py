@@ -13,8 +13,8 @@ def _log_event_state(flag: str, event: MidiEvent):
     log.debug(f"[{flag.upper()}] name={event.name} type={event.type}")
 
 manager = ConnectionManager("meh-app")
-async def notify_new_event(event: MidiEvent):
-    await manager.notify({"notify": "status"})
+async def notify_new_event():
+    await manager.notify({"notify": "event"})
 
 class MidiChordProcessor:
     def __init__(
@@ -108,5 +108,5 @@ class MidiEventHandler:
         except asyncio.CancelledError:
             log.debug(f"[CANCELLED] Handler main task stopped")
         finally:
-            self._cleanup_tasks()
+            await self._cleanup_tasks()
 

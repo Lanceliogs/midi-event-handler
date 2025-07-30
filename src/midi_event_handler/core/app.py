@@ -12,6 +12,15 @@ from midi_event_handler.core.midi.outputs import MidiOutputManager
 from midi_event_handler.tools import logtools
 log = logtools.get_logger(__name__)
 
+from midi_event_handler.tools.connection import ConnectionManager
+manager = ConnectionManager("meh-app")
+
+async def notify_app_state():
+    await manager.notify({"notify": "state"})
+
+def notify_app_state_nowait():
+    manager.notify_nowait({"notify": "state"})
+
 
 class MidiApp:
     def __init__(self):
@@ -49,6 +58,8 @@ class MidiApp:
         load_mapping_yaml()
         self._setup_from_mapping()
 
+        notify_app_state_nowait()
+
     async def start(self):
         if self.running:
             log.info("[Start] Already running")
@@ -68,12 +79,14 @@ class MidiApp:
         ]
         log.info("[Start] Tasks spawned!")
 
+        await notify_app_state()
+
     async def stop(self):
         if not self.running:
             log.info("[Stop] Not running")
             return
         self.running = False
-
+        
         log.info("[Stop] Cancelling the tasks...")
         for task in self._tasks:
             task.cancel()
@@ -81,6 +94,8 @@ class MidiApp:
         self._tasks.clear()
         self.outputs.close_all()
         log.info("[Stop] Stopped!")
+
+        await notify_app_state()
 
     def get_status(self) -> Dict[str, Any]:
         return {

@@ -15,18 +15,65 @@
         </div>
     </header>
 
-    <div class="page-container">
+   <div class="page-container with-sidebar-right">
 
-        <!-- Status Card -->
+        <!-- Main Content -->
         <div id="status-area"
-             hx-get="/dashboard/status"
-             hx-trigger="load, event:update from:body"
-             hx-swap="innerHTML"
-             class="status-card">
-
-            <!-- Fallback content while loading -->
+            hx-get="/dashboard/status"
+            hx-trigger="load, update from:body"
+            hx-swap="innerHTML"
+            class="status-card">
             <p class="status-loading">Loading status...</p>
         </div>
+
+        <!-- Sidebar (on the right) -->
+        <aside class="sidebar-right">
+            <div class="sidebar-section">
+                <button id="start-button" class="btn"
+                    hx-post="/start"
+                    hx-target="#hx-feedback">START</button>
+                <button id="stop-button" class="btn"
+                    hx-post="/stop"
+                    hx-target="#hx-feedback">STOP</button>
+            </div>
+
+            <hr>
+
+            <div class="sidebar-section">
+                
+                <label for="mapping-upload" class="btn">UPLOAD MAPPING</label>
+                <input id="mapping-upload" type="file" name="file"
+                    style="display: none;" 
+                    hx-post="/upload-mapping"
+                    hx-trigger="change"
+                    hx-encoding="multipart/form-data"
+                    hx-target="#hx-feedback"
+                    hx-swap="innerHTML"
+                    hx-on="htmx:afterRequest: this.value = null">
+
+                <div id="drop-zone"
+                    class="drop-zone"
+                    data-upload-url="/upload-mapping">
+                    <p>Drag and drop a mapping file (*.yaml) here</p>
+                </div>
+
+            </div>
+
+            <hr>
+
+            <div class="sidebar-section">
+                <button id="restart-button" class="btn"
+                        hx-post="/admin/restart"
+                        hx-target="#hx-feedback">RESTART</button>
+            </div>
+
+            <hr>
+
+            <div id="hx-feedback" class="hx-feedback-box"></div>
+            <div id="hx-feedback-timestamp" class="hx-feedback-timestamp"></div>
+
+        </aside>
+    </div>
     </div>
 </body>
 </html>

@@ -13,7 +13,7 @@ RUNTIME_MAPPING_PATH = RUNTIME_PATH / "mapping.yaml"
 
 _raw: Dict = {}
 
-def load_mapping_yaml(path: Optional[Path]):
+def load_mapping_yaml(path: Optional[Path] = None):
     global _raw
 
     path = path or RUNTIME_MAPPING_PATH

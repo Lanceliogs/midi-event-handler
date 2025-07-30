@@ -27,6 +27,9 @@ class ConnectionManager():
     def connections_num(self):
         return len(self._websockets)
     
+    def notify_nowait(self, item):
+        self._queue.put_nowait(item)
+
     async def notify(self, item):
         await self._queue.put(item)
 
@@ -42,6 +45,7 @@ class ConnectionManager():
         while ws in self._websockets:
             try:
                 await ws.send_json({"alive": True})
+                await asyncio.sleep(3)
             except WebSocketDisconnect:
                 self._websockets.discard(ws)
                 log.info(f"Connection removed from manager: {self._name}")
