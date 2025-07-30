@@ -3,8 +3,7 @@ from pathlib import Path
 from midi_event_handler.core.config.loader import *
 
 test_mapping_path = Path(__file__).parent / "test_mapping.yaml"
-os.environ["MEH_MAPPING_YAML"] = str(test_mapping_path)
-load_mapping_yaml() # test load from env 
+load_mapping_yaml(test_mapping_path) # test load from env 
 
 from fastapi.testclient import TestClient
 from midi_event_handler.web.app import app
