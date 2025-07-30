@@ -11,7 +11,7 @@ log = logtools.get_logger(__name__)
 RUNTIME_PATH = Path(".runtime")
 RUNTIME_MAPPING_PATH = RUNTIME_PATH / "mapping.yaml"
 
-_raw: Optional[Dict] = None
+_raw: Dict = {}
 
 def load_mapping_yaml(path: Optional[Path]):
     global _raw
