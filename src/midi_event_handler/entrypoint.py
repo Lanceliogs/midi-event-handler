@@ -25,6 +25,9 @@ def main():
      if args.mapping:
           log.info("Using mapping from CLI: %s", args.mapping)
           shutil.copy(args.mapping, RUNTIME_PATH / "mapping.yaml")
+     
+     # First mapping load
+     load_mapping_yaml()
 
      uvicorn.run(
           "midi_event_handler.web.app:app",

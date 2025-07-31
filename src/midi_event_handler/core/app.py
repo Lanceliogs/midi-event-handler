@@ -51,6 +51,11 @@ class MidiApp:
             event_index=self.index
         )
 
+        log.info(f"[Setup] Listeners: {', '.join(get_configured_inputs())}")
+        log.info(f"[Setup] Events: {len(get_event_list())}")
+        log.info(f"[Setup] Outputs: {', '.join(get_configured_outputs())}")
+
+
     def reload_mapping(self):
         if self.running:
             log.warning("[Reload-Mapping] Can't reload while the app is running!")

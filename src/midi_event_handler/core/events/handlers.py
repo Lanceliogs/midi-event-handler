@@ -92,7 +92,6 @@ class MidiEventHandler:
         await asyncio.gather(self._min_duration_task, self._fallback_scheduler_task, return_exceptions=True)
 
     async def run(self):
-        manager
         log.debug(f"[STARTED] handler main task running")
         try:
             while True:
