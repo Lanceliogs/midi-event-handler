@@ -1,12 +1,55 @@
-const socket = new WebSocket(`ws://${location.host}/events`);
+let socket;
 
-socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    console.log(data)
-    if (data.notify) {
-        document.body.dispatchEvent(new CustomEvent("update"));
-    }
-};
+function updateWsStatus(connected) {
+  const led = document.getElementById("ws-led");
+  const label = document.getElementById("ws-label");
+
+  if (!led || !label) return;
+
+  if (connected) {
+    led.classList.add("up");
+    led.classList.remove("down");
+    label.innerText = "UP";
+  } else {
+    led.classList.add("down");
+    led.classList.remove("up");
+    label.innerText = "DOWN";
+  }
+}
+
+function connectWebSocket() {
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    console.log("[WS] Already connected. Skipping.");
+    return;
+  }
+  socket = new WebSocket(`ws://${location.host}/events`);
+
+  socket.onopen = () => {
+    console.log("[WS] Connected to server");
+    updateWsStatus(true);
+  };
+
+  socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log(data)
+      if (data.notify) {
+          document.body.dispatchEvent(new CustomEvent("update"));
+      }
+  };
+
+  socket.onclose = () => {
+    console.warn("[WS] Disconnected. Reconnecting immediately...");
+    updateWsStatus(false);
+    setTimeout(connectWebSocket, 1000); // Fixed 1s delay
+  };
+
+  socket.onerror = (err) => {
+    console.error("[WS] Error:", err);
+    socket.close(); // Trigger onclose -> reconnect
+  };
+}
+
+document.addEventListener("DOMContentLoaded", connectWebSocket);
 
 document.addEventListener("DOMContentLoaded", () => {
   const dropZone = document.getElementById("drop-zone");

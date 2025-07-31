@@ -162,7 +162,7 @@ body {
 }
 
 .hx-feedback-box {
-  margin-top: auto;
+  margin-top: 0;
   padding: 0.5rem 0.75rem;
   font-size: 0.7rem;
   color: #444;
@@ -183,4 +183,34 @@ body {
   color: #999;
   margin-top: 0;
   text-align: right;
+}
+
+.ws-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0 0;
+  font-size: 0.85rem;
+  color: #444;
+  border-top: 1px solid #ddd;
+  margin-top: auto;
+}
+
+.led {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: red;
+  box-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.led.up {
+  background-color: #3fcf3f;
+  box-shadow: 0 0 6px rgba(63, 207, 63, 0.6);
+}
+
+.led.down {
+  background-color: red;
+  box-shadow: 0 0 6px rgba(255, 0, 0, 0.6);
 }
