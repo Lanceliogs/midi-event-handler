@@ -19,10 +19,13 @@ dependencies = [
 packages = [{include = "midi_event_handler", from = "src"}]
 
 [tool.poetry.scripts]
-start = "midi_event_handler.entrypoint:main"
+start-app = "midi_event_handler.entrypoint:main"
+build-app = "tools.build:run"
+
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
+nuitka = "^2.7.12"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
