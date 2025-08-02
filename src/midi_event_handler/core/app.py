@@ -8,6 +8,7 @@ from midi_event_handler.core.events.handlers import MidiEventHandler, MidiChordP
 from midi_event_handler.core.events.indexer import MidiEventIndex
 from midi_event_handler.core.midi.listener import MidiListener
 from midi_event_handler.core.midi.outputs import MidiOutputManager
+from midi_event_handler.core.midi.utils import get_ports_status
 
 from midi_event_handler.tools import logtools
 log = logtools.get_logger(__name__)
@@ -109,9 +110,6 @@ class MidiApp:
         return {
             "running": self.running,
             "active_events": { t: dump_event(h.event) for t, h in self.handlers.items() },
-            "midi_ports": {
-                "inputs": [ l.friendly_port_name for l in self.listeners ],
-                "outputs": self.outputs.get_open_ports()
-            },
+            "midi_ports": get_ports_status(),
             "tasks": len(self._tasks)
         }

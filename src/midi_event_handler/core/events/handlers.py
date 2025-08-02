@@ -100,12 +100,12 @@ class MidiEventHandler:
         await asyncio.gather(self._min_duration_task, self._fallback_scheduler_task, return_exceptions=True)
 
     async def run(self):
-        log.info(f"[STARTED] handler main task running")
+        log.debug(f"[STARTED] handler main task running")
         try:
             while True:
                 next_event: MidiEvent = await self.event_queue.get()
                 _log_event_state("NEXT", next_event)
-                if self.locked or not next_event:
+                if self.locked or not next_event or next_event == self.event:
                     _log_event_state("DISCARDED", next_event)
                     continue
                 if self.event:
@@ -115,7 +115,7 @@ class MidiEventHandler:
                 await self._start_next_event()
                 
         except asyncio.CancelledError:
-            log.info(f"[CANCELLED] Handler main task stopped")
+            log.debug(f"[CANCELLED] Handler main task stopped")
         finally:
             await self._cleanup_tasks()
 

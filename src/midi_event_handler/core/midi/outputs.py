@@ -36,6 +36,12 @@ class MidiOutputManager:
 
     def get(self, name: str) -> Optional[mido.ports.BaseOutput]:
         return self._outputs.get(name)
+    
+    def get_real_name(self, name: str) -> Optional[str]:
+        port = self.get(name)
+        if port:
+            return port.name
+        return None
 
     def send(self, message: MidiMessage):
         port = self.get(message.port)

@@ -20,8 +20,8 @@ class MidiListener:
 
         self.stop_event = threading.Event()
 
-        self.friendly_port_name = port_name # For indexer usage 
-        self.real_port_name = port_name # For real MIDI usage
+        self.friendly_port_name = port_name # For indexer usage
+        self.port_name = port_name # For real MIDI usage
 
         # Autocorrect with look-alikes
         available_ports: list[str] = mido.get_input_names()

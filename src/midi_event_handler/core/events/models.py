@@ -65,6 +65,14 @@ class MidiEvent:
     def _asdict(self):
         return asdict(self)
     
+    def __repr__(self):
+        return f"<MidiEvent: name={self.name} type={self.type}>"
+    
+    def __eq__(self, other: "MidiEvent") -> bool:
+        if not other:
+            return False
+        return self.name == other.name
+    
 # Handles None values as well
 def dump_event(event: Optional[MidiEvent]) -> dict:
             if not event:

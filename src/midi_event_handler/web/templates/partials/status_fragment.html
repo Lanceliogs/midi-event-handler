@@ -1,36 +1,81 @@
 <div class="status-container">
-  <div><strong>Status:</strong> {{ '🟢 Running' if status.running else '🔴 Stopped' }}</div>
 
-  <div>
-    <strong>Active Events:</strong>
-    <ul class="status-list">
-      {% for k in status.active_events %}
-        <li>{{ k }} ({{ status.active_events[k] }})</li>
-      {% else %}
-        <li class="status-none">None</li>
-      {% endfor %}
-    </ul>
-  </div>
-
-  <div>
-    <strong>MIDI Ports:</strong>
-    <div class="status-ports">
-      <div>🎛️ Inputs:
-        <ul class="status-list">
-          {% for i in status.midi_ports.inputs %}
-            <li>{{ i }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-      <div>🔊 Outputs:
-        <ul class="status-list">
-          {% for o in status.midi_ports.outputs %}
-            <li>{{ o }}</li>
-          {% endfor %}
-        </ul>
-      </div>
+  <!-- App Running Status -->
+  <div class="status-section">
+    <div class="status-value {{ 'running' if status.running else 'stopped' }}">
+      {{ '🟢 RUNNING' if status.running else '🔴 STOPPED' }}
     </div>
   </div>
 
-  <div><strong>Async Tasks:</strong> {{ status.tasks }}</div>
+  <hr class="status-divider">
+
+  <!-- Active Events -->
+  <div class="status-section">
+    <strong>Active Events:</strong>
+    {% if status.active_events %}
+      {% for name, event in status.active_events.items() %}
+        <div class="event-block">
+          <div class="event-title">{{ name|capitalize }}</div>
+          {% if event %}
+            <ul class="event-info">
+              <li><strong>Name:</strong> {{ event.name }}</li>
+              <li><strong>Chord:</strong> Notes {{ event.chord.notes }} on {{ event.chord.port }}</li>
+              <li><strong>Start:</strong> {{ event.start_messages|length }} message(s)</li>
+              <li><strong>End:</strong> {{ event.end_messages|length }} message(s)</li>
+              {% for label, val in {
+                "Min Duration": event.duration_min,
+                "Max Duration": event.duration_max,
+                "Fallback": event.fallback_event
+              }.items() if val %}
+                <li><strong>{{ label }}:</strong> {{ val }}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="event-none">No active event</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="status-none">None</p>
+    {% endif %}
+  </div>
+
+  <hr class="status-divider">
+
+  <!-- MIDI Ports -->
+  <div class="status-section">
+    <strong>MIDI Ports:</strong>
+    <div class="midi-port-blocks">
+
+      {% for group_label, ports in {
+        '🎛️ Inputs': status.midi_ports.inputs,
+        '🔊 Outputs': status.midi_ports.outputs
+      }.items() %}
+        <div class="midi-port-group">
+          <h4>{{ group_label }}</h4>
+          {% if ports %}
+            <ul class="midi-port-list">
+              {% for port in ports %}
+                <li class="{{ 'port-unavailable' if not port.available else '' }}">
+                  <span class="port-label">{{ port.friendly_name }}</span>
+                  <span class="port-id">
+                    ({{ port.real_name if port.available else 'Unavailable' }})
+                  </span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="status-none">No {{ group_label|lower }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+    </div>
+  </div>
+
+  <!-- Async Task Count -->
+  <div class="status-footer">
+    <span class="debug-label">Async Tasks: {{ status.tasks }}</span>
+  </div>
+
 </div>
