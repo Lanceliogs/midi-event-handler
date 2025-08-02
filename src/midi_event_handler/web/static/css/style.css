@@ -296,7 +296,10 @@ body {
   border: 1px solid #ddd;
   border-radius: 4px;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
-  white-space: pre-line;
+  white-space: nowrap;       /* Prevent wrapping */
+  overflow: hidden;          /* Hide overflow */
+  text-overflow: ellipsis;   /* Add the ... */
+  max-width: 100%;           /* Optional: limit width */
 }
 
 .hx-feedback-box:not(:empty) {
