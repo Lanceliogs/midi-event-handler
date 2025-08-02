@@ -36,6 +36,7 @@ class MidiChord:
 
     def __post_init__(self):
         object.__setattr__(self, "notes", sorted(self.notes))
+        
 
     def __str__(self):
         return f"{self.port} - Chord({', '.join(map(str, self.notes))})"

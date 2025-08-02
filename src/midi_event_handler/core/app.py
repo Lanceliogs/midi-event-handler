@@ -110,7 +110,7 @@ class MidiApp:
             "running": self.running,
             "active_events": { t: dump_event(h.event) for t, h in self.handlers.items() },
             "midi_ports": {
-                "inputs": [ l.port_name for l in self.listeners ],
+                "inputs": [ l.friendly_port_name for l in self.listeners ],
                 "outputs": self.outputs.get_open_ports()
             },
             "tasks": len(self._tasks)

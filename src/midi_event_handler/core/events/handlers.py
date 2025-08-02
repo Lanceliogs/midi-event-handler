@@ -31,6 +31,7 @@ class MidiChordProcessor:
             chord: MidiChord = await self.chord_queue.get()
             event: MidiEvent = self.event_index.lookup_by_signature(chord.signature())
             if event:
+                log.info(f"Event found: {chord}: {event}")
                 await self.event_queues[event.type].put(event)
             else:
                 log.warning(f"No event found for chord: {chord}")
@@ -70,6 +71,7 @@ class MidiEventHandler:
         if self.event.duration_max:
             self._fallback_scheduler_task = asyncio.create_task(self._schedule_fallback_event())
             await asyncio.sleep(0.001)
+        _log_event_state("STARTED", self.event)
 
     async def _unlock_after_min_duration(self):
         await asyncio.sleep(self.event.duration_min)
@@ -89,7 +91,7 @@ class MidiEventHandler:
         self.event = None
         while not self.event_queue.empty():
             self.event_queue.get_nowait()
-            
+
         # Cancel duration related taks
         if self._min_duration_task and not self._min_duration_task.done():
             self._min_duration_task.cancel()
@@ -106,10 +108,12 @@ class MidiEventHandler:
                 if self.locked or not next_event:
                     _log_event_state("DISCARDED", next_event)
                     continue
-                await self._end_current_event()
+                if self.event:
+                    await self._end_current_event()
                 self.event = next_event
                 await notify_new_event()
                 await self._start_next_event()
+                
         except asyncio.CancelledError:
             log.info(f"[CANCELLED] Handler main task stopped")
         finally:

@@ -22,20 +22,17 @@ class MidiOutputManager:
 
     def register(self, name: str):
         available_outputs = mido.get_output_names()
-        
+        real_name = ""
         # Autocorrect name with look-alikes if possible 
         for output in available_outputs:
             if name in output:
                 log.info(f"{name} -> {output}")
-                name = output
+                real_name = output
                 break
-
-        if not name in available_outputs:
-            log.info(f"Unavailable MIDI output: {name}")
-            log.info(f"Avalaible ports are : {', '.join(available_outputs)}")
-            return
+        if not real_name:
+            log.warning(f"[Register] Can't register port as output: {name}")
         if name not in self._outputs:
-            self._outputs[name] = mido.open_output(name)
+            self._outputs[name] = mido.open_output(real_name)
 
     def get(self, name: str) -> Optional[mido.ports.BaseOutput]:
         return self._outputs.get(name)
@@ -48,8 +45,12 @@ class MidiOutputManager:
             raise RuntimeError(f"MIDI output port '{message.port}' not registered")
         
     def send_multiple(self, messages: MidiMessage):
+        log.info(f"[SendMultiple] Sending {len(messages)} message(s)")
         for msg in messages:
-            self.send(msg)
+            try:
+                self.send(msg)
+            except:
+                log.exception("[SendMultiple] Exception while sending message!")
 
     def close_all(self):
         for port in self._outputs.values():
