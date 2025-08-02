@@ -22,8 +22,17 @@ class MidiOutputManager:
 
     def register(self, name: str):
         available_outputs = mido.get_output_names()
+        
+        # Autocorrect name with look-alikes if possible 
+        for output in available_outputs:
+            if name in output:
+                log.info(f"{name} -> {output}")
+                name = output
+                break
+
         if not name in available_outputs:
             log.info(f"Unavailable MIDI output: {name}")
+            log.info(f"Avalaible ports are : {', '.join(available_outputs)}")
             return
         if name not in self._outputs:
             self._outputs[name] = mido.open_output(name)
@@ -49,3 +58,4 @@ class MidiOutputManager:
 
     def get_open_ports(self) -> List[str]:
         return list(self._outputs.keys())
+    

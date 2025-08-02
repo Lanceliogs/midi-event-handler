@@ -91,10 +91,13 @@ class MidiApp:
             log.info("[Stop] Not running")
             return
         self.running = False
+
+        log.info("[Stop] Shutting down the listerner threads...")
+        [ l.stop() for l in self.listeners ]
+        await asyncio.sleep(0.100)
         
         log.info("[Stop] Cancelling the tasks...")
-        for task in self._tasks:
-            task.cancel()
+        [ t.cancel() for t in self._tasks if not t.done() ]
         await asyncio.gather(*self._tasks, return_exceptions=True)
         self._tasks.clear()
         self.outputs.close_all()

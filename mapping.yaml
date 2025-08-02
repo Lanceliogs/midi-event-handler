@@ -1,14 +1,10 @@
 inputs:
   # MIDI input port names
-  - InputDevice1
-  - InputDevice2
-  - LoopMIDI Port 0
+  - "loopIN0"
 
 outputs:
   # MIDI output port names
-  - OutputDevice1
-  - OutputDevice2
-  - LoopMIDI Port 5
+  - "loopOU0"
 
 event_types:
   # Event type list
@@ -19,40 +15,40 @@ events:
 
   ### LIGHTS
 
-  - name: event_123
-    type: light
+  - name: event_127+131
+    type: music
     trigger:
-      port: InputDevice1
-      notes: [127, 131]
+      port: loopIN0
+      notes: [64, 66]
     start_messages:
-      - {type: note_on, note: 64, velocity: 127, port: OutputDevice1}
-      - {type: note_on, note: 66, velocity: 127, port: OutputDevice1}
+      - {type: note_on, note: 64, velocity: 127, port: "loopOU0"}
+      - {type: note_on, note: 66, velocity: 127, port: "loopOU0"}
     end_messages:
-      - {type: note_off, note: 64, velocity: 0, port: OutputDevice1}
-      - {type: note_off, note: 66, velocity: 0, port: OutputDevice1}
+      - {type: note_off, note: 64, velocity: 0, port: "loopOU0"}
+      - {type: note_off, note: 66, velocity: 0, port: "loopOU0"}
     duration_min: 0
-    duration_max: 600
-    fallback_event: mon_evenement
+    duration_max: 10
+    fallback_event: event_key_128
 
   ### MUSIC
 
-  - name: mon_evenement
+  - name: event_key_128
     type: music
     trigger:
-      port: InputDevice2
-      notes: [128]
+      port: loopIN0
+      notes: [108]
     start_messages:
-      - {type: note_on, note: 128, velocity: 127, port: OutputDevice2}
+      - {type: note_on, note: 108, velocity: 127, port: "loopOU0"}
     end_messages:
-      - {type: note_off, note: 128, velocity: 0, port: OutputDevice2}
+      - {type: note_off, note: 108, velocity: 0, port: "loopOU0"}
 
   - name: event_key_65+67
-    type: light
+    type: music
     trigger:
-      port: LoopMIDI Port 0
+      port: loopIN0
       notes: [65, 67]
     start_messages:
-      - {type: note_on, note: 128, velocity: 127, port: LoopMIDI Port 5}
+      - {type: note_on, note: 100, velocity: 127, port: "loopOU0"}
     end_messages:
-      - {type: note_off, note: 128, velocity: 0, port: LoopMIDI Port 5}
+      - {type: note_off, note: 100, velocity: 0, port: "loopOU0"}
 

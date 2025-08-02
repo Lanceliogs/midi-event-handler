@@ -10,7 +10,7 @@ from midi_event_handler.tools.connection import ConnectionManager
 
 log = logtools.get_logger(__name__)
 def _log_event_state(flag: str, event: MidiEvent):
-    log.debug(f"[{flag.upper()}] name={event.name} type={event.type}")
+    log.info(f"[{flag.upper()}] name={event.name} type={event.type}")
 
 manager = ConnectionManager("meh-app")
 async def notify_new_event():
@@ -85,6 +85,12 @@ class MidiEventHandler:
             log.info(f"[CANCELLED] Fallback task was cancelled")
 
     async def _cleanup_tasks(self):
+        # Reset event - Empty queue 
+        self.event = None
+        while not self.event_queue.empty():
+            self.event_queue.get_nowait()
+            
+        # Cancel duration related taks
         if self._min_duration_task and not self._min_duration_task.done():
             self._min_duration_task.cancel()
         if self._fallback_scheduler_task and not self._fallback_scheduler_task.done():
@@ -92,7 +98,7 @@ class MidiEventHandler:
         await asyncio.gather(self._min_duration_task, self._fallback_scheduler_task, return_exceptions=True)
 
     async def run(self):
-        log.debug(f"[STARTED] handler main task running")
+        log.info(f"[STARTED] handler main task running")
         try:
             while True:
                 next_event: MidiEvent = await self.event_queue.get()
@@ -105,7 +111,7 @@ class MidiEventHandler:
                 await notify_new_event()
                 await self._start_next_event()
         except asyncio.CancelledError:
-            log.debug(f"[CANCELLED] Handler main task stopped")
+            log.info(f"[CANCELLED] Handler main task stopped")
         finally:
             await self._cleanup_tasks()
 
