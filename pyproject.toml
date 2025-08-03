@@ -26,6 +26,9 @@ build-app = "tools.build:run"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
 nuitka = "^2.7.12"
+htmlmin = "^0.1.12"
+csscompressor = "^0.9.5"
+rjsmin = "^1.2.4"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
