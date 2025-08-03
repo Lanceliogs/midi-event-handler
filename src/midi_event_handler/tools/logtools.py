@@ -5,13 +5,13 @@ from pathlib import Path
 from os import getenv
 
 config_path = Path(
-        getenv("MEH_LOG_CONFIG", "logging_configs/config.yaml")
+        getenv("MEH_LOG_CONFIG", "config.yaml")
     )
 
 if config_path.exists():
     with config_path.open("r") as f:
-        config = yaml.safe_load(f)
-        logging.config.dictConfig(config)
+        config: dict = yaml.safe_load(f)
+        logging.config.dictConfig(config.get("logging"))
 else:
     logging.basicConfig(
         level=logging.INFO,

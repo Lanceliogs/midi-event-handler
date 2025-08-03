@@ -13,17 +13,23 @@ OUTPUT_DIR = Path("build")
 APP_ENTRY = "src/midi_event_handler/entrypoint.py"
 LAUNCHER_ENTRY = "src/midi_event_handler/launcher.py"
 
-SRC_LOGGING_CONFIG = "logging_configs/config.yaml"
-BUILD_LOGGING_CONFIG = "logging_configs/config.yaml"
+SRC_CONFIG = "config.yaml"
+BUILD_CONFIG = "config.yaml"
 
 SRC_STATIC_DIR = "src/midi_event_handler/web/static"
 BUILD_STATIC_DIR = "static"
+SRC_TEMPLATES_DIR = "src/midi_event_handler/web/templates"
+BUILD_TEMPLATES_DIR = "templates"
 
-def minify_static_files(static_dir: Path):
-    print(f"🔄 Minifying web files: {static_dir}")
+FINAL_APP_DIR_NAME = "Release"
+
+# --- NUITKA -------------------------------------------------------------------- 
+
+def minify_static_files(output_dir: Path):
+    print(f"\n🔄 Minifying web files recursively in: {output_dir}")
 
     # Minify HTML
-    for html_file in static_dir.rglob("*.html"):
+    for html_file in output_dir.rglob("*.html"):
         try:
             content = html_file.read_text(encoding="utf-8")
             minified = htmlmin.minify(content, remove_comments=True, remove_empty_space=True)
@@ -33,7 +39,7 @@ def minify_static_files(static_dir: Path):
             print(f"❌ Failed to minify HTML {html_file}: {e}")
 
     # Minify CSS
-    for css_file in static_dir.rglob("*.css"):
+    for css_file in output_dir.rglob("*.css"):
         try:
             content = css_file.read_text(encoding="utf-8")
             minified = csscompressor.compress(content)
@@ -43,7 +49,7 @@ def minify_static_files(static_dir: Path):
             print(f"❌ Failed to minify CSS {css_file}: {e}")
 
     # Minify JavaScript
-    for js_file in static_dir.rglob("*.js"):
+    for js_file in output_dir.rglob("*.js"):
         try:
             content = js_file.read_text(encoding="utf-8")
             minified = rjsmin.jsmin(content)
@@ -52,7 +58,7 @@ def minify_static_files(static_dir: Path):
         except Exception as e:
             print(f"❌ Failed to minify JS {js_file}: {e}")
 
-    print(f"\n✅ Minify complete of {static_dir}")
+    print(f"\n✅ Minify complete of {output_dir}")
 
 def run():
     print("🔄 Cleaning old build directory...")
@@ -63,8 +69,9 @@ def run():
         sys.executable, "-m", "nuitka",
         "--standalone",
         "--follow-imports",
-        f"--include-data-files={SRC_LOGGING_CONFIG}={BUILD_LOGGING_CONFIG}",
+        f"--include-data-files={SRC_CONFIG}={BUILD_CONFIG}",
         f"--include-data-dir={SRC_STATIC_DIR}={BUILD_STATIC_DIR}",
+        f"--include-data-dir={SRC_TEMPLATES_DIR}={BUILD_TEMPLATES_DIR}",
         f"--output-dir={OUTPUT_DIR}",
         APP_ENTRY,
     ], check=True)
@@ -84,7 +91,7 @@ def run():
         print("❌ Launcher build failed!")
         sys.exit(1)
 
-    print(f"\n✅ Build complete! Output in: {OUTPUT_DIR}")
+    print(f"\n✅ Build complete! Output in: {OUTPUT_DIR}\n")
 
     # Rename app binary
     orig_app = OUTPUT_DIR / "entrypoint.dist" / "entrypoint.exe"
@@ -106,4 +113,46 @@ def run():
     else:
         print(f"⚠️ Expected file not found: {orig_launcher}")
 
-    minify_static_files(OUTPUT_DIR / "entrypoint.dist" / BUILD_STATIC_DIR)
+    minify_static_files(OUTPUT_DIR / "entrypoint.dist")
+
+    # Renaming the whole app dir
+
+    shutil.move(OUTPUT_DIR / "entrypoint.dist", OUTPUT_DIR / FINAL_APP_DIR_NAME)
+    print(f"\n✅ Application directory renamed as {FINAL_APP_DIR_NAME}\n")
+
+
+# --- INNO SETUP -------------------------------------------------------
+
+INNOSETUP_CONF = Path(".innosetup.conf")
+
+def get_iscc_path():
+    # Try cached path
+    if INNOSETUP_CONF.exists():
+        saved = INNOSETUP_CONF.read_text(encoding="utf-8").strip()
+        if Path(saved).exists():
+            return saved
+
+    # Prompt user
+    print("❌ Inno Setup compiler (ISCC.exe) not found.")
+    user_input = input("🔍 Please enter the full path to ISCC.exe: ").strip()
+    if not Path(user_input).exists():
+        print("❌ Invalid path. Exiting.")
+        sys.exit(1)
+
+    # Save for next time
+    INNOSETUP_CONF.write_text(user_input, encoding="utf-8")
+    return user_input
+
+
+def build_inno_installer():
+    # Adjust this to your actual .iss file location
+    ISS_FILE = Path("installer.iss")
+    iscc_path = get_iscc_path()
+
+    print(f"[._.] Running Inno Setup Compiler:\n    {iscc_path}\n")
+    result = subprocess.run([iscc_path, str(ISS_FILE)], check=False)
+
+    if result.returncode == 0:
+        print("[*o*] Installer created successfully.")
+    else:
+        print("❌ Inno Setup failed.")

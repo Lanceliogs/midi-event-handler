@@ -22,7 +22,7 @@ packages = [{include = "midi_event_handler", from = "src"}]
 setup-web = "tools.setup:setup_web"
 start-app = "midi_event_handler.entrypoint:main"
 build-app = "tools.build:run"
-
+build-installer = "tools.build:build_inno_installer"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"

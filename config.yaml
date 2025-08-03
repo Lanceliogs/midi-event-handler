@@ -1,0 +1,39 @@
+# General application config
+app:
+  host: 127.0.0.1
+  port: 8000
+
+# Logging config
+logging:
+  version: 1
+  disable_existing_loggers: False
+
+  formatters:
+    default:
+      format: "%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s"
+      datefmt: "%Y-%m-%d %H:%M:%S"
+
+  handlers:
+    console:
+      class: logging.StreamHandler
+      level: DEBUG
+      formatter: default
+      stream: ext://sys.stdout
+
+    errors_only:
+      class: logging.StreamHandler
+      level: ERROR
+      formatter: default
+      stream: ext://sys.stderr
+
+  root:
+    level: INFO
+    handlers: [console]
+
+  loggers:
+    uvicorn:
+      level: INFO
+    uvicorn.error:
+      level: INFO
+    uvicorn.access:
+      level: INFO

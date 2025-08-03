@@ -6,6 +6,9 @@ from midi_event_handler.core.config.loader import (
 )
 from midi_event_handler.tools import logtools
 import shutil
+import sys
+
+is_frozen = getattr(sys, 'frozen', False)
 
 log = logtools.get_logger(__name__)
 
@@ -27,14 +30,17 @@ def main():
           shutil.copy(args.mapping, RUNTIME_PATH / "mapping.yaml")
      
      # First mapping load
-     load_mapping_yaml()
+     try:
+          load_mapping_yaml()
+     except FileNotFoundError:
+          log.exception("No mapping YAML file. First launch?")
 
      uvicorn.run(
           "midi_event_handler.web.app:app",
           host=host,
           port=port,
-          log_config="logging_configs/config.yaml",
-          reload=args.reload
+          log_config="config.yaml",
+          reload=args.reload and not is_frozen
      )
     
 if __name__ == "__main__":
