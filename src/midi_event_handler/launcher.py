@@ -1,14 +1,17 @@
 import subprocess
 import time
-import os
+import sys
 from pathlib import Path
+
+is_frozen = getattr(sys, 'frozen', False)
 
 RUNTIME_DIR = Path(".runtime")
 RESTART_FLAG = RUNTIME_DIR / "restart.flag"
-APP_BINARY = "meh_app.exe"  # Your bundled app
 
 def launch_app():
-    return subprocess.Popen([APP_BINARY])
+    command = ["app.exe"] if is_frozen else \
+        ["poetry", "run", "start-app"]
+    return subprocess.Popen(command)
 
 def watch_for_restart():
     while True:

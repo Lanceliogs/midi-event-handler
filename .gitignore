@@ -9,6 +9,7 @@
 *.dist/
 *.egg-info/
 .eggs/
+nuitka-crash-report.xml
 
 # VSCode settings (recommended to exclude from repo)
 .vscode/

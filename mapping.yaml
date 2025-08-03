@@ -1,10 +1,10 @@
 inputs:
   # MIDI input port names
-  - "loopIN0"
+  - "loopIN0" # MIDI keyboards here
 
 outputs:
   # MIDI output port names
-  - "loopOU0"
+  - "loopOU0" # Logiciel de MAO / Table de lights virtuelle
 
 event_types:
   # Event type list
@@ -15,24 +15,22 @@ events:
 
   ### LIGHTS
 
-  - name: event_127+131
+  - name: event_key_107
     type: music
     trigger:
       port: loopIN0
-      notes: [64, 66]
+      notes: [107]
     start_messages:
-      - {type: note_on, note: 64, velocity: 127, port: "loopOU0"}
-      - {type: note_on, note: 66, velocity: 127, port: "loopOU0"}
+      - {type: note_on, note: 106, velocity: 127, port: "loopOU0"}
     end_messages:
-      - {type: note_off, note: 64, velocity: 0, port: "loopOU0"}
-      - {type: note_off, note: 66, velocity: 0, port: "loopOU0"}
+      - {type: note_off, note: 106, velocity: 0, port: "loopOU0"}
     duration_min: 0
     duration_max: 10
     fallback_event: event_key_128
 
   ### MUSIC
 
-  - name: event_key_128
+  - name: event_key_108
     type: music
     trigger:
       port: loopIN0
@@ -41,6 +39,9 @@ events:
       - {type: note_on, note: 108, velocity: 127, port: "loopOU0"}
     end_messages:
       - {type: note_off, note: 108, velocity: 0, port: "loopOU0"}
+    duration_min: 10
+    duration_max: 20
+    fallback_event: event_key_107
 
   - name: event_key_65+67
     type: music
