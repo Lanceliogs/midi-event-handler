@@ -4,8 +4,9 @@ import sys
 from pathlib import Path
 import yaml
 import webbrowser
+import builtins
 
-is_frozen = getattr(sys, 'frozen', False)
+is_compiled = '__compiled__' in globals()
 
 RUNTIME_DIR = Path(".runtime")
 RESTART_FLAG = RUNTIME_DIR / "restart.flag"
@@ -29,9 +30,9 @@ app_conf: dict = conf.get("app", default_app_conf())
 
 def launch_app():
     
-    command = ["app.exe"] if is_frozen else \
-        [
-            "poetry", "run", "start-app",
+    command = ["app.exe"] if is_compiled else ["poetry", "run", "start-app"]
+    
+    command += [
             "--host", app_conf.get('host', '127.0.0.1'),
             "--port", str(app_conf.get('port', 8000))
         ]
