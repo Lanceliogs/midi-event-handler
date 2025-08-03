@@ -1,84 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>MIDI Event Handler Dashboard</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <script src="/static/js/htmx.min.js"></script>
-    <script src="/static/js/main.js" defer></script>
-</head>
-<body class="page-body">
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
 
-    <header class="topbar">
-        <div class="topbar-inner">
-            <h1 class="topbar-title">🎹 MIDI Event Handler</h1>
-        </div>
-    </header>
+{% block content %}    
+<!-- Main Content -->
+<div id="status-area"
+    hx-get="/dashboard/status"
+    hx-trigger="load, update from:body"
+    hx-swap="innerHTML"
+    class="status-card">
+    <p class="status-loading">Loading status...</p>
+</div>
 
-   <div class="page-container with-sidebar-right">
+<!-- Sidebar (on the right) -->
+<aside class="sidebar-right">
+    <div class="sidebar-section">
+        <button id="start-button" class="btn"
+            hx-post="/start"
+            hx-target="#hx-feedback">START</button>
+        <button id="stop-button" class="btn"
+            hx-post="/stop"
+            hx-target="#hx-feedback">STOP</button>
+    </div>
 
-        <!-- Main Content -->
-        <div id="status-area"
-            hx-get="/dashboard/status"
-            hx-trigger="load, update from:body"
+    <hr>
+
+    <div class="sidebar-section">
+        
+        <label for="mapping-upload" class="btn">UPLOAD MAPPING</label>
+        <input id="mapping-upload" type="file" name="file"
+            style="display: none;" 
+            hx-post="/upload-mapping"
+            hx-trigger="change"
+            hx-encoding="multipart/form-data"
+            hx-target="#hx-feedback"
             hx-swap="innerHTML"
-            class="status-card">
-            <p class="status-loading">Loading status...</p>
+            hx-on="htmx:afterRequest: this.value = null">
+
+        <div id="drop-zone"
+            class="drop-zone"
+            data-upload-url="/upload-mapping">
+            <p>Drag and drop a mapping file (*.yaml) here</p>
         </div>
 
-        <!-- Sidebar (on the right) -->
-        <aside class="sidebar-right">
-            <div class="sidebar-section">
-                <button id="start-button" class="btn"
-                    hx-post="/start"
-                    hx-target="#hx-feedback">START</button>
-                <button id="stop-button" class="btn"
-                    hx-post="/stop"
-                    hx-target="#hx-feedback">STOP</button>
-            </div>
-
-            <hr>
-
-            <div class="sidebar-section">
-                
-                <label for="mapping-upload" class="btn">UPLOAD MAPPING</label>
-                <input id="mapping-upload" type="file" name="file"
-                    style="display: none;" 
-                    hx-post="/upload-mapping"
-                    hx-trigger="change"
-                    hx-encoding="multipart/form-data"
-                    hx-target="#hx-feedback"
-                    hx-swap="innerHTML"
-                    hx-on="htmx:afterRequest: this.value = null">
-
-                <div id="drop-zone"
-                    class="drop-zone"
-                    data-upload-url="/upload-mapping">
-                    <p>Drag and drop a mapping file (*.yaml) here</p>
-                </div>
-
-            </div>
-
-            <hr>
-
-            <div class="sidebar-section">
-                <button id="restart-button" class="btn"
-                        hx-post="/admin/restart"
-                        hx-target="#hx-feedback">RESTART</button>
-            </div>
-
-
-            
-            <div class="ws-status" id="ws-status">
-                <span class="led" id="ws-led"></span>
-                <span id="ws-label">DOWN</span>
-            </div>
-
-            <div id="hx-feedback" class="hx-feedback-box"></div>
-            <div id="hx-feedback-timestamp" class="hx-feedback-timestamp"></div>
-
-        </aside>
     </div>
+
+    <hr>
+
+    <div class="sidebar-section">
+        <button id="restart-button" class="btn"
+                hx-post="/admin/restart"
+                hx-target="#hx-feedback">RESTART</button>
     </div>
-</body>
-</html>
+
+    <div class="ws-status" id="ws-status">
+        <span class="led" id="ws-led"></span>
+        <span id="ws-label">DOWN</span>
+    </div>
+
+    <div id="hx-feedback" class="hx-feedback-box"></div>
+    <div id="hx-feedback-timestamp" class="hx-feedback-timestamp"></div>
+</aside>
+{% endblock %}

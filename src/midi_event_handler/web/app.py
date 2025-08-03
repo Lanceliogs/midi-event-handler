@@ -19,11 +19,16 @@ from midi_event_handler.tools.connection import ConnectionManager
 from midi_event_handler.tools import logtools
 from midi_event_handler.core.app import MidiApp
 
+from midi_event_handler.web import help
+
 log = logtools.get_logger(__name__)
 
-templates = Jinja2Templates(directory="src/midi_event_handler/web/templates")
+templates_path = Path(__file__).parent / "templates"
+templates = Jinja2Templates(directory=templates_path)
 
 app = FastAPI()
+app.include_router(help.router)
+
 midiapp = MidiApp()
 
 # --- JSON API routes -------------------------------------------------------------

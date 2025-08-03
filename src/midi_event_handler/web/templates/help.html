@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Help{% endblock %}
+
+{% block content %}
+<div class="status-card">
+
+  <div class="status-section">
+    <h2>📘 About This App</h2>
+    <p>
+      The <strong>MIDI Event Handler</strong> is a real-time MIDI controller management interface. It listens for configured MIDI chords and maps them to structured event lifecycles (start, duration, end).
+    </p>
+    <p>
+      Built with <code>FastAPI</code>, <code>HTMX</code>, and <code>Nuitka</code>, it supports hot-pluggable devices, real-time status updates, and YAML-configurable mapping logic.
+    </p>
+  </div>
+
+  <hr class="status-divider" />
+
+  <div class="status-section">
+    <h2>📖 User Manual</h2>
+    <h3>1. Upload a Mapping</h3>
+    <p>Use the sidebar to drag-and-drop or upload a <code>.yaml</code> file that defines your event mappings.</p>
+
+    <h3>2. Start / Stop the App</h3>
+    <p>Click <strong>START</strong> to activate MIDI listening. When running, active events and MIDI status will be displayed.</p>
+
+    <h3>3. Restart the Application</h3>
+    <p>Click <strong>RESTART</strong> to trigger a full server reload (e.g. after config changes).</p>
+
+    <h3>4. WebSocket Connection</h3>
+    <p>The status LED at the bottom of the sidebar shows live connection status with the backend.</p>
+
+    <h3>5. Event Monitoring</h3>
+    <p>All triggered events will be displayed in the main status area with details about chord, type, and duration.</p>
+  </div>
+
+</div>
+{% endblock %}

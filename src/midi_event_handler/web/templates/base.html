@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}MIDI Event Handler{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/htmx.min.js"></script>
+    <script src="/static/js/main.js" defer></script>
+</head>
+<body class="page-body">
+
+    <!-- Top Navigation Bar -->
+    <header class="topbar">
+        <div class="topbar-inner">
+            <h1 class="topbar-title">🎹 MIDI Event Handler</h1>
+            <nav class="topbar-nav">
+                <a href="/dashboard" class="btn">HOME</a>
+                <a href="/help" class="btn">HELP</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Content Block -->
+    <div class="page-container with-sidebar-right">
+        {% block content %}{% endblock %}
+    </div>
+
+</body>
+</html>

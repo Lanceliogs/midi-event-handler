@@ -111,5 +111,3 @@ document.addEventListener("htmx:afterSwap", function (event) {
   const formatted = now.toLocaleString(); // or use toISOString() if preferred
   timestampEl.textContent = `Updated: ${formatted}`;
 });
-
-
