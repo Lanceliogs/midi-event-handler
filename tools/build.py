@@ -2,6 +2,7 @@ import subprocess
 import shutil
 from pathlib import Path
 import sys
+import os
 
 import htmlmin
 import csscompressor
@@ -22,6 +23,8 @@ SRC_TEMPLATES_DIR = "src/midi_event_handler/web/templates"
 BUILD_TEMPLATES_DIR = "templates"
 
 FINAL_APP_DIR_NAME = "Release"
+
+JOBS = 8
 
 # --- NUITKA -------------------------------------------------------------------- 
 
@@ -74,6 +77,7 @@ def run():
         f"--include-data-dir={SRC_TEMPLATES_DIR}={BUILD_TEMPLATES_DIR}",
         "--windows-icon-from-ico=meh-icon.ico",
         f"--output-dir={OUTPUT_DIR}",
+        f"--jobs={JOBS}",
         APP_ENTRY,
     ], check=True)
     if result.returncode != 0:
@@ -86,6 +90,7 @@ def run():
         "--standalone",
         f"--output-dir={OUTPUT_DIR}",
         f"--nofollow-import-to=midi_event_handler",
+        f"--jobs={JOBS}",
         "--windows-icon-from-ico=meh-icon.ico",
         LAUNCHER_ENTRY,
     ], check=True)
@@ -118,8 +123,9 @@ def run():
     minify_static_files(OUTPUT_DIR / "entrypoint.dist")
 
     # Renaming the whole app dir
-
-    shutil.move(OUTPUT_DIR / "entrypoint.dist", OUTPUT_DIR / FINAL_APP_DIR_NAME)
+    old_path = OUTPUT_DIR / "entrypoint.dist"
+    release_path = OUTPUT_DIR / FINAL_APP_DIR_NAME
+    old_path.rename(release_path)
     print(f"\n✅ Application directory renamed as {FINAL_APP_DIR_NAME}\n")
 
 
