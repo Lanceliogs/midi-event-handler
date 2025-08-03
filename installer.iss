@@ -6,6 +6,7 @@ DefaultGroupName=MIDI Event Handler
 UninstallDisplayIcon={app}\launcher.exe
 OutputDir=dist\installer
 OutputBaseFilename=midi-event-handler-setup
+SetupIconFile=meh-icon.ico
 PrivilegesRequired=lowest
 Compression=lzma
 SolidCompression=yes

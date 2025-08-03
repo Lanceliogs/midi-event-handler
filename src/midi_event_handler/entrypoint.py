@@ -4,6 +4,7 @@ from pathlib import Path
 from midi_event_handler.core.config.loader import (
      RUNTIME_PATH, load_mapping_yaml
 )
+from midi_event_handler.core.config import get_logging_config
 from midi_event_handler.tools import logtools
 import shutil
 import sys
@@ -39,7 +40,7 @@ def main():
           "midi_event_handler.web.app:app",
           host=host,
           port=port,
-          log_config="config.yaml",
+          log_config=get_logging_config(),
           reload=args.reload and not is_frozen
      )
     

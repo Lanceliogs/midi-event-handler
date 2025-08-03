@@ -6,6 +6,8 @@ from .loader import (
     get_configured_outputs,
     get_event_types,
     get_event_list,
+    get_app_config,
+    get_logging_config,
 )
 
 __all__ = [
@@ -14,4 +16,6 @@ __all__ = [
     "get_configured_outputs",
     "get_event_types",
     "get_event_list",
+    "get_app_config",
+    "get_logging_config",
 ]

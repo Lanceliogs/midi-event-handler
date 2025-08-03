@@ -8,6 +8,16 @@ from midi_event_handler.tools import logtools
 
 log = logtools.get_logger(__name__)
 
+_conf = {}
+with open("config.yaml", "r") as f:
+    _conf = yaml.safe_load(f)
+
+def get_app_config() -> dict:
+    return _conf.get("app", {})
+
+def get_logging_config() -> dict:
+    return _conf.get("logging", {})
+
 RUNTIME_PATH = Path(".runtime")
 RUNTIME_MAPPING_PATH = RUNTIME_PATH / "mapping.yaml"
 

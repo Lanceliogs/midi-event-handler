@@ -72,6 +72,7 @@ def run():
         f"--include-data-files={SRC_CONFIG}={BUILD_CONFIG}",
         f"--include-data-dir={SRC_STATIC_DIR}={BUILD_STATIC_DIR}",
         f"--include-data-dir={SRC_TEMPLATES_DIR}={BUILD_TEMPLATES_DIR}",
+        "--windows-icon-from-ico=meh-icon.ico",
         f"--output-dir={OUTPUT_DIR}",
         APP_ENTRY,
     ], check=True)
@@ -85,6 +86,7 @@ def run():
         "--standalone",
         f"--output-dir={OUTPUT_DIR}",
         f"--nofollow-import-to=midi_event_handler",
+        "--windows-icon-from-ico=meh-icon.ico",
         LAUNCHER_ENTRY,
     ], check=True)
     if result.returncode != 0:
