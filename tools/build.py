@@ -75,6 +75,7 @@ def run():
         f"--include-data-files={SRC_CONFIG}={BUILD_CONFIG}",
         f"--include-data-dir={SRC_STATIC_DIR}={BUILD_STATIC_DIR}",
         f"--include-data-dir={SRC_TEMPLATES_DIR}={BUILD_TEMPLATES_DIR}",
+        "--include-module=mido.backends.rtmidi", # force rtmidi include
         "--windows-icon-from-ico=meh-icon.ico",
         f"--output-dir={OUTPUT_DIR}",
         f"--jobs={JOBS}",

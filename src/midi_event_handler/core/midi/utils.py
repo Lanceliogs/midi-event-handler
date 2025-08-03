@@ -1,4 +1,5 @@
 import mido
+
 from typing import List
 
 from midi_event_handler.core.config import (

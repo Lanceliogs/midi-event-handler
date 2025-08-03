@@ -21,10 +21,19 @@ from midi_event_handler.core.app import MidiApp
 
 from midi_event_handler.web import help
 
+def get_templates_path():
+    if "__compiled__" in globals():
+        return Path("templates")
+    return Path(__file__).parent / "templates"
+
+def get_static_path():
+    if "__compiled__" in globals():
+        return Path("static")
+    return Path(__file__).parent / "static"
+
 log = logtools.get_logger(__name__)
 
-templates_path = Path(__file__).parent / "templates"
-templates = Jinja2Templates(directory=templates_path)
+templates = Jinja2Templates(directory=get_templates_path())
 
 app = FastAPI()
 app.include_router(help.router)
@@ -111,6 +120,4 @@ async def exit_and_let_launcher_restart():
 
 
 # Mount static as html at the end
-static_path = Path(__file__).parent / "static"
-app.mount("/static", StaticFiles(directory=static_path, html=True), name="static")
-
+app.mount("/static", StaticFiles(directory=get_static_path(), html=True), name="static")
