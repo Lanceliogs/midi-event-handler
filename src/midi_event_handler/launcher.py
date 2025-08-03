@@ -33,7 +33,7 @@ def launch_app():
         [
             "poetry", "run", "start-app",
             "--host", app_conf.get('host', '127.0.0.1'),
-            "--port", app_conf.get('port', 8000)
+            "--port", str(app_conf.get('port', 8000))
         ]
     
     # Optional args
