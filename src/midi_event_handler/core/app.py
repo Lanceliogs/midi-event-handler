@@ -70,6 +70,15 @@ class MidiApp:
         if self.running:
             log.info("[Start] Already running")
             return
+        
+        # Check if all ports are available
+        port_status = get_ports_status()
+        ports = port_status.get("inputs", []) + port_status.get("outputs", [])
+        ready = all([p.get("available") for p in ports ])
+        if not ready:
+            log.warning("[Start] Some ports are not available")
+            return
+
         self.running = True
 
         self.outputs.register_multiple(get_configured_outputs())

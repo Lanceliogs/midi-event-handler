@@ -10,7 +10,7 @@ from midi_event_handler.tools.connection import ConnectionManager
 
 log = logtools.get_logger(__name__)
 def _log_event_state(flag: str, event: MidiEvent):
-    log.info(f"[{flag.upper()}] name={event.name} type={event.type}")
+    log.info(f"[{flag.upper()}] {event}")
 
 manager = ConnectionManager("meh-app")
 async def notify_new_event():
@@ -76,12 +76,15 @@ class MidiEventHandler:
     async def _unlock_after_min_duration(self):
         await asyncio.sleep(self.event.duration_min)
         self.locked = False
+        log.info(f"[UNLOCK] Event unlocked after {self.event.duration_min} seconds")
 
     async def _schedule_fallback_event(self):
         try:
+            log.info(f"[FALLBACK] Scheduled in {self.event.duration_max} seconds")
             await asyncio.sleep(self.event.duration_max)
             fallback_event = self.event_index.lookup_by_name(self.event.fallback_event)
-            log.info(f"[FALLBACK] Sending fallback event: {fallback_event.name}")
+            fallback_name = fallback_event.name if fallback_event else "None"
+            log.info(f"[FALLBACK] Sending fallback event: {fallback_name}")
             await self.event_queue.put(fallback_event)
         except asyncio.CancelledError:
             log.info(f"[CANCELLED] Fallback task was cancelled")
@@ -105,13 +108,15 @@ class MidiEventHandler:
             while True:
                 next_event: MidiEvent = await self.event_queue.get()
                 _log_event_state("NEXT", next_event)
-                if self.locked or not next_event or next_event == self.event:
+                if self.locked or (next_event and next_event == self.event):
                     _log_event_state("DISCARDED", next_event)
                     continue
                 if self.event:
                     await self._end_current_event()
                 self.event = next_event
                 await notify_new_event()
+                if not self.event:
+                    continue # None was injected inside the queue
                 await self._start_next_event()
                 
         except asyncio.CancelledError:

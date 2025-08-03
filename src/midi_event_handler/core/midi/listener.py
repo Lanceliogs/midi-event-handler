@@ -21,7 +21,7 @@ class MidiListener:
         self.stop_event = threading.Event()
 
         self.friendly_port_name = port_name # For indexer usage
-        self.port_name = port_name # For real MIDI usage
+        self.port_name = "" # For real MIDI usage
 
         # Autocorrect with look-alikes
         available_ports: list[str] = mido.get_input_names()
@@ -29,11 +29,15 @@ class MidiListener:
             if port_name in name:
                 self.port_name = name
                 return
-        log.warning(f"[Init] {self.port_name} does not look like a valid port.")
+        log.warning(f"[Init] {port_name} does not look like a valid port.")
         log.info(f"[Init] Available input ports are: {', '.join(available_ports)}")
 
     async def run(self):
         def loop():
+            if not self.port_name:
+                log.warning("[Run] Invalid port, can't start listener")
+                return
+            
             log.info("[Run] Starting loop for %s", self.friendly_port_name)
             try:
                 with mido.open_input(self.port_name) as port:
