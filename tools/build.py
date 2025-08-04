@@ -26,7 +26,57 @@ FINAL_APP_DIR_NAME = "Release"
 
 JOBS = 8
 
+ICON_ICO = "meh-icon.ico"
+
+CONSOLE_MODE = "attach"
+
 # --- NUITKA -------------------------------------------------------------------- 
+
+def make_nuitka_build_command(
+    script: str | Path, use_lto=True, use_clang=False, jobs=8,
+    windows_console_mode=None,
+    include_data_dir=[],
+    include_data_files=[],
+    include_modules=[],
+    nofollows=[]
+):
+    # Base args
+    command = [
+        sys.executable, "-m", "nuitka",
+        "--standalone",
+        "--follow-imports"
+    ]
+
+    # Includes args
+    for f1, f2 in include_data_files:
+        command.append(f"--include-data-files={f1}={f2}")
+    for d1, d2 in include_data_dir:
+        command.append(f"--include-data-dir={d1}={d2}")
+    for m in include_modules:
+        command.append(f"--include-module={m}")
+    for m in nofollows:
+        command.append(f"--nofollow-import-to={m}")
+
+    if windows_console_mode:
+        if windows_console_mode not in ("force", "disable", "attach", "hide"):
+            raise ValueError("Invalid wnidows console mode")
+        command.append(f"--windows-console-mode={windows_console_mode}")
+
+    # Others
+    command += [
+        f"--windows-icon-from-ico={ICON_ICO}",
+        f"--output-dir={OUTPUT_DIR}",
+        f"--jobs={jobs}",
+        script
+    ]
+
+    # Optional enhancements
+    if use_lto:
+        command.append("--lto=yes")
+    if use_clang:
+        command.append("--clang")
+
+    return command
 
 def minify_static_files(output_dir: Path):
     print(f"\n🔄 Minifying web files recursively in: {output_dir}")
@@ -68,33 +118,31 @@ def run():
     shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
 
     print(f"\n🔨 Building main app ({APP_ENTRY})...")
-    result = subprocess.run([
-        sys.executable, "-m", "nuitka",
-        "--standalone",
-        "--follow-imports",
-        f"--include-data-files={SRC_CONFIG}={BUILD_CONFIG}",
-        f"--include-data-dir={SRC_STATIC_DIR}={BUILD_STATIC_DIR}",
-        f"--include-data-dir={SRC_TEMPLATES_DIR}={BUILD_TEMPLATES_DIR}",
-        "--include-module=mido.backends.rtmidi", # force rtmidi include
-        "--windows-icon-from-ico=meh-icon.ico",
-        f"--output-dir={OUTPUT_DIR}",
-        f"--jobs={JOBS}",
+    command = make_nuitka_build_command(
         APP_ENTRY,
-    ], check=True)
+        use_lto=True, use_clang=False, jobs=8,
+        include_data_files=[
+            (SRC_CONFIG, BUILD_CONFIG),
+            (ICON_ICO, ICON_ICO)],
+        include_data_dir=[
+            (SRC_STATIC_DIR, BUILD_STATIC_DIR),
+            (SRC_TEMPLATES_DIR, BUILD_TEMPLATES_DIR)
+        ],
+        include_modules=["mido.backends.rtmidi"]
+    )
+    result = subprocess.run(command, check=True)
     if result.returncode != 0:
         print("❌ App build failed!")
         sys.exit(1)
 
     print(f"\n🔨 Building launcher ({LAUNCHER_ENTRY})...")
-    result = subprocess.run([
-        sys.executable, "-m", "nuitka",
-        "--standalone",
-        f"--output-dir={OUTPUT_DIR}",
-        f"--nofollow-import-to=midi_event_handler",
-        f"--jobs={JOBS}",
-        "--windows-icon-from-ico=meh-icon.ico",
+    command = make_nuitka_build_command(
         LAUNCHER_ENTRY,
-    ], check=True)
+        use_clang=False, use_lto=True, jobs=8,
+        nofollows=["midi_event_handler"],
+        windows_console_mode=CONSOLE_MODE
+    )
+    result = subprocess.run(command, check=True)
     if result.returncode != 0:
         print("❌ Launcher build failed!")
         sys.exit(1)
