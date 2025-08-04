@@ -6,6 +6,8 @@ import yaml
 import webbrowser
 import builtins
 
+from midi_event_handler.tools.tray import setup_tray_icon
+
 is_compiled = '__compiled__' in globals()
 
 RUNTIME_DIR = Path(".runtime")
@@ -55,7 +57,10 @@ def watch_for_restart():
         time.sleep(0.5)
 
 def main():
-    webbrowser.open(f"http://127.0.0.1:{app_conf.get('port', 8000)}/dashboard")
+    url = f"http://127.0.0.1:{app_conf.get('port', 8000)}/dashboard"
+    setup_tray_icon(url)
+
+    webbrowser.open(url)
     
     RUNTIME_DIR.mkdir(exist_ok=True)
     while True:
