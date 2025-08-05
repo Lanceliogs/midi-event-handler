@@ -3,7 +3,7 @@ name = "midi-event-handler"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "Julien LANCELOT",email = "julien.lancelot@enovasense.com"}
+    {name = "Julien LANCELOT",email = "julienlancelot91@gmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.12,<4"
