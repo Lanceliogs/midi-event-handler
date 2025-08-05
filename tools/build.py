@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 import sys
 import os
+import time
 
 import htmlmin
 import csscompressor
@@ -11,7 +12,6 @@ import rjsmin
 # --- Configuration ----------------------------------
 OUTPUT_DIR = Path("build")
 
-APP_ENTRY = "src/midi_event_handler/entrypoint.py"
 LAUNCHER_ENTRY = "src/midi_event_handler/launcher.py"
 
 SRC_CONFIG = "config.yaml"
@@ -114,12 +114,13 @@ def minify_static_files(output_dir: Path):
     print(f"\n✅ Minify complete of {output_dir}")
 
 def run():
+    total_start = time.perf_counter()
     print("🔄 Cleaning old build directory...")
     shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
 
-    print(f"\n🔨 Building main app ({APP_ENTRY})...")
+    print(f"\n🔨 Building app ({LAUNCHER_ENTRY})...")
     command = make_nuitka_build_command(
-        APP_ENTRY,
+        LAUNCHER_ENTRY,
         use_lto=True, use_clang=False, jobs=8,
         include_data_files=[
             (SRC_CONFIG, BUILD_CONFIG),
@@ -128,54 +129,26 @@ def run():
             (SRC_STATIC_DIR, BUILD_STATIC_DIR),
             (SRC_TEMPLATES_DIR, BUILD_TEMPLATES_DIR)
         ],
-        include_modules=["mido.backends.rtmidi"]
+        windows_console_mode="attach",
+        include_modules=["mido.backends.rtmidi"] # PIL for launcher
     )
     result = subprocess.run(command, check=True)
     if result.returncode != 0:
         print("❌ App build failed!")
         sys.exit(1)
 
-    print(f"\n🔨 Building launcher ({LAUNCHER_ENTRY})...")
-    command = make_nuitka_build_command(
-        LAUNCHER_ENTRY,
-        use_clang=False, use_lto=True, jobs=8,
-        nofollows=["midi_event_handler"],
-        windows_console_mode=CONSOLE_MODE
-    )
-    result = subprocess.run(command, check=True)
-    if result.returncode != 0:
-        print("❌ Launcher build failed!")
-        sys.exit(1)
-
     print(f"\n✅ Build complete! Output in: {OUTPUT_DIR}\n")
 
-    # Rename app binary
-    orig_app = OUTPUT_DIR / "entrypoint.dist" / "entrypoint.exe"
-    renamed_app = OUTPUT_DIR / "entrypoint.dist" / "app.exe"
-
-    if orig_app.exists():
-        orig_app.rename(renamed_app)
-        print(f"✅ App renamed: {orig_app.name} ➜ {renamed_app.name}")
-    else:
-        print(f"⚠️ Expected file not found: {orig_app}")
-
-    # Moving launcher.exe to app.dist 
-    orig_launcher = OUTPUT_DIR / "launcher.dist" / "launcher.exe"
-    moved_launcher = OUTPUT_DIR / "entrypoint.dist" / "launcher.exe"
-    
-    if orig_launcher.exists():
-        orig_launcher.rename(moved_launcher)
-        print(f"✅ Launcher moved: {orig_launcher.name} ➜ {moved_launcher.name}")
-    else:
-        print(f"⚠️ Expected file not found: {orig_launcher}")
-
-    minify_static_files(OUTPUT_DIR / "entrypoint.dist")
+    minify_static_files(OUTPUT_DIR / "launcher.dist")
 
     # Renaming the whole app dir
-    old_path = OUTPUT_DIR / "entrypoint.dist"
+    old_path = OUTPUT_DIR / "launcher.dist"
     release_path = OUTPUT_DIR / FINAL_APP_DIR_NAME
     old_path.rename(release_path)
     print(f"\n✅ Application directory renamed as {FINAL_APP_DIR_NAME}\n")
+
+    total_time = time.perf_counter() - total_start
+    print(f"\n🏁 Build completed in {total_time:.2f}s")
 
 
 # --- INNO SETUP -------------------------------------------------------
@@ -202,7 +175,8 @@ def get_iscc_path():
 
 
 def build_inno_installer():
-    # Adjust this to your actual .iss file location
+    total_start = time.perf_counter()
+
     ISS_FILE = Path("installer.iss")
     iscc_path = get_iscc_path()
 
@@ -213,3 +187,6 @@ def build_inno_installer():
         print("[*o*] Installer created successfully.")
     else:
         print("❌ Inno Setup failed.")
+
+    total_time = time.perf_counter() - total_start
+    print(f"\n🏁 Build completed in {total_time:.2f}s")
