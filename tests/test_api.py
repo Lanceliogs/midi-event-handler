@@ -17,7 +17,7 @@ def test_mapping():
     assert events[0].chord.notes == [127, 131]
 
 def test_get_status():
-    response = client.get("/status")
+    response = client.get("/meh.api/status")
     assert response.status_code == 200
     assert isinstance(response.json(), dict)
 

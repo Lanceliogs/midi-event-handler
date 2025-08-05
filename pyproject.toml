@@ -1,6 +1,6 @@
 [project]
 name = "midi-event-handler"
-version = "0.1.0"
+version = "v0.2.0"
 description = ""
 authors = [
     {name = "Julien LANCELOT",email = "julienlancelot91@gmail.com"}
@@ -15,6 +15,7 @@ dependencies = [
     "psutil (>=7.0.0,<8.0.0)",
     "pystray (>=0.19.5,<0.20.0)",
     "pillow (>=11.3.0,<12.0.0)",
+    "markdown (>=3.8.2,<4.0.0)",
 ]
 
 [tool.poetry]
@@ -22,9 +23,10 @@ packages = [{include = "midi_event_handler", from = "src"}]
 
 [tool.poetry.scripts]
 setup-web = "tools.setup:setup_web"
-start-app = "midi_event_handler.entrypoint:main"
+start-app = "midi_event_handler.main:main"
 build-app = "tools.build:run"
 build-installer = "tools.build:build_inno_installer"
+update-version = "tools.build:update_version_file"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"

@@ -4,7 +4,7 @@
 {% block content %}    
 <!-- Main Content -->
 <div id="status-area"
-    hx-get="/dashboard/status"
+    hx-get="/meh.ui/dashboard/status"
     hx-trigger="load, update from:body"
     hx-swap="innerHTML"
     class="status-card">
@@ -15,10 +15,10 @@
 <aside class="sidebar-right">
     <div class="sidebar-section">
         <button id="start-button" class="btn"
-            hx-post="/start"
+            hx-post="/meh.api/start"
             hx-target="#hx-feedback">START</button>
         <button id="stop-button" class="btn"
-            hx-post="/stop"
+            hx-post="/meh.api/stop"
             hx-target="#hx-feedback">STOP</button>
     </div>
 
@@ -29,7 +29,7 @@
         <label for="mapping-upload" class="btn">UPLOAD MAPPING</label>
         <input id="mapping-upload" type="file" name="file"
             style="display: none;" 
-            hx-post="/upload-mapping"
+            hx-post="/meh.api/upload-mapping"
             hx-trigger="change"
             hx-encoding="multipart/form-data"
             hx-target="#hx-feedback"
@@ -38,7 +38,7 @@
 
         <div id="drop-zone"
             class="drop-zone"
-            data-upload-url="/upload-mapping">
+            data-upload-url="/meh.api/upload-mapping">
             <p>Drag and drop a mapping file (*.yaml) here</p>
         </div>
 
@@ -48,7 +48,7 @@
 
     <div class="sidebar-section">
         <button id="restart-button" class="btn"
-                hx-post="/admin/restart"
+                hx-post="/meh.api/restart"
                 hx-target="#hx-feedback">RESTART</button>
     </div>
 

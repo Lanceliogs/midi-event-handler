@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.post("/shutdown")
+@router.post("/meh.api/shutdown")
 async def shutdown(request: Request):
     client_host = request.client.host
     if client_host != "127.0.0.1" and client_host != "::1":
@@ -31,7 +31,7 @@ async def exit_gracefully():
 
 # --- This is what you call from the launcher ---------------------------------------------------- 
 def request_shutdown(port: int):
-    url = f"http://127.0.0.1:{port}/shutdown"
+    url = f"http://127.0.0.1:{port}/meh.api/shutdown"
     try:
         log.info(f"🛑 Sending shutdown request to {url}")
         response = requests.post(url, timeout=5)

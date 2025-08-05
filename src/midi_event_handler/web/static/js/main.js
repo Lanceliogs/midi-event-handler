@@ -22,7 +22,7 @@ function connectWebSocket() {
     console.log("[WS] Already connected. Skipping.");
     return;
   }
-  socket = new WebSocket(`ws://${location.host}/events`);
+  socket = new WebSocket(`ws://${location.host}/meh.ws/events`);
 
   socket.onopen = () => {
     console.log("[WS] Connected to server");

@@ -14,8 +14,8 @@
         <div class="topbar-inner">
             <h1 class="topbar-title">🎹 MIDI Event Handler</h1>
             <nav class="topbar-nav">
-                <a href="/dashboard" class="btn">HOME</a>
-                <a href="/help" class="btn">HELP</a>
+                <a href="/meh.ui/dashboard" class="btn">HOME</a>
+                <a href="/meh.ui/help" class="btn">HELP</a>
             </nav>
         </div>
     </header>
@@ -24,6 +24,12 @@
     <div class="page-container with-sidebar-right">
         {% block content %}{% endblock %}
     </div>
+
+    <footer class="footer-version">
+        <div class="footer-inner">
+            <span class="footer-text">MIDI Event Handler • {{ version }}</span>
+        </div>
+    </footer>
 
 </body>
 </html>
