@@ -5,10 +5,10 @@ from midi_event_handler.core.events.models import MidiEvent, MidiChord
 from midi_event_handler.core.events.indexer import MidiEventIndex
 from midi_event_handler.core.midi.outputs import MidiOutputManager
 
-from midi_event_handler.tools import logtools
 from midi_event_handler.tools.connection import ConnectionManager
 
-log = logtools.get_logger(__name__)
+import logging
+log = logging.getLogger(__name__)
 def _log_event_state(flag: str, event: MidiEvent):
     log.info(f"[{flag.upper()}] {event}")
 

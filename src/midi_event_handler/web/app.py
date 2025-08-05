@@ -12,14 +12,18 @@ from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from pydantic import BaseModel
 
-import psutil, os, shutil
+import psutil, os, shutil, asyncio, logging
 
 from midi_event_handler.core.config.loader import RUNTIME_PATH
+
 from midi_event_handler.tools.connection import ConnectionManager
-from midi_event_handler.tools import logtools
+
 from midi_event_handler.core.app import MidiApp
 
 from midi_event_handler.web import help
+from midi_event_handler.web import shutdown
+
+from contextlib import asynccontextmanager
 
 def get_templates_path():
     if "__compiled__" in globals():
@@ -31,12 +35,18 @@ def get_static_path():
         return Path("static")
     return Path(__file__).parent / "static"
 
-log = logtools.get_logger(__name__)
+log = logging.getLogger(__name__)
 
 templates = Jinja2Templates(directory=get_templates_path())
 
-app = FastAPI()
+# --- APP -----------------------------------------------------------------
+@asynccontextmanager
+async def lifespan(app: FastAPI):    
+    yield
+
+app = FastAPI(lifespan=lifespan)
 app.include_router(help.router)
+app.include_router(shutdown.router)
 
 midiapp = MidiApp()
 

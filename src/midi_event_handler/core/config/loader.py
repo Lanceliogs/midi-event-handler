@@ -4,9 +4,9 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from midi_event_handler.core.events.models import MidiChord, MidiEvent, MidiMessage
-from midi_event_handler.tools import logtools
 
-log = logtools.get_logger(__name__)
+import logging
+log = logging.getLogger(__name__)
 
 _conf = {}
 with open("config.yaml", "r") as f:
@@ -17,6 +17,12 @@ def get_app_config() -> dict:
 
 def get_logging_config() -> dict:
     return _conf.get("logging", {})
+
+def default_app_conf() -> dict:
+    return {
+        "host": "127.0.0.1",
+        "port": 8000,
+    }
 
 RUNTIME_PATH = Path(".runtime")
 RUNTIME_MAPPING_PATH = RUNTIME_PATH / "mapping.yaml"

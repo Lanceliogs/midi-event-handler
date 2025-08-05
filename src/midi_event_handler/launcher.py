@@ -1,120 +1,102 @@
 import subprocess
 import time
-import sys
+import signal
 from pathlib import Path
 import yaml
 import webbrowser
-import builtins
+import argparse
 
-import threading
-from pystray import Icon, MenuItem as Item, Menu
-from PIL import Image
+from midi_event_handler.tools.logtools import setup_logger
+from midi_event_handler.tools.tray import setup_tray_icon
+from midi_event_handler.core.config import default_app_conf
+from midi_event_handler.web.shutdown import request_shutdown
 
-# --- Parameters ----------------------------------------------------------
+import logging
+log = logging.getLogger(__name__)
+
+# === App Compilation Check ===
 is_compiled = '__compiled__' in globals()
 
+# === Runtime Paths ===
 RUNTIME_DIR = Path(".runtime")
 RESTART_FLAG = RUNTIME_DIR / "restart.flag"
 EXIT_FLAG = RUNTIME_DIR / "exit.flag"
-
 ICON_PATH = Path("meh-icon.ico")
 
-def setup_tray_icon(url: str):
-    image = Image.open(ICON_PATH)
-
-    icon = Icon(
-        "midi_event_handler",
-        image,
-        "MIDI Event Handler",
-        menu=Menu(
-            Item("Open Dashboard", lambda icon, item:  webbrowser.open(url)),
-            Item("Quit", on_exit)
-        )
-    )
-
-    # Run the icon in a separate thread so it doesn't block
-    threading.Thread(target=icon.run, daemon=True).start()
-
-def on_exit(icon, item):
-    icon.stop()
-    exit_flag = Path(".runtime") / "exit.flag"
-    exit_flag.touch()
-
-# --- App config -------------------------------------------------
-
-conf = {}
+# === Config Load ===
 with open("config.yaml", "r") as f:
     conf = yaml.safe_load(f)
 
-# I left the non used args as example,
-# but they should ne be used in production.
-def default_app_conf() -> dict:
-    return {
-        "host": "127.0.0.1",
-        "port": 8000,
-        #"reload": False,
-        #"local": False,
-        #"mapping": None
-    }
-
 app_conf: dict = conf.get("app", default_app_conf())
 
+# === App Launch ===
 def launch_app():
-    
-    command = ["app.exe"] if is_compiled else ["poetry", "run", "start-app"]
-    
-    command += [
-            "--host", app_conf.get('host', '127.0.0.1'),
-            "--port", str(app_conf.get('port', 8000))
-        ]
-    
-    # Optional args
-    if app_conf.get("mapping"):
-        command.append("--mapping")
-        command.append(app_conf.get("mapping"))
-    if app_conf.get("reload"):
-        command.append("--reload")
-
-    print(f"Starting app with command:\n  > {' '.join(command)}")
+    command = ["launcher.exe", "--app"] if is_compiled else ["poetry", "run", "start-app"]
+    log.info(f"Launching app: {' '.join(command)}")
     return subprocess.Popen(command)
 
 
 def watch_for_flag():
     while True:
         if RESTART_FLAG.exists():
-            print("Restart flag detected")
+            log.warning("🔁 Restart flag detected")
             return "restart"
         if EXIT_FLAG.exists():
-            print("Exit flag detected")
+            log.warning("🛑 Exit flag detected")
             return "exit"
         time.sleep(0.5)
 
 
-def main():
-    url = f"http://127.0.0.1:{app_conf.get('port', 8000)}/dashboard"
+def monitor_loop():
+    port = app_conf.get('port', 8000)
+    url = f"http://127.0.0.1:{port}/dashboard"
+
     setup_tray_icon(url)
 
     webbrowser.open(url)
-    
+
     RUNTIME_DIR.mkdir(exist_ok=True)
+
     while True:
         proc = launch_app()
         flag = watch_for_flag()
 
-        # It's either restart or exit
-        proc.terminate()
-        print(f"App returned {proc.wait()}")
-        if flag == "restart":
+        request_shutdown(port)
+        try:
+            proc.wait(timeout=10)
+        except KeyboardInterrupt:
+            log.warning("KeyboardInterrupt detected in child process")
+        except subprocess.TimeoutExpired:
+            log.warning("TimeoutError detected. Killing the child instead.")
+            proc.kill()
+        finally:
             RESTART_FLAG.unlink(missing_ok=True)
-        elif flag == "exit":
             EXIT_FLAG.unlink(missing_ok=True)
+        
+        if flag == "exit":
             break
-        else:
+        if flag != "restart":
+            log.warning(f"Unknown flag: {flag}")
             break
-    
-    # We kill the flags at the end if needed
-    RESTART_FLAG.unlink(missing_ok=True)
-    EXIT_FLAG.unlink(missing_ok=True)
+
+
+def main():
+    setup_logger()
+
+    parser = argparse.ArgumentParser(description="MIDI Event Handler Launcher")
+    parser.add_argument("--app", action="store_true", help="Run app directly (no monitoring)")
+    args = parser.parse_args()
+
+    if args.app:
+        # Run app directly, bypass monitoring
+        from midi_event_handler.entrypoint import run_app
+        host = app_conf.get('host', '127.0.0.1'),
+        port = app_conf.get('port', 8000)
+        run_app(host=host, port=port)
+    else:
+        # Monitoring loop (default in compiled mode)
+        monitor_loop()
+
 
 if __name__ == "__main__":
     main()

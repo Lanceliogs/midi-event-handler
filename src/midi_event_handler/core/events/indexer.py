@@ -7,8 +7,8 @@ import yaml
 from midi_event_handler.core.events.models import MidiEvent, MidiChord, MidiMessage
 from midi_event_handler.core.config.loader import get_event_list
 
-from midi_event_handler.tools import logtools
-log = logtools.get_logger(__name__)
+import logging
+log = logging.getLogger(__name__)
 
 class MidiEventIndex:
 

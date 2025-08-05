@@ -10,8 +10,8 @@ from midi_event_handler.core.midi.listener import MidiListener
 from midi_event_handler.core.midi.outputs import MidiOutputManager
 from midi_event_handler.core.midi.utils import get_ports_status
 
-from midi_event_handler.tools import logtools
-log = logtools.get_logger(__name__)
+import logging
+log = logging.getLogger(__name__)
 
 from midi_event_handler.tools.connection import ConnectionManager
 manager = ConnectionManager("meh-app")

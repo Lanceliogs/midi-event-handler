@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field, asdict
 from typing import Optional, Dict, List, Tuple
 import mido
-from midi_event_handler.tools import logtools
 
-log = logtools.get_logger(__name__)
+import logging
+log = logging.getLogger(__name__)
 
 @dataclass
 class MidiMessage:

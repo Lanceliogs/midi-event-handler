@@ -2,9 +2,9 @@ import mido
 from typing import Dict, Optional, List
 
 from midi_event_handler.core.events.models import MidiMessage
-from midi_event_handler.tools import logtools
 
-log = logtools.get_logger(__name__)
+import logging
+log = logging.getLogger(__name__)
 
 class MidiOutputManager:
     def __init__(self, names: Optional[List[str]] = None):
