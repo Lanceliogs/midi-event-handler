@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="status-card">
-
+  <div class="status-container">
   <div class="status-section">
     <h2>📘 About This App</h2>
     <p>
@@ -19,20 +19,20 @@
   <div class="status-section">
     <h2>📖 User Manual</h2>
     <h3>1. Upload a Mapping</h3>
-    <p>Use the sidebar to drag-and-drop or upload a <code>.yaml</code> file that defines your event mappings.</p>
+    <p>Use the sidebar to drag-and-drop or upload a <code>.yaml</code> file that defines your event mappings. The app needs to be stopped though.</p>
 
     <h3>2. Start / Stop the App</h3>
     <p>Click <strong>START</strong> to activate MIDI listening. When running, active events and MIDI status will be displayed.</p>
 
     <h3>3. Restart the Application</h3>
-    <p>Click <strong>RESTART</strong> to trigger a full server reload (e.g. after config changes).</p>
+    <p>Click <strong>RESTART</strong> to trigger a full server reload (e.g. after a server config changes, or as a last resort maybe).</p>
 
     <h3>4. WebSocket Connection</h3>
-    <p>The status LED at the bottom of the sidebar shows live connection status with the backend.</p>
+    <p>The status LED at the bottom of the sidebar shows live connection status with the backend. If DOWN, then the app is probably dead, or was exited</p>
 
     <h3>5. Event Monitoring</h3>
     <p>All triggered events will be displayed in the main status area with details about chord, type, and duration.</p>
   </div>
-
+  </div>
 </div>
 {% endblock %}

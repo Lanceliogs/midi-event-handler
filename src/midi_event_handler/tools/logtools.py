@@ -5,7 +5,7 @@ from pathlib import Path
 from os import getenv
 
 def setup_logger():
-    config_path = Path(getenv("MEH_LOG_CONFIG", "config.yaml"))
+    config_path = Path("config.yaml")
 
     if config_path.exists():
         with config_path.open("r") as f:

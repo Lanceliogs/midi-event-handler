@@ -147,6 +147,9 @@ def run():
     old_path.rename(release_path)
     print(f"\n✅ Application directory renamed as {FINAL_APP_DIR_NAME}\n")
 
+    version_path = release_path / "version.txt"
+    update_version_file(version_path)
+
     total_time = time.perf_counter() - total_start
     print(f"\n🏁 Build completed in {total_time:.2f}s")
 
@@ -190,3 +193,17 @@ def build_inno_installer():
 
     total_time = time.perf_counter() - total_start
     print(f"\n🏁 Build completed in {total_time:.2f}s")
+
+def update_version_file(path: Path = Path("version.txt")):
+    result = subprocess.run([
+        "poetry", "version", "--short"],
+        check=True,
+        capture_output=True,
+        text=True
+    )
+    version = result.stdout.strip()
+    path.write_text(version)
+    if result.returncode == 0:
+        print(f"[*o*] Version updated: {version}")
+    else:
+        print("❌ Could not update version.")

@@ -18,7 +18,7 @@ body {
 
 .page-container.with-sidebar-right {
   display: flex;
-  height: calc(100vh - 110px); /* Topbar height */
+  height: calc(100vh - 110px - 32px);
   padding: 0;
 }
 
@@ -85,6 +85,28 @@ body {
   border: none;
   border-top: 1px solid #ccc;
   margin: 1rem 0;
+}
+
+/* ====== Footer ====== */
+
+.footer-version {
+  height: 15px;
+  background-color: #f0f2f5;
+  color: #666;
+  text-align: center;
+  font-size: 0.75rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid #ccc;
+}
+
+.footer-inner {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.footer-text {
+  font-family: sans-serif;
 }
 
 /* ====== Status Card & Container ====== */
@@ -348,4 +370,20 @@ body {
 
 .btn:hover {
   background-color: #f0f0f0;
+}
+
+/* ====== Whatsnew ====== */
+.prose h1 {
+  font-size: 1.75rem;
+  margin-top: 1em;
+}
+
+.prose p {
+  margin-bottom: 1em;
+}
+
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin-bottom: 1em;
 }

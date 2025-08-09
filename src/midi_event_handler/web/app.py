@@ -2,7 +2,8 @@ from fastapi import (
     FastAPI, 
     WebSocket, WebSocketDisconnect,
     File, UploadFile,
-    HTTPException
+    HTTPException,
+    Depends
 )
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -14,7 +15,9 @@ from pydantic import BaseModel
 
 import psutil, os, shutil, asyncio, logging
 
-from midi_event_handler.core.config.loader import RUNTIME_PATH
+from midi_event_handler.core.config import (
+    RUNTIME_PATH, get_current_version
+)
 
 from midi_event_handler.tools.connection import ConnectionManager
 
@@ -52,7 +55,7 @@ midiapp = MidiApp()
 
 # --- JSON API routes -------------------------------------------------------------
 
-@app.post("/upload-mapping")
+@app.post("/meh.api/upload-mapping")
 async def upload_mapping(file: UploadFile = File(...)):
 
     if midiapp.running:
@@ -73,27 +76,27 @@ async def upload_mapping(file: UploadFile = File(...)):
 
     return {"status": "ok", "mapping": file.filename}
 
-@app.post("/start")
+@app.post("/meh.api/start")
 async def start_show():
     await midiapp.start()
     return {
         "running": midiapp.running
     }
 
-@app.post("/stop")
+@app.post("/meh.api/stop")
 async def stop_show():
     await midiapp.stop()
     return {
         "running": midiapp.running
     }
 
-@app.get("/status")
+@app.get("/meh.api/status")
 async def get_status():
     return midiapp.get_status()
 
 # --- Websockets ----------------------------------------------------------------
 
-@app.websocket("/events")
+@app.websocket("/meh.ws/events")
 async def ws_endpoint_events(ws: WebSocket):
     manager = ConnectionManager("meh-app")
     await manager.manage_until_death(ws)
@@ -102,13 +105,16 @@ async def ws_endpoint_events(ws: WebSocket):
 
 @app.get("/")
 async def index():
-    return RedirectResponse("/dashboard")
+    return RedirectResponse("/meh.ui/dashboard")
 
-@app.get("/dashboard")
-async def dashboard(request: Request):
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+@app.get("/meh.ui/dashboard")
+async def dashboard(request: Request, version: str = Depends(get_current_version)):
+    return templates.TemplateResponse("dashboard.html", {
+        "request": request,
+        "version": version
+    })
 
-@app.get("/dashboard/status")
+@app.get("/meh.ui/dashboard/status")
 async def status_fragment(request: Request):
     return templates.TemplateResponse("partials/status_fragment.html", {
         "request": request,
@@ -117,17 +123,11 @@ async def status_fragment(request: Request):
 
 # --- ADMIN routes -------------------------------------------------------------
 
-@app.post("/admin/restart")
+@app.post("/meh.api/restart")
 async def request_restart():
     Path(".runtime").mkdir(exist_ok=True)
     Path(".runtime/restart.flag").touch()
     return {"status": "restart requested"}
-
-@app.post("/admin/exit")
-async def exit_and_let_launcher_restart():
-    pid = os.getpid()
-    psutil.Process(pid).terminate()  # launcher will relaunch
-
 
 # Mount static as html at the end
 app.mount("/static", StaticFiles(directory=get_static_path(), html=True), name="static")

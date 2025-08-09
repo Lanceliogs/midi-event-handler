@@ -6,9 +6,12 @@ import yaml
 import webbrowser
 import argparse
 
+from midi_event_handler.main import run_app
 from midi_event_handler.tools.logtools import setup_logger
 from midi_event_handler.tools.tray import setup_tray_icon
-from midi_event_handler.core.config import default_app_conf
+from midi_event_handler.core.config import (
+    default_app_conf, RUNTIME_PATH, WHATSNEW_PATH
+)
 from midi_event_handler.web.shutdown import request_shutdown
 
 import logging
@@ -49,11 +52,12 @@ def watch_for_flag():
 
 def monitor_loop():
     port = app_conf.get('port', 8000)
-    url = f"http://127.0.0.1:{port}/dashboard"
 
-    setup_tray_icon(url)
+    dashboard_url = f"http://127.0.0.1:{port}/meh.ui/dashboard"
+    whatsnew_url = f"http://127.0.0.1:{port}/meh.ui/whatsnew"
 
-    webbrowser.open(url)
+    setup_tray_icon(dashboard_url)
+    webbrowser.open(whatsnew_url if WHATSNEW_PATH.exists() else dashboard_url)
 
     RUNTIME_DIR.mkdir(exist_ok=True)
 
@@ -88,9 +92,7 @@ def main():
     args = parser.parse_args()
 
     if args.app:
-        # Run app directly, bypass monitoring
-        from midi_event_handler.entrypoint import run_app
-        host = app_conf.get('host', '127.0.0.1'),
+        host = app_conf.get('host', '127.0.0.1')
         port = app_conf.get('port', 8000)
         run_app(host=host, port=port)
     else:

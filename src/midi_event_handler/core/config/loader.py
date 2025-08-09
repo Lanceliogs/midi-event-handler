@@ -15,6 +15,9 @@ with open("config.yaml", "r") as f:
 def get_app_config() -> dict:
     return _conf.get("app", {})
 
+def get_updates_config() -> dict:
+    return _conf.get("updates", {})
+
 def get_logging_config() -> dict:
     return _conf.get("logging", {})
 
@@ -24,8 +27,19 @@ def default_app_conf() -> dict:
         "port": 8000,
     }
 
+VERSION_PATH = Path("version.txt")
 RUNTIME_PATH = Path(".runtime")
 RUNTIME_MAPPING_PATH = RUNTIME_PATH / "mapping.yaml"
+WHATSNEW_PATH = RUNTIME_PATH / "whatsnew.md"
+
+def safe_runtime_path():
+    RUNTIME_PATH.mkdir(exist_ok=True)
+    return RUNTIME_PATH
+
+def get_current_version():
+    if not VERSION_PATH.exists():
+        return "v0.0.0"
+    return VERSION_PATH.read_text().strip()
 
 _raw: Dict = {}
 

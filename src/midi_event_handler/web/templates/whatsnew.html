@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}What's New{% endblock %}
+
+{% block content %}
+<div class="status-card">
+
+  <div class="status-section">
+    <div class="status-container">
+    <h1>📢 What's New</h1>
+    <div class="prose">
+      {{ content | safe }}
+    </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
