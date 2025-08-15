@@ -22,3 +22,6 @@ htmx.min.js
 
 # Ignore runtime files
 .runtime/
+
+# The roadmap must stay secret :)
+todo.md
