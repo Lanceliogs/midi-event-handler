@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 from midi_event_handler.core.events.models import MidiEvent, MidiChord
 from midi_event_handler.core.events.indexer import MidiEventIndex
@@ -29,10 +29,11 @@ class MidiChordProcessor:
     async def run(self):
         while True:
             chord: MidiChord = await self.chord_queue.get()
-            event: MidiEvent = self.event_index.lookup_by_signature(chord.signature())
-            if event:
-                log.info(f"Event found: {chord}: {event}")
-                await self.event_queues[event.type].put(event)
+            events: List[MidiEvent] = self.event_index.lookup_by_signature(chord.signature())
+            if events:
+                log.info(f"Event(s) found: {chord}: {' '.join([e.name for e in events])}")
+                for e in events:
+                    await self.event_queues[e.type].put(e)
             else:
                 log.warning(f"No event found for chord: {chord}")
 
