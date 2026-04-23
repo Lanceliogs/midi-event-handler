@@ -1,6 +1,6 @@
 [project]
 name = "midi-event-handler"
-version = "v0.3.0"
+version = "0.4.0"
 description = ""
 authors = [
     {name = "Julien LANCELOT",email = "julienlancelot91@gmail.com"}
@@ -16,6 +16,7 @@ dependencies = [
     "pystray (>=0.19.5,<0.20.0)",
     "pillow (>=11.3.0,<12.0.0)",
     "markdown (>=3.8.2,<4.0.0)",
+    "requests (>=2.32.4,<3.0.0)",
 ]
 
 [tool.poetry]
@@ -24,17 +25,16 @@ packages = [{include = "midi_event_handler", from = "src"}]
 [tool.poetry.scripts]
 setup-web = "tools.setup:setup_web"
 start-app = "midi_event_handler.main:main"
-build-app = "tools.build:run"
-build-installer = "tools.build:build_inno_installer"
-update-version = "tools.build:update_version_file"
+launcher = "midi_event_handler.launcher:main"
+debug-midi = "midi_event_handler.debug:main"
+build = "tools.build:main"
+build-installer = "tools.build:build_installer"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
-nuitka = "^2.7.12"
 htmlmin = "^0.1.12"
 csscompressor = "^0.9.5"
 rjsmin = "^1.2.4"
-requests = "^2.32.4"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

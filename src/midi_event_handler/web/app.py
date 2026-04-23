@@ -16,7 +16,7 @@ from pydantic import BaseModel
 import psutil, os, shutil, asyncio, logging
 
 from midi_event_handler.core.config import (
-    RUNTIME_PATH, get_current_version
+    RUNTIME_PATH, get_current_version, is_embedded
 )
 
 from midi_event_handler.tools.connection import ConnectionManager
@@ -29,12 +29,12 @@ from midi_event_handler.web import shutdown
 from contextlib import asynccontextmanager
 
 def get_templates_path():
-    if "__compiled__" in globals():
+    if is_embedded():
         return Path("templates")
     return Path(__file__).parent / "templates"
 
 def get_static_path():
-    if "__compiled__" in globals():
+    if is_embedded():
         return Path("static")
     return Path(__file__).parent / "static"
 

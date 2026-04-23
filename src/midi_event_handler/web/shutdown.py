@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Request, HTTPException
-import asyncio
 import requests
 
 from midi_event_handler.tools.connection import ConnectionManager
@@ -19,25 +18,26 @@ async def shutdown(request: Request):
     manager = ConnectionManager("meh-app")
     await manager.shutdown()
 
-    asyncio.get_event_loop().call_soon(lambda: asyncio.create_task(exit_gracefully()))
+    from midi_event_handler.main import server
+    if server:
+        server.should_exit = True
+        log.info("✅ server.should_exit set to True")
+    
     return {"message": "Shutting down..."}
 
-async def exit_gracefully():
-    try:
-        await asyncio.sleep(0.5)
-        raise SystemExit("Graceful shutdown triggered by /shutdown")
-    except SystemExit:
-        raise
 
-# --- This is what you call from the launcher ---------------------------------------------------- 
-def request_shutdown(port: int):
+def request_shutdown(port: int) -> bool:
+    """Send shutdown request to the app. Returns True if accepted."""
     url = f"http://127.0.0.1:{port}/meh.api/shutdown"
     try:
         log.info(f"🛑 Sending shutdown request to {url}")
         response = requests.post(url, timeout=5)
         if response.status_code == 200:
             log.info("✅ Shutdown request accepted by the app")
+            return True
         else:
             log.warning(f"⚠️ Shutdown request returned status {response.status_code}: {response.text}")
+            return False
     except requests.exceptions.RequestException:
         log.exception(f"❌ Failed to send shutdown request")
+        return False

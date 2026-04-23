@@ -9,7 +9,8 @@ from midi_event_handler.core.config import (
     RUNTIME_PATH,
     WHATSNEW_PATH,
     get_current_version,
-    safe_runtime_path
+    safe_runtime_path,
+    get_app_config
 )
 
 from midi_event_handler.tools.updater import (
@@ -18,8 +19,9 @@ from midi_event_handler.tools.updater import (
     format_release_notes
 )
 
+from midi_event_handler.web.shutdown import request_shutdown
+
 ICON_PATH = Path("meh-icon.ico")
-EXIT_FLAG = RUNTIME_PATH / "exit.flag"
 
 tray_state = {
     "status_text": "Idle",
@@ -136,5 +138,6 @@ def setup_tray_icon(url: str):
 # --- Exit ---
 
 def on_exit(icon, item):
+    port = get_app_config().get('port', 8000)
+    request_shutdown(port)
     icon.stop()
-    EXIT_FLAG.touch()
