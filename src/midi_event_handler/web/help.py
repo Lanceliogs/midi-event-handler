@@ -6,11 +6,12 @@ import markdown
 
 from midi_event_handler.core.config import (
     WHATSNEW_PATH,
-    get_current_version
+    get_current_version,
+    is_embedded
 )
 
 def get_templates_path():
-    if "__compiled__" in globals():
+    if is_embedded():
         return Path("templates")
     return Path(__file__).parent / "templates"
 

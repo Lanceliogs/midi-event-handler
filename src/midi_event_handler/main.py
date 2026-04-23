@@ -2,19 +2,21 @@ import uvicorn
 from argparse import ArgumentParser
 from pathlib import Path
 from midi_event_handler.core.config.loader import (
-     RUNTIME_PATH, load_mapping_yaml
+     RUNTIME_PATH, load_mapping_yaml, is_embedded
 )
 from midi_event_handler.core.config import get_logging_config
 from midi_event_handler.web.app import app
 
 import shutil
-import builtins
 import logging
 
-is_compiled = '__compiled__' in globals()
 log = logging.getLogger(__name__)
 
+server: uvicorn.Server = None
+
 def run_app(host="127.0.0.1", port=8000, local=False, mapping=None, reload=False):
+     global server
+     
      if local:
           host = "127.0.0.1"
           port = 8000
@@ -30,18 +32,19 @@ def run_app(host="127.0.0.1", port=8000, local=False, mapping=None, reload=False
      except FileNotFoundError:
           log.exception("No mapping YAML file. First launch?")
 
+     config = uvicorn.Config(
+          app,
+          host=host,
+          port=port,
+          log_config=get_logging_config(),
+          reload=reload and not is_embedded()
+     )
+     server = uvicorn.Server(config)
+     
      try:
-          uvicorn.run(
-                    app,
-                    host=host,
-                    port=port,
-                    log_config=get_logging_config(),
-                    reload=reload and not is_compiled
-          )
-     except SystemExit as e:
-          log.info(f"Expected SystemExit: {e}")
-     except:
-          log.exception("Unhandled exception")
+          server.run()
+     except KeyboardInterrupt:
+          pass  # Clean exit on Ctrl+C
 
 
 def main():

@@ -9,9 +9,9 @@
 *.dist/
 *.egg-info/
 .eggs/
-nuitka-crash-report.xml
 build/
 dist/
+.build-cache/
 .innosetup.conf
 
 # VSCode settings (recommended to exclude from repo)

@@ -127,16 +127,20 @@ From the sidebar you can:
 - `POST /meh.api/restart` — asks the launcher to restart
 - WebSocket `/meh.ws/events` — pushes lightweight notifications so the dashboard can live-update
 
-## Nuitka builds
+## Building releases
 
-The project includes helper scripts wired in `pyproject.toml`:
+This project moved from Nuitka to embedded Python distribution. Why?
+
+- **Open source friendly** — no proprietary compilation step, just Python
+- **Fast builds** — Nuitka took 10+ minutes, embedded builds take seconds (Python is cached)
+- **Easy patching** — need to fix something? Edit the `.py` files directly in the release folder
+- **Cleaner release** — a small native CLI launcher (`meh.exe`) + standard Python, no compiled blobs
+
+Helper scripts are wired in `pyproject.toml`:
 
 ```bash
-# Update version.txt from a tag or string (used by the installer naming)
-poetry run update-version
-
-# Compile the app (Nuitka). Produces a /build/Release layout the installer can use.
-poetry run build-app
+# Build the release (downloads Python, builds wheel, compiles CLI launcher)
+poetry run build
 
 # Build a Windows installer with Inno Setup (reads .innosetup.conf for ISCC.exe path)
 poetry run build-installer
@@ -144,6 +148,7 @@ poetry run build-installer
 
 Notes:
 
+- Embedded Python and CLI exe are cached in `.build-cache/` for fast rebuilds.
 - Installer output goes to `dist/installer/midi-event-handler-setup_<version>.exe`.
 - The launcher handles graceful shutdown/restart by calling the app’s `/shutdown` endpoint.
 - Release checks pull from GitHub Releases and download the correct `midi-event-handler-setup_*.exe`.
@@ -155,7 +160,7 @@ Notes:
 - **Mapping changes not taking effect?**
   - If the app is **running**, stop it first, then upload a new mapping.
   - For CLI: `--mapping yourfile.yaml` copies to `.runtime/mapping.yaml` before startup.
-- **Dev reloads**: `--reload` only works in **non-compiled** (dev) mode.
+- **Dev reloads**: `--reload` only works in dev mode (not in embedded releases).
 - **Logs**: tweak `config.yaml` to change log levels/formatters.
 - **Firewall**: the dashboard runs on your configured host/port; default is `127.0.0.1:8000`.
 

@@ -1,5 +1,5 @@
 import yaml
-import os
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Dict, Any
 
@@ -7,6 +7,13 @@ from midi_event_handler.core.events.models import MidiChord, MidiEvent, MidiMess
 
 import logging
 log = logging.getLogger(__name__)
+
+
+def is_embedded() -> bool:
+    """Check if running from embedded release (vs development mode)."""
+    cwd = Path.cwd()
+    python_dir = cwd / "python"
+    return python_dir.exists() and (python_dir / "python.exe").exists()
 
 _conf = {}
 with open("config.yaml", "r") as f:
@@ -27,7 +34,6 @@ def default_app_conf() -> dict:
         "port": 8000,
     }
 
-VERSION_PATH = Path("version.txt")
 RUNTIME_PATH = Path(".runtime")
 RUNTIME_MAPPING_PATH = RUNTIME_PATH / "mapping.yaml"
 WHATSNEW_PATH = RUNTIME_PATH / "whatsnew.md"
@@ -36,10 +42,18 @@ def safe_runtime_path():
     RUNTIME_PATH.mkdir(exist_ok=True)
     return RUNTIME_PATH
 
+VERSION_PATH = Path("version.txt")
+
 def get_current_version():
-    if not VERSION_PATH.exists():
+    # In embedded mode, version.txt has git hash info
+    if VERSION_PATH.exists():
+        return VERSION_PATH.read_text().strip()
+    # In dev mode, use package metadata
+    from importlib.metadata import version
+    try:
+        return version("midi-event-handler")
+    except Exception:
         return "v0.0.0"
-    return VERSION_PATH.read_text().strip()
 
 _raw: Dict = {}
 
