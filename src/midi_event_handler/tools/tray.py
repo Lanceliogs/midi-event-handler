@@ -65,10 +65,11 @@ def enable_menu_item():
 
 def launch_installer_detached(installer_path):
     DETACHED_PROCESS = 0x00000008
+    CREATE_NO_WINDOW = 0x08000000
     subprocess.Popen(
         [str(installer_path)],
-        creationflags=DETACHED_PROCESS,
-        close_fds=True,
+        creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW,
+        stdin=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
     )
@@ -100,13 +101,14 @@ def run_update_check_threaded(icon):
             # Write version notes
             WHATSNEW_PATH.write_text(format_release_notes(latest_tag, notes))
 
-            # Detach and run
+            # Detach and run installer
             launch_installer_detached(download_path)
 
             # Exit current app
             set_status("Exiting...")
             icon.notify("App will close now for update", "Updater")
-            EXIT_FLAG.touch()
+            port = get_app_config().get('port', 8000)
+            request_shutdown(port)
             tray_icon.stop()
 
         except Exception as e:
