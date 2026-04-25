@@ -3,30 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}MIDI Event Handler{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="/static/assets/meh-icon.ico">
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="/static/js/htmx.min.js"></script>
-    <script src="/static/js/main.js" defer></script>
+    <script type="module" src="/static/js/app.js"></script>
+    {% block scripts %}{% endblock %}
 </head>
 <body class="page-body">
+    {% from "macros/icons.html" import icon, icon_btn, link_btn %}
 
     <!-- Top Navigation Bar -->
     <header class="topbar">
         <div class="topbar-inner">
-            <h1 class="topbar-title">🎹 MIDI Event Handler</h1>
+            <h1 class="topbar-title">
+                <img src="/static/assets/meh-icon.ico" class="topbar-logo" alt="MEH">
+                MIDI Event Handler
+            </h1>
             <nav class="topbar-nav">
-                <a href="/meh.ui/dashboard" class="btn">HOME</a>
-                <a href="/meh.ui/help" class="btn">HELP</a>
+                {{ link_btn("home", "HOME", "/meh/ui/dashboard") }}
+                {{ link_btn("pencil-square", "EDITOR", "/meh/ui/editor") }}
+                {{ link_btn("question-mark-circle", "HELP", "/meh/ui/help") }}
             </nav>
         </div>
     </header>
 
     <!-- Content Block -->
-    <div class="page-container with-sidebar-right">
+    <div class="page-container {% block container_class %}with-sidebar-right{% endblock %}">
         {% block content %}{% endblock %}
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal-backdrop" class="modal-backdrop hidden">
+        <div id="modal-container" class="modal-container"></div>
     </div>
 
     <footer class="footer-version">
         <div class="footer-inner">
+            <div class="ws-status" id="ws-status">
+                <span class="ws-led" id="ws-led"></span>
+                <span class="ws-label" id="ws-label">--</span>
+            </div>
             <span class="footer-text">MIDI Event Handler • {{ version }}</span>
         </div>
     </footer>

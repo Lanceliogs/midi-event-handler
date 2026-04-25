@@ -1,0 +1,27 @@
+{# 
+  Icon macros for Heroicons SVGs
+  Usage: {% from "macros/icons.html" import icon, icon_btn, link_btn %}
+#}
+
+{# Standalone icon #}
+{% macro icon(name, size="md", class="") %}
+<img src="/static/assets/icons/{{ name }}.svg" 
+     class="icon icon-{{ size }} {{ class }}" 
+     alt="" 
+     aria-hidden="true">
+{% endmacro %}
+
+{# Button with icon only #}
+{% macro icon_btn(name, title="", class="") %}
+<button type="button" class="btn-icon {{ class }}" title="{{ title }}">
+  <img src="/static/assets/icons/{{ name }}.svg" class="icon" alt="">
+</button>
+{% endmacro %}
+
+{# Link styled as button with icon + text #}
+{% macro link_btn(name, text, href, class="btn") %}
+<a href="{{ href }}" class="{{ class }}">
+  <img src="/static/assets/icons/{{ name }}.svg" class="icon" alt="">
+  <span>{{ text }}</span>
+</a>
+{% endmacro %}

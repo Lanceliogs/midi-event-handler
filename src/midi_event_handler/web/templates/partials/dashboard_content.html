@@ -1,0 +1,125 @@
+<div class="dashboard" id="dashboard-container" data-started-at="{{ status.started_at or '' }}">
+    <!-- Top Bar: Status + Show Timer -->
+    <div class="dashboard-header">
+        <div class="app-status {{ 'running' if status.running else 'stopped' }}">
+            <span class="status-led"></span>
+            <span class="status-text">{{ 'RUNNING' if status.running else 'STOPPED' }}</span>
+        </div>
+        
+        {% if status.running and status.uptime %}
+        <div class="show-timer">
+            <span class="timer-label">Show Time</span>
+            <span class="timer-value" id="show-timer">{{ "%02d:%02d:%02d"|format(status.uptime // 3600, (status.uptime % 3600) // 60, status.uptime % 60) }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Active Events -->
+    <div class="dashboard-section">
+        <h2 class="section-title">Active Events</h2>
+        <div class="active-events-grid">
+            {% for event_type, handler in status.handlers.items() %}
+            <div class="handler-card {{ 'active' if handler.active else 'idle' }} type-{{ event_type }}"
+                 data-event-type="{{ event_type }}"
+                 {% if handler.active and handler.event %}
+                 data-event-started-at="{{ handler.event_started_at if handler.event_started_at is defined else '' }}"
+                 data-duration-max="{{ handler.event.duration_max or '' }}"
+                 {% endif %}>
+                <div class="handler-header">
+                    <span class="handler-type">{{ event_type }}</span>
+                    {% if handler.locked %}
+                    <span class="handler-locked">LOCKED</span>
+                    {% endif %}
+                </div>
+                
+                {% if handler.active and handler.event %}
+                <div class="handler-event">
+                    <div class="event-name">{{ handler.event.name }}</div>
+                    {% if handler.event.comment %}
+                    <div class="event-comment">{{ handler.event.comment }}</div>
+                    {% endif %}
+                    
+                    <div class="event-timing">
+                        {% if handler.elapsed is defined %}
+                        <span class="elapsed">{{ "%.1f"|format(handler.elapsed) }}s</span>
+                        {% endif %}
+                        {% if handler.remaining is defined %}
+                        <div class="countdown-bar">
+                            <div class="countdown-progress" style="width: {{ (handler.remaining / handler.event.duration_max * 100) if handler.event.duration_max else 0 }}%"></div>
+                        </div>
+                        <span class="remaining">{{ "%.1f"|format(handler.remaining) }}s left</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if handler.event.fallback_event %}
+                    <div class="fallback-hint">→ {{ handler.event.fallback_event }}</div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="handler-idle">
+                    <span class="idle-text">Waiting...</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Two Column Layout: Event Log + MIDI Input -->
+    <div class="dashboard-columns">
+        <!-- Event Log -->
+        <div class="dashboard-section">
+            <h2 class="section-title">Recent Events</h2>
+            <div class="event-log" id="event-log">
+                {% for entry in status.event_log|reverse %}
+                <div class="log-entry {{ entry.action }}">
+                    <span class="log-time">{{ entry.timestamp | format_time }}</span>
+                    <span class="log-action {{ entry.action }}">{{ entry.action|upper }}</span>
+                    <span class="log-event">{{ entry.event }}</span>
+                </div>
+                {% else %}
+                <div class="log-empty">No events yet</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- MIDI Input -->
+        <div class="dashboard-section">
+            <h2 class="section-title">MIDI Input</h2>
+            <div class="midi-input-display" id="midi-input-display">
+                <div class="midi-empty">Waiting for input...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats & Port Health -->
+    <div class="dashboard-footer">
+        <div class="dashboard-section stats-section">
+            <h3 class="section-title-sm">Trigger Counts</h3>
+            <div class="trigger-stats">
+                {% for event_name, count in status.trigger_counts.items() %}
+                <div class="stat-item">
+                    <span class="stat-name">{{ event_name }}</span>
+                    <span class="stat-count">{{ count }}</span>
+                </div>
+                {% else %}
+                <div class="stats-empty">No triggers yet</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="dashboard-section ports-section">
+            <h3 class="section-title-sm">Input Activity</h3>
+            <div class="port-health">
+                {% for port in status.midi_ports.inputs %}
+                {% set activity_class = 'activity-' ~ port.activity_status if port.activity_status else '' %}
+                {% set avail_class = '' if port.available else 'unavailable' %}
+                <span class="port-badge {{ activity_class }} {{ avail_class }}" 
+                      title="{{ port.friendly_name }}{% if port.inactive_seconds is defined %} - last input {{ port.inactive_seconds|int }}s ago{% endif %}">
+                    {{ port.friendly_name }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

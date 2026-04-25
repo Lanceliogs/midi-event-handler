@@ -1,0 +1,27 @@
+{#
+  Note badge macros for displaying MIDI notes
+  Usage: {% from "macros/notes.html" import note_badge, note_badges %}
+#}
+
+{% macro note_badge(num, name) %}
+<span class="note-badge">
+  <span class="note-num">{{ num }}</span>
+  <span class="note-name">{{ name }}</span>
+</span>
+{% endmacro %}
+
+{% macro note_badges(notes) %}
+<span class="note-badges">
+  {%- for note in notes -%}
+  {{ note_badge(note[0], note[1]) }}
+  {%- endfor -%}
+</span>
+{% endmacro %}
+
+{% macro note_badges_simple(note_numbers, converter) %}
+<span class="note-badges">
+  {%- for num in note_numbers -%}
+  {{ note_badge(num, converter(num)) }}
+  {%- endfor -%}
+</span>
+{% endmacro %}

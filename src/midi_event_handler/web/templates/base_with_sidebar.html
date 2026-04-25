@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Main Content Area -->
+<div id="main-content" class="main-content">
+    {% block main %}{% endblock %}
+</div>
+
+<!-- Sidebar (on the right) -->
+<aside class="sidebar-right">
+    {% block sidebar_top %}{% endblock %}
+
+    {% include "partials/sidebar/controls.html" %}
+
+    <hr>
+
+    {% block sidebar_mapping %}
+    {% include "partials/sidebar/mapping_loader.html" %}
+    {% endblock %}
+
+    {% block sidebar_actions %}{% endblock %}
+
+    <hr>
+
+    <div class="sidebar-section">
+        <button id="restart-button" class="btn"
+                hx-post="/meh/api/restart"
+                hx-swap="none">
+            <img src="/static/assets/icons/arrow-path.svg" class="icon" alt="">
+            <span>RESTART</span>
+        </button>
+    </div>
+
+    <hr>
+
+    {% block sidebar_ports %}
+    {% include "partials/sidebar/midi_ports.html" %}
+    {% endblock %}
+</aside>
+{% endblock %}

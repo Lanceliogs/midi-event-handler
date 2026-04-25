@@ -5,7 +5,6 @@ from midi_event_handler.core.config.loader import (
      RUNTIME_PATH, load_mapping_yaml, is_embedded
 )
 from midi_event_handler.core.config import get_logging_config
-from midi_event_handler.web.app import app
 
 import shutil
 import logging
@@ -26,11 +25,14 @@ def run_app(host="127.0.0.1", port=8000, local=False, mapping=None, reload=False
           log.info("Using mapping from CLI: %s", mapping)
           shutil.copy(mapping, RUNTIME_PATH / "mapping.yaml")
      
-     # First mapping load
+     # Load mapping BEFORE importing web.app (which creates MidiApp)
      try:
           load_mapping_yaml()
      except FileNotFoundError:
           log.exception("No mapping YAML file. First launch?")
+     
+     # Import after mapping is loaded
+     from midi_event_handler.web.app import app
 
      config = uvicorn.Config(
           app,

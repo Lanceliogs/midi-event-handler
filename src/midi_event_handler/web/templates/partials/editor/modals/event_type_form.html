@@ -1,0 +1,20 @@
+{% from "macros/modal.html" import modal_form %}
+
+{% call modal_form(
+    title="Add Event Type" if is_new else "Edit Event Type",
+    action_url="/meh/ui/editor/event-type",
+    submit_text="Add" if is_new else "Save"
+) %}
+<div class="form-group">
+    <label for="type-name">Type Name</label>
+    <input type="text" 
+           id="type-name" 
+           name="name" 
+           value="{{ current_name or '' }}"
+           autocomplete="off"
+           required>
+    {% if original_name %}
+    <input type="hidden" name="original_name" value="{{ original_name }}">
+    {% endif %}
+</div>
+{% endcall %}

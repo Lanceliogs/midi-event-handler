@@ -1,0 +1,48 @@
+<div class="sidebar-section midi-ports-sidebar" id="midi-ports-container">
+    <div class="midi-ports-header">
+        <strong>MIDI Ports</strong>
+        <button type="button" class="btn-icon" 
+                hx-get="{{ ports_refresh_url | default('/meh/ui/partials/sidebar/ports') }}"
+                hx-target="#midi-ports-container"
+                hx-swap="outerHTML"
+                title="Refresh ports">
+            <img src="/static/assets/icons/arrow-path.svg" class="icon" alt="">
+        </button>
+    </div>
+
+    <ul class="port-list">
+        {% for port in ports.inputs %}
+        <li class="port-item {{ 'port-ok' if port.available else 'port-err' }}">
+            <span class="port-type">IN</span>
+            <span class="port-name">{{ port.friendly_name }}</span>
+            <span class="port-badge">{{ '✓' if port.available else '✗' }}</span>
+        </li>
+        {% endfor %}
+        {% for port in ports.outputs %}
+        <li class="port-item {{ 'port-ok' if port.available else 'port-err' }}">
+            <span class="port-type">OUT</span>
+            <span class="port-name">{{ port.friendly_name }}</span>
+            <span class="port-badge">{{ '✓' if port.available else '✗' }}</span>
+        </li>
+        {% endfor %}
+        {% if not ports.inputs and not ports.outputs %}
+        <li class="port-item port-none">No ports configured</li>
+        {% endif %}
+    </ul>
+
+    {% set total_available = ports.available_inputs|length + ports.available_outputs|length %}
+    <details class="available-ports">
+        <summary>Show all available ({{ total_available }})</summary>
+        <ul class="available-list">
+            {% for port in ports.available_inputs %}
+            <li><span class="port-type-sm">IN</span> {{ port }}</li>
+            {% endfor %}
+            {% for port in ports.available_outputs %}
+            <li><span class="port-type-sm">OUT</span> {{ port }}</li>
+            {% endfor %}
+            {% if total_available == 0 %}
+            <li class="status-none">No MIDI devices detected</li>
+            {% endif %}
+        </ul>
+    </details>
+</div>

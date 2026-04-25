@@ -1,0 +1,233 @@
+<div class="editor-container" data-dirty="{{ 'true' if dirty else 'false' }}" data-app-running="{{ 'true' if app_running else 'false' }}">
+    <!-- Config Card -->
+    <div class="editor-card">
+        <div class="card-header">
+            <h2>Configuration</h2>
+        </div>
+        <div class="card-body">
+            <div class="config-grid">
+                <!-- Inputs -->
+                <div class="config-column">
+                    <div class="config-header">
+                        <h3>Inputs</h3>
+                        <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Add input' }}"
+                                hx-get="/meh/ui/editor/input/new"
+                                hx-target="#modal-container"
+                                {{ 'disabled' if app_running else '' }}>
+                            <img src="/static/assets/icons/plus.svg" class="icon" alt="">
+                        </button>
+                    </div>
+                    <ul class="config-list" id="inputs-list">
+                        {% for input in mapping.inputs %}
+                        <li class="config-item">
+                            <span class="item-name">{{ input }}</span>
+                            <div class="item-actions">
+                                <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Edit' }}"
+                                        hx-get="/meh/ui/editor/input/{{ input }}"
+                                        hx-target="#modal-container"
+                                        {{ 'disabled' if app_running else '' }}>
+                                    <img src="/static/assets/icons/pencil-square.svg" class="icon" alt="">
+                                </button>
+                                <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Delete' }}"
+                                        hx-get="/meh/ui/editor/confirm-delete/input/{{ input }}"
+                                        hx-target="#modal-container"
+                                        {{ 'disabled' if app_running else '' }}>
+                                    <img src="/static/assets/icons/trash.svg" class="icon" alt="">
+                                </button>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li class="config-item empty">No inputs configured</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Outputs -->
+                <div class="config-column">
+                    <div class="config-header">
+                        <h3>Outputs</h3>
+                        <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Add output' }}"
+                                hx-get="/meh/ui/editor/output/new"
+                                hx-target="#modal-container"
+                                {{ 'disabled' if app_running else '' }}>
+                            <img src="/static/assets/icons/plus.svg" class="icon" alt="">
+                        </button>
+                    </div>
+                    <ul class="config-list" id="outputs-list">
+                        {% for output in mapping.outputs %}
+                        <li class="config-item">
+                            <span class="item-name">{{ output }}</span>
+                            <div class="item-actions">
+                                <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Edit' }}"
+                                        hx-get="/meh/ui/editor/output/{{ output }}"
+                                        hx-target="#modal-container"
+                                        {{ 'disabled' if app_running else '' }}>
+                                    <img src="/static/assets/icons/pencil-square.svg" class="icon" alt="">
+                                </button>
+                                <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Delete' }}"
+                                        hx-get="/meh/ui/editor/confirm-delete/output/{{ output }}"
+                                        hx-target="#modal-container"
+                                        {{ 'disabled' if app_running else '' }}>
+                                    <img src="/static/assets/icons/trash.svg" class="icon" alt="">
+                                </button>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li class="config-item empty">No outputs configured</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Event Types -->
+                <div class="config-column">
+                    <div class="config-header">
+                        <h3>Event Types</h3>
+                        <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Add event type' }}"
+                                hx-get="/meh/ui/editor/event-type/new"
+                                hx-target="#modal-container"
+                                {{ 'disabled' if app_running else '' }}>
+                            <img src="/static/assets/icons/plus.svg" class="icon" alt="">
+                        </button>
+                    </div>
+                    <ul class="config-list" id="event-types-list">
+                        {% for etype in mapping.event_types %}
+                        <li class="config-item">
+                            <span class="item-name">{{ etype }}</span>
+                            <div class="item-actions">
+                                <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Edit' }}"
+                                        hx-get="/meh/ui/editor/event-type/{{ etype }}"
+                                        hx-target="#modal-container"
+                                        {{ 'disabled' if app_running else '' }}>
+                                    <img src="/static/assets/icons/pencil-square.svg" class="icon" alt="">
+                                </button>
+                                <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Delete' }}"
+                                        hx-get="/meh/ui/editor/confirm-delete/event-type/{{ etype }}"
+                                        hx-target="#modal-container"
+                                        {{ 'disabled' if app_running else '' }}>
+                                    <img src="/static/assets/icons/trash.svg" class="icon" alt="">
+                                </button>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li class="config-item empty">No event types configured</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Events Card -->
+    <div class="editor-card events-card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <h2>Events</h2>
+                <div class="events-filter input-with-clear">
+                    <input type="text" 
+                           id="events-filter" 
+                           placeholder="Filter..." 
+                           class="filter-input"
+                           data-action="filter-events">
+                    <button type="button" class="btn-clear" data-action="clear-filter" title="Clear filter">&times;</button>
+                </div>
+            </div>
+            <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Add event' }}"
+                    hx-get="/meh/ui/editor/event/new"
+                    hx-target="#modal-container"
+                    {{ 'disabled' if app_running else '' }}>
+                <img src="/static/assets/icons/plus.svg" class="icon" alt="">
+            </button>
+        </div>
+        <div class="card-body events-list-container">
+            <ul class="events-list" id="events-list">
+                {% set event_names = mapping.events | map(attribute='name') | list %}
+                {% for event in mapping.events %}
+                {% set port_valid = event.chord.port in mapping.inputs %}
+                {% set type_valid = event.type in mapping.event_types %}
+                {% set fallback_valid = (not event.fallback_event) or (event.fallback_event in event_names) %}
+                {% set is_active = event.name in active_events %}
+                <li class="event-item {{ 'active' if is_active else '' }}" data-event="{{ event.name }}">
+                    <div class="event-header">
+                        <span class="event-name">{{ event.name }}</span>
+                        <div class="event-header-right">
+                            <span class="event-type-badge {{ 'badge-error' if not type_valid else '' }}">{{ event.type }}</span>
+                            {% if is_active %}
+                            <button type="button" class="btn-icon btn-stop test-btn" title="{{ 'Start app to test' if not app_running else 'Stop event' }}"
+                                    data-action="stop-event"
+                                    data-event="{{ event.name }}"
+                                    {{ 'disabled' if not app_running else '' }}>
+                                <img src="/static/assets/icons/stop.svg" class="icon" alt="">
+                            </button>
+                            {% else %}
+                            <button type="button" class="btn-icon btn-play test-btn" title="{{ 'Start app to test' if not app_running else 'Play event' }}"
+                                    data-action="play-event"
+                                    data-event="{{ event.name }}"
+                                    {{ 'disabled' if not app_running else '' }}>
+                                <img src="/static/assets/icons/play.svg" class="icon" alt="">
+                            </button>
+                            {% endif %}
+                            <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Edit' }}"
+                                    hx-get="/meh/ui/editor/event/{{ event.name }}"
+                                    hx-target="#modal-container"
+                                    {{ 'disabled' if app_running else '' }}>
+                                <img src="/static/assets/icons/pencil-square.svg" class="icon" alt="">
+                            </button>
+                            <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Delete' }}"
+                                    hx-get="/meh/ui/editor/confirm-delete/event/{{ event.name }}"
+                                    hx-target="#modal-container"
+                                    {{ 'disabled' if app_running else '' }}>
+                                <img src="/static/assets/icons/trash.svg" class="icon" alt="">
+                            </button>
+                        </div>
+                    </div>
+                    <div class="event-comment">{{ event.comment if event.comment else '—' }}</div>
+                    
+                    <div class="event-trigger-row">
+                        <span class="trigger-port-badge {{ 'badge-error' if not port_valid else '' }}">{{ event.chord.port }}</span>
+                        <button type="button" class="btn-icon btn-rec edit-btn" title="{{ 'Stop app to edit' if app_running else 'Record trigger' }}"
+                                data-action="quick-record"
+                                data-event="{{ event.name }}"
+                                data-port="{{ event.chord.port }}"
+                                {{ 'disabled' if app_running else '' }}>
+                            <img src="/static/assets/icons/microphone.svg" class="icon" alt="">
+                        </button>
+                        <div class="event-trigger-notes" data-event="{{ event.name }}">
+                            {% if event.chord.notes %}
+                            {% for note in event.chord.notes %}
+                            <span class="note-badge">
+                                <span class="note-num">{{ note }}</span>
+                                <span class="note-name">{{ note | note_name }}</span>
+                            </span>
+                            {% endfor %}
+                            {% else %}
+                            <span class="trigger-hint">Click rec to record</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="event-details">
+                        <span class="event-badge event-badge-messages">
+                            <span class="event-badge-label">Msgs</span>
+                            <span class="event-badge-value">{{ event.start_messages | length }}↑ {{ event.end_messages | length }}↓</span>
+                        </span>
+                        {% if event.duration_min or event.duration_max %}
+                        <span class="event-badge event-badge-duration">
+                            <span class="event-badge-label">Duration</span>
+                            <span class="event-badge-value">{{ event.duration_min or 0 }}s → {{ event.duration_max or '∞' }}s</span>
+                        </span>
+                        {% endif %}
+                        {% if event.fallback_event %}
+                        <span class="event-badge event-badge-fallback {{ 'badge-error' if not fallback_valid else '' }}">
+                            <span class="event-badge-label">Fallback</span>
+                            <span class="event-badge-value">{{ event.fallback_event }}</span>
+                        </span>
+                        {% endif %}
+                    </div>
+                </li>
+                {% else %}
+                <li class="event-item empty">No events configured</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>

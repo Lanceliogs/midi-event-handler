@@ -1,0 +1,87 @@
+<div class="modal">
+    <div class="modal-header">
+        <h3>Save Changes</h3>
+        <button type="button" class="btn-icon modal-close" data-action="close-modal">
+            <img src="/static/assets/icons/x-mark.svg" class="icon" alt="Close">
+        </button>
+    </div>
+    <div class="modal-body">
+        {% if has_changes %}
+        <p>The following changes will be saved:</p>
+        
+        <div class="diff-container">
+            {% if diff.inputs.added or diff.inputs.removed %}
+            <div class="diff-section">
+                <strong>Inputs</strong>
+                <ul class="diff-list">
+                    {% for item in diff.inputs.added %}
+                    <li class="diff-added">+ {{ item }}</li>
+                    {% endfor %}
+                    {% for item in diff.inputs.removed %}
+                    <li class="diff-removed">- {{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            {% if diff.outputs.added or diff.outputs.removed %}
+            <div class="diff-section">
+                <strong>Outputs</strong>
+                <ul class="diff-list">
+                    {% for item in diff.outputs.added %}
+                    <li class="diff-added">+ {{ item }}</li>
+                    {% endfor %}
+                    {% for item in diff.outputs.removed %}
+                    <li class="diff-removed">- {{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            {% if diff.event_types.added or diff.event_types.removed %}
+            <div class="diff-section">
+                <strong>Event Types</strong>
+                <ul class="diff-list">
+                    {% for item in diff.event_types.added %}
+                    <li class="diff-added">+ {{ item }}</li>
+                    {% endfor %}
+                    {% for item in diff.event_types.removed %}
+                    <li class="diff-removed">- {{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            {% if diff.events.added or diff.events.removed or diff.events.modified %}
+            <div class="diff-section">
+                <strong>Events</strong>
+                <ul class="diff-list">
+                    {% for item in diff.events.added %}
+                    <li class="diff-added">+ {{ item }}</li>
+                    {% endfor %}
+                    {% for item in diff.events.modified %}
+                    <li class="diff-modified">~ {{ item }}</li>
+                    {% endfor %}
+                    {% for item in diff.events.removed %}
+                    <li class="diff-removed">- {{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <p>No changes to save.</p>
+        {% endif %}
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn" data-action="close-modal">Cancel</button>
+        {% if has_changes %}
+        <button type="button" class="btn btn-primary"
+                hx-post="/meh/ui/editor/api/mapping/save"
+                hx-swap="none"
+                hx-on::after-request="if(event.detail.successful) { closeModal(); document.querySelector('.editor-container').dataset.dirty = 'false'; updateDirtyIndicator(); }">
+            Save Changes
+        </button>
+        {% endif %}
+    </div>
+</div>

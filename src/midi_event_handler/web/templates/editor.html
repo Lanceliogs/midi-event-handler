@@ -1,0 +1,31 @@
+{% extends "base_with_sidebar.html" %}
+{% block title %}Editor{% endblock %}
+
+{% block scripts %}
+<script type="module" src="/static/js/pages/editor.js"></script>
+{% endblock %}
+
+{% block sidebar_ports %}
+{% include "partials/sidebar/midi_ports.html" %}
+{% endblock %}
+
+{% block sidebar_actions %}
+<hr>
+<div class="sidebar-section">
+    <a id="download-btn" class="btn" href="/meh/ui/editor/api/mapping/download">
+        <img src="/static/assets/icons/arrow-down-tray.svg" class="icon" alt="">
+        <span>DOWNLOAD</span>
+    </a>
+    <button id="save-btn" class="btn btn-primary"
+            hx-get="/meh/ui/editor/save-confirm"
+            hx-target="#modal-container">
+        <img src="/static/assets/icons/check.svg" class="icon" alt="">
+        <span>SAVE</span>
+        <span id="dirty-indicator" class="dirty-dot {{ '' if dirty else 'hidden' }}"></span>
+    </button>
+</div>
+{% endblock %}
+
+{% block main %}
+{% include "partials/editor/editor_content.html" %}
+{% endblock %}
