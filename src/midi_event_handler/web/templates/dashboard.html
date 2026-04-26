@@ -1,63 +1,17 @@
-{% extends "base.html" %}
+{% extends "base_with_sidebar.html" %}
 {% block title %}Dashboard{% endblock %}
 
-{% block content %}    
-<!-- Main Content -->
-<div id="status-area"
-    hx-get="/meh.ui/dashboard/status"
-    hx-trigger="load, update from:body"
-    hx-swap="innerHTML"
-    class="status-card">
-    <p class="status-loading">Loading status...</p>
+{% block scripts %}
+<script type="module" src="/static/js/pages/dashboard.js"></script>
+{% endblock %}
+
+{% block main %}
+<div id="dashboard-area"
+    hx-get="/meh/ui/dashboard/status"
+    hx-trigger="load"
+    hx-swap="innerHTML">
+    <div class="dashboard-loading">
+        <p>Loading dashboard...</p>
+    </div>
 </div>
-
-<!-- Sidebar (on the right) -->
-<aside class="sidebar-right">
-    <div class="sidebar-section">
-        <button id="start-button" class="btn"
-            hx-post="/meh.api/start"
-            hx-target="#hx-feedback">START</button>
-        <button id="stop-button" class="btn"
-            hx-post="/meh.api/stop"
-            hx-target="#hx-feedback">STOP</button>
-    </div>
-
-    <hr>
-
-    <div class="sidebar-section">
-        
-        <label for="mapping-upload" class="btn">UPLOAD MAPPING</label>
-        <input id="mapping-upload" type="file" name="file"
-            style="display: none;" 
-            hx-post="/meh.api/upload-mapping"
-            hx-trigger="change"
-            hx-encoding="multipart/form-data"
-            hx-target="#hx-feedback"
-            hx-swap="innerHTML"
-            hx-on="htmx:afterRequest: this.value = null">
-
-        <div id="drop-zone"
-            class="drop-zone"
-            data-upload-url="/meh.api/upload-mapping">
-            <p>Drag and drop a mapping file (*.yaml) here</p>
-        </div>
-
-    </div>
-
-    <hr>
-
-    <div class="sidebar-section">
-        <button id="restart-button" class="btn"
-                hx-post="/meh.api/restart"
-                hx-target="#hx-feedback">RESTART</button>
-    </div>
-
-    <div class="ws-status" id="ws-status">
-        <span class="led" id="ws-led"></span>
-        <span id="ws-label">DOWN</span>
-    </div>
-
-    <div id="hx-feedback" class="hx-feedback-box"></div>
-    <div id="hx-feedback-timestamp" class="hx-feedback-timestamp"></div>
-</aside>
 {% endblock %}

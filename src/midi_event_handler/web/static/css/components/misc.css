@@ -1,0 +1,114 @@
+/* ====== Upload/Drop Zone ====== */
+.drop-zone {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #666;
+  background-color: #fafafa;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.drop-zone:hover {
+  background-color: #f0f0f0;
+  border-color: #999;
+}
+
+.drop-zone.dragover {
+  background-color: #dbeafe;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+
+.drop-zone-icon {
+  width: 2rem;
+  height: 2rem;
+  opacity: 0.4;
+  margin-bottom: 0.5rem;
+}
+
+.drop-zone:hover .drop-zone-icon {
+  opacity: 0.6;
+}
+
+.drop-zone p {
+  margin: 0;
+}
+
+/* ====== Whatsnew / Prose ====== */
+.prose h1 {
+  font-size: 1.75rem;
+  margin-top: 1em;
+}
+
+.prose p {
+  margin-bottom: 1em;
+}
+
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+/* ====== Alerts ====== */
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.alert-warning {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  color: #92400e;
+}
+
+.alert-error {
+  background: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #991b1b;
+}
+
+.alert-info {
+  background: #dbeafe;
+  border: 1px solid #3b82f6;
+  color: #1e40af;
+}
+
+.alert-success {
+  background: #d1fae5;
+  border: 1px solid #10b981;
+  color: #065f46;
+}
+
+/* ====== Help Actions ====== */
+.help-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+/* ====== Debug ====== */
+.debug-label {
+  font-family: monospace;
+}
+
+/* ====== Feedback Messages (Legacy) ====== */
+.feedback-success {
+  color: #059669;
+  font-weight: 500;
+}
+
+.feedback-error {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.feedback-warning {
+  color: #d97706;
+  font-weight: 500;
+}

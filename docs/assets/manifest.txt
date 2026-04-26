@@ -1,0 +1,40 @@
+MIDI Event Handler - Screenshot Manifest
+========================================
+
+All screenshots used in both English and French manuals.
+
+
+DASHBOARD
+---------
+dashboard_running.png         Dashboard with active events, timers, logs
+dashboard_stopped.png         Dashboard when app is stopped
+dashboard_midi_ports.png      Port health and trigger statistics
+
+
+EDITOR
+------
+editor_not_running.png        Editor page with app stopped (edit mode)
+editor_running.png            Editor page with app running (PAD mode)
+event_filter.png              Event filter input field
+input_modal.png               Add/edit input port modal
+
+
+EVENTS
+------
+add_event_modal.png           Create new event modal
+add_event_modal_2.png         Create event modal (alternate view)
+edit_event_modal.png          Edit event modal
+edit_event_modal_2.png        Edit event modal (alternate view)
+edit_event_trigger.png        Editing trigger notes
+edit_event_message.png        Editing start/end messages
+delete_event_modal.png        Delete confirmation modal
+diff_modal.png                Save confirmation with diff preview
+
+
+HELP & ERRORS
+-------------
+help_page.png                 Help page with documentation
+console_logs.png              Log viewer modal
+error_modal.png               Error notification toast
+error_detail_modal.png        Error details modal
+notifications.png             Toast notifications

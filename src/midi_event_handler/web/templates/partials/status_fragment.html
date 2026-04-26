@@ -2,8 +2,9 @@
 
   <!-- App Running Status -->
   <div class="status-section">
-    <div class="status-value {{ 'running' if status.running else 'stopped' }}">
-      {{ '🟢 RUNNING' if status.running else '🔴 STOPPED' }}
+    <div class="status-indicator {{ 'running' if status.running else 'stopped' }}">
+      <span class="status-led"></span>
+      <span class="status-text">{{ 'RUNNING' if status.running else 'STOPPED' }}</span>
     </div>
   </div>
 
@@ -11,7 +12,7 @@
 
   <!-- Active Events -->
   <div class="status-section">
-    <strong>Active Events:</strong>
+    <h3 class="section-title">Active Events</h3>
     {% if status.active_events %}
       {% for name, event in status.active_events.items() %}
         <div class="event-block">
@@ -36,41 +37,8 @@
         </div>
       {% endfor %}
     {% else %}
-      <p class="status-none">None</p>
+      <p class="status-none">No events loaded</p>
     {% endif %}
-  </div>
-
-  <hr class="status-divider">
-
-  <!-- MIDI Ports -->
-  <div class="status-section">
-    <strong>MIDI Ports:</strong>
-    <div class="midi-port-blocks">
-
-      {% for group_label, ports in {
-        '🎛️ Inputs': status.midi_ports.inputs,
-        '🔊 Outputs': status.midi_ports.outputs
-      }.items() %}
-        <div class="midi-port-group">
-          <h4>{{ group_label }}</h4>
-          {% if ports %}
-            <ul class="midi-port-list">
-              {% for port in ports %}
-                <li class="{{ 'port-unavailable' if not port.available else '' }}">
-                  <span class="port-label">{{ port.friendly_name }}</span>
-                  <span class="port-id">
-                    ({{ port.real_name if port.available else 'Unavailable' }})
-                  </span>
-                </li>
-              {% endfor %}
-            </ul>
-          {% else %}
-            <p class="status-none">No {{ group_label|lower }}</p>
-          {% endif %}
-        </div>
-      {% endfor %}
-
-    </div>
   </div>
 
   <!-- Async Task Count -->

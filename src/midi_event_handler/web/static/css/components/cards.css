@@ -1,0 +1,155 @@
+/* ====== Status Card ====== */
+.status-card {
+  flex: 1;
+  background: white;
+  padding: 1.5rem;
+  margin: 0;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.status-loading {
+  font-style: italic;
+  color: #888;
+}
+
+.status-container {
+  padding: 1rem;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin: 1rem 0;
+}
+
+.status-section {
+  margin-bottom: 1.5rem;
+}
+
+.status-label {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #444;
+}
+
+.status-value {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-top: 0.25rem;
+}
+
+.status-value.running {
+  color: #28a745;
+}
+
+.status-value.stopped {
+  color: #dc3545;
+}
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.status-indicator.running {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-indicator.stopped {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-led {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.running .status-led {
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+}
+
+.status-indicator.stopped .status-led {
+  background: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+  animation: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.75rem 0;
+}
+
+.status-divider {
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 1.5rem 0;
+}
+
+.status-list {
+  padding-left: 1.2rem;
+  list-style-type: disc;
+}
+
+.status-none {
+  font-style: italic;
+  color: #999;
+}
+
+.status-footer {
+  text-align: right;
+  font-size: 0.75rem;
+  color: #777;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 1rem;
+}
+
+/* ====== Event Block ====== */
+.event-block {
+  border: 1px solid #ccc;
+  background: #fff;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  border-radius: 6px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.03);
+}
+
+.event-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #444;
+  margin-bottom: 0.5rem;
+}
+
+.event-info {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.event-info li {
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+.event-none {
+  font-style: italic;
+  color: #999;
+}

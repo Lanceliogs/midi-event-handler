@@ -1,6 +1,8 @@
 # Meh! — MIDI Event Handler
 
-Map **MIDI inputs (single notes or chords)** to **custom MIDI outputs** with optional **time-based behavior** (min/max duration + fallback events). Comes with a small FastAPI web UI to start/stop the runtime and hot-swap mappings.
+Map **MIDI inputs (single notes or chords)** to **custom MIDI outputs** with optional **time-based behavior** (min/max duration + fallback events). Comes with a full-featured web UI including a **visual mapping editor**, **live dashboard**, and **MIDI recording**.
+
+> **Documentation**: See the [User Manual](docs/manual_en.md) for detailed usage instructions.
 
 ## Requirements
 
@@ -102,30 +104,72 @@ poetry run start-app --mapping mapping.yaml
 poetry run start-app --local
 ```
 
-Open the dashboard: [**http://127.0.0.1:8000/dashboard**](http://127.0.0.1:8000/dashboard)
+Open the app: [**http://127.0.0.1:8000**](http://127.0.0.1:8000)
 
-From the sidebar you can:
+#### Web UI Pages
+
+| Page | URL | Description |
+|------|-----|-------------|
+| **Dashboard** | `/meh/ui/dashboard` | Live show monitoring with timers |
+| **Editor** | `/meh/ui/editor` | Visual mapping editor with MIDI recording |
+| **Help** | `/meh/ui/help` | Documentation and log viewer |
+
+#### Sidebar Controls
 
 - **START/STOP** the MIDI runtime
-- **Upload** a new `mapping.yaml` (hot-reloads when the app isn’t running)
-- **Request restart** (helpful for the launcher/compiled mode)
+- **Upload** a new `mapping.yaml` or `.yml` (only when stopped)
+- **Request restart** (for launcher/compiled mode)
 
 ### 2) Launcher (monitors & tray on Windows)
 
 - In compiled/installed mode it shows a **system tray icon** with:
   - **Open Dashboard**
   - **Check for Updates** (GitHub releases)
-  - **Quit** (writes an exit flag)
-- The launcher watches `.runtime/restart.flag` / `.runtime/exit.flag` to cycle the app.
+  - **Quit**
+- The launcher watches `.runtime/restart.flag` to cycle the app.
+
+## Features
+
+### Visual Editor
+
+The **Editor** page provides full CRUD for your mapping configuration:
+
+- Add/edit/delete **inputs**, **outputs**, **event types**, and **events**
+- **Record MIDI notes** directly from your controller (click the mic icon)
+- Interactive note/message badges
+- Diff preview before saving
+- Dirty state indicator for unsaved changes
+
+### Live Dashboard
+
+The **Dashboard** page provides real-time monitoring during shows:
+
+- **Show timer** with elapsed time
+- **Active events** per type with countdown progress bars
+- **Event log** with START/END history
+- **MIDI input monitor** showing incoming chords
+- **Trigger statistics** sorted by most used
+- **Port health** with activity indicators (green/orange/red)
+
+### PAD Mode (Manual Triggering)
+
+When the app is running, you can manually trigger events from the Editor:
+
+- Click **PLAY** to trigger an event as if MIDI was received
+- Click **STOP** to end an active event
+- Useful for testing without a MIDI controller
 
 ## API (useful for scripting)
 
-- `POST /meh.api/start` — starts the MIDI runtime
-- `POST /meh.api/stop` — stops the MIDI runtime
-- `GET  /meh.api/status` — JSON status (running, current events, MIDI ports, tasks)
-- `POST /meh.api/upload-mapping` — multipart upload of a `.yaml` mapping (only when not running)
-- `POST /meh.api/restart` — asks the launcher to restart
-- WebSocket `/meh.ws/events` — pushes lightweight notifications so the dashboard can live-update
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/meh/api/start` | Start the MIDI runtime |
+| `POST` | `/meh/api/stop` | Stop the MIDI runtime |
+| `GET` | `/meh/api/status` | JSON status (running, events, ports, tasks) |
+| `POST` | `/meh/api/upload-mapping` | Upload a `.yaml`/`.yml` mapping (stopped only) |
+| `POST` | `/meh/api/restart` | Request launcher restart |
+| `GET` | `/meh/api/logs` | Get recent application logs |
+| `WS` | `/meh/ws/events` | Real-time notifications for UI updates |
 
 ## Building releases
 
@@ -150,7 +194,7 @@ Notes:
 
 - Embedded Python and CLI exe are cached in `.build-cache/` for fast rebuilds.
 - Installer output goes to `dist/installer/midi-event-handler-setup_<version>.exe`.
-- The launcher handles graceful shutdown/restart by calling the app’s `/shutdown` endpoint.
+- The launcher handles graceful shutdown/restart by calling the app's `/shutdown` endpoint.
 - Release checks pull from GitHub Releases and download the correct `midi-event-handler-setup_*.exe`.
 
 ## Usage tips & troubleshooting

@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Help{% endblock %}
+{% block container_class %}{% endblock %}
+
+{% block scripts %}
+<script type="module" src="/static/js/pages/help.js"></script>
+{% endblock %}
 
 {% block content %}
 <div class="status-card">
@@ -19,7 +24,7 @@
   <div class="status-section">
     <h2>📖 User Manual</h2>
     <h3>1. Upload a Mapping</h3>
-    <p>Use the sidebar to drag-and-drop or upload a <code>.yaml</code> file that defines your event mappings. The app needs to be stopped though.</p>
+    <p>Use the sidebar to drag-and-drop or upload a <code>.yaml</code> or <code>.yml</code> file that defines your event mappings. The app needs to be stopped though.</p>
 
     <h3>2. Start / Stop the App</h3>
     <p>Click <strong>START</strong> to activate MIDI listening. When running, active events and MIDI status will be displayed.</p>
@@ -32,6 +37,23 @@
 
     <h3>5. Event Monitoring</h3>
     <p>All triggered events will be displayed in the main status area with details about chord, type, and duration.</p>
+  </div>
+
+  <hr class="status-divider" />
+
+  <div class="status-section">
+    <h2>🔧 Troubleshooting</h2>
+    <p>If something isn't working, check the application logs for error messages.</p>
+    <div class="help-actions">
+      <button class="btn" id="view-logs-btn">
+        <img src="/static/assets/icons/document-text.svg" class="icon" alt="">
+        View Logs
+      </button>
+      <a class="btn" href="/meh/api/logs/download">
+        <img src="/static/assets/icons/arrow-down-tray.svg" class="icon" alt="">
+        Download Logs
+      </a>
+    </div>
   </div>
   </div>
 </div>

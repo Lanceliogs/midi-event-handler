@@ -1,0 +1,22 @@
+{% from "macros/modal.html" import modal_confirm %}
+
+{% call modal_confirm(
+    title="Delete " + item_type|title + "?",
+    message='Are you sure you want to delete "' + item_name + '"?',
+    action_url="/meh/ui/editor/" + item_type + "/" + item_name,
+    confirm_text="Delete"
+) %}
+{% if cascade_warning %}
+<div class="alert alert-warning">
+    <img src="/static/assets/icons/exclamation-triangle.svg" class="icon" alt="">
+    <div>
+        <strong>Warning:</strong> This will also delete {{ cascade_count }} event(s):
+        <ul class="cascade-list">
+            {% for event_name in cascade_events %}
+            <li>{{ event_name }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+{% endcall %}

@@ -1,0 +1,160 @@
+{% from "macros/modal.html" import modal_form %}
+
+{% call modal_form(
+    title="Add Event" if is_new else "Edit Event: " + event.name,
+    action_url="/meh/ui/editor/event",
+    submit_text="Add" if is_new else "Save"
+) %}
+
+<div class="form-group">
+    <label for="event-name">Name</label>
+    <input type="text" 
+           id="event-name" 
+           name="name" 
+           value="{{ event.name }}"
+           autocomplete="off"
+           required>
+    {% if original_name %}
+    <input type="hidden" name="original_name" value="{{ original_name }}">
+    {% endif %}
+</div>
+
+<div class="form-group">
+    <label for="event-comment">Comment <span class="optional">(optional)</span></label>
+    <textarea id="event-comment" 
+              name="comment" 
+              rows="2"
+              placeholder="Add a description or notes about this event...">{{ event.comment or '' }}</textarea>
+</div>
+
+<div class="form-row">
+    <div class="form-group form-group-half">
+        <label for="event-type">Type</label>
+        <select id="event-type" name="type" required>
+            <option value="">-- Select type --</option>
+            {% for etype in event_types %}
+            <option value="{{ etype }}" {{ 'selected' if event.type == etype else '' }}>{{ etype }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="form-group form-group-half">
+        <label for="trigger-port">Trigger Port</label>
+        <select id="trigger-port" name="trigger_port" required>
+            <option value="">-- Select input --</option>
+            {% for inp in inputs %}
+            <option value="{{ inp }}" {{ 'selected' if event.chord.port == inp else '' }}>{{ inp }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<div class="form-group">
+    <label>Trigger Notes</label>
+    <input type="hidden" id="trigger-notes" name="trigger_notes" value="{{ event.chord.notes | join(', ') }}">
+    <div class="notes-editor" id="notes-editor">
+        <div class="notes-badges" id="notes-badges">
+            {% for note in event.chord.notes %}
+            <span class="note-badge-edit" data-note="{{ note }}">
+                <span class="note-num">{{ note }}</span>
+                <span class="note-name">{{ note | note_name }}</span>
+                <button type="button" class="note-delete" data-action="delete-note">&times;</button>
+            </span>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn-icon" data-action="add-note" title="Add note">
+            <img src="/static/assets/icons/plus.svg" class="icon" alt="">
+        </button>
+        <button type="button" class="btn-icon btn-rec" data-action="record-notes" title="Record notes (5s timeout)">
+            <img src="/static/assets/icons/microphone.svg" class="icon" alt="">
+        </button>
+    </div>
+    <div class="form-hint">Click a note to edit, + to add, or Rec to record from MIDI</div>
+</div>
+
+<div class="form-row">
+    <div class="form-group form-group-half">
+        <label for="duration-min">Duration Min (seconds)</label>
+        <input type="number" 
+               id="duration-min" 
+               name="duration_min" 
+               value="{{ event.duration_min or '' }}"
+               min="0"
+               step="0.1"
+               placeholder="0">
+    </div>
+    
+    <div class="form-group form-group-half">
+        <label for="duration-max">Duration Max (seconds)</label>
+        <input type="number" 
+               id="duration-max" 
+               name="duration_max" 
+               value="{{ event.duration_max or '' }}"
+               min="0"
+               step="0.1"
+               placeholder="∞">
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="fallback-event">Fallback Event</label>
+    <select id="fallback-event" name="fallback_event">
+        <option value="">-- None --</option>
+        {% for ename in event_names %}
+        <option value="{{ ename }}" {{ 'selected' if event.fallback_event == ename else '' }}>{{ ename }}</option>
+        {% endfor %}
+    </select>
+    <div class="form-hint">Event to trigger if this one times out</div>
+</div>
+
+<div class="form-section">
+    <div class="form-section-header">
+        <label>Start Messages</label>
+    </div>
+    <input type="hidden" id="start-messages" name="start_messages" value="{{ start_messages_json | e }}">
+    <div class="messages-editor" id="start-messages-editor" data-target="start-messages" data-outputs='{{ outputs | tojson }}'>
+        <div class="messages-list">
+            {% for msg in event.start_messages %}
+            <span class="message-badge" data-index="{{ loop.index0 }}" data-port="{{ msg.port }}" data-type="{{ msg.type }}" data-note="{{ msg.note }}" data-velocity="{{ msg.velocity }}">
+                <span class="msg-port">{{ msg.port }}</span>
+                <span class="msg-note">{{ msg.note }}</span>
+                <span class="msg-name">{{ msg.note | note_name }}</span>
+                <span class="msg-vel">{{ msg.velocity }}</span>
+                <button type="button" class="msg-delete" data-action="delete-message" title="Delete">&times;</button>
+            </span>
+            {% else %}
+            <span class="messages-placeholder">Click + to add (note_on, vel 127)</span>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn-icon" data-action="add-message" data-editor="start-messages-editor" data-defaults="start" title="Add message">
+            <img src="/static/assets/icons/plus.svg" class="icon" alt="">
+        </button>
+    </div>
+</div>
+
+<div class="form-section">
+    <div class="form-section-header">
+        <label>End Messages</label>
+    </div>
+    <input type="hidden" id="end-messages" name="end_messages" value="{{ end_messages_json | e }}">
+    <div class="messages-editor" id="end-messages-editor" data-target="end-messages" data-outputs='{{ outputs | tojson }}'>
+        <div class="messages-list">
+            {% for msg in event.end_messages %}
+            <span class="message-badge" data-index="{{ loop.index0 }}" data-port="{{ msg.port }}" data-type="{{ msg.type }}" data-note="{{ msg.note }}" data-velocity="{{ msg.velocity }}">
+                <span class="msg-port">{{ msg.port }}</span>
+                <span class="msg-note">{{ msg.note }}</span>
+                <span class="msg-name">{{ msg.note | note_name }}</span>
+                <span class="msg-vel">{{ msg.velocity }}</span>
+                <button type="button" class="msg-delete" data-action="delete-message" title="Delete">&times;</button>
+            </span>
+            {% else %}
+            <span class="messages-placeholder">Click + to add (note_off, vel 0)</span>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn-icon" data-action="add-message" data-editor="end-messages-editor" data-defaults="end" title="Add message">
+            <img src="/static/assets/icons/plus.svg" class="icon" alt="">
+        </button>
+    </div>
+</div>
+
+{% endcall %}

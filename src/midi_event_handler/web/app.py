@@ -1,133 +1,79 @@
-from fastapi import (
-    FastAPI, 
-    WebSocket, WebSocketDisconnect,
-    File, UploadFile,
-    HTTPException,
-    Depends
-)
-from fastapi.requests import Request
-from fastapi.responses import JSONResponse, RedirectResponse
+"""
+Main FastAPI application.
+"""
+
+from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from pathlib import Path
-from pydantic import BaseModel
-
-import psutil, os, shutil, asyncio, logging
-
-from midi_event_handler.core.config import (
-    RUNTIME_PATH, get_current_version, is_embedded
-)
-
-from midi_event_handler.tools.connection import ConnectionManager
-
-from midi_event_handler.core.app import MidiApp
-
-from midi_event_handler.web import help
-from midi_event_handler.web import shutdown
-
 from contextlib import asynccontextmanager
+
+from midi_event_handler.core.config import is_embedded
+from midi_event_handler.core.app import MidiApp
+from midi_event_handler.core.midi.notes import note_to_name
+
+from midi_event_handler.web.routers import api, ws, dashboard, editor, partials
+from midi_event_handler.web import help, shutdown
+
+import logging
+log = logging.getLogger(__name__)
+
 
 def get_templates_path():
     if is_embedded():
         return Path("templates")
     return Path(__file__).parent / "templates"
 
+
 def get_static_path():
     if is_embedded():
         return Path("static")
     return Path(__file__).parent / "static"
 
-log = logging.getLogger(__name__)
 
+# --- App Setup ----------------------------------------------------------------
+
+# Shared instances (created before lifespan to be accessible)
 templates = Jinja2Templates(directory=get_templates_path())
+templates.env.filters['note_name'] = note_to_name
+midiapp = MidiApp()
 
-# --- APP -----------------------------------------------------------------
 @asynccontextmanager
-async def lifespan(app: FastAPI):    
+async def lifespan(app: FastAPI):
     yield
+    # Cleanup on shutdown
+    log.info("[Lifespan] Shutting down MidiApp...")
+    if midiapp.running:
+        await midiapp.stop()
+    log.info("[Lifespan] Cleanup complete")
 
 app = FastAPI(lifespan=lifespan)
+
+# Configure routers with shared dependencies
+api.set_midiapp(midiapp)
+dashboard.configure(templates, midiapp)
+editor.configure(templates, midiapp)
+partials.configure(templates)
+
+# Include routers
+app.include_router(api.router)
+app.include_router(ws.router)
+app.include_router(dashboard.router)
+app.include_router(editor.router)
+app.include_router(partials.router)
 app.include_router(help.router)
 app.include_router(shutdown.router)
 
-midiapp = MidiApp()
 
-# --- JSON API routes -------------------------------------------------------------
-
-@app.post("/meh.api/upload-mapping")
-async def upload_mapping(file: UploadFile = File(...)):
-
-    if midiapp.running:
-        raise HTTPException(status_code=400, detail="Can't reload while the app is running")
-    if not file.filename.endswith(".yaml"):
-        raise HTTPException(status_code=400, detail="File must be a .yaml")
-
-    RUNTIME_PATH.mkdir(exist_ok=True)
-    mapping_path = RUNTIME_PATH / "mapping.yaml"
-
-    try:
-        with mapping_path.open("wb") as f:
-            shutil.copyfileobj(file.file, f)
-        midiapp.reload_mapping()
-    except Exception as e:
-        log.exception("Failed to upload or reload mapping")
-        raise HTTPException(status_code=500, detail=f"Failed to upload or reload mapping: {e}")
-
-    return {"status": "ok", "mapping": file.filename}
-
-@app.post("/meh.api/start")
-async def start_show():
-    await midiapp.start()
-    return {
-        "running": midiapp.running
-    }
-
-@app.post("/meh.api/stop")
-async def stop_show():
-    await midiapp.stop()
-    return {
-        "running": midiapp.running
-    }
-
-@app.get("/meh.api/status")
-async def get_status():
-    return midiapp.get_status()
-
-# --- Websockets ----------------------------------------------------------------
-
-@app.websocket("/meh.ws/events")
-async def ws_endpoint_events(ws: WebSocket):
-    manager = ConnectionManager("meh-app")
-    await manager.manage_until_death(ws)
-
-# --- UI routes ----------------------------------------------------------------
+# --- Root redirect ------------------------------------------------------------
 
 @app.get("/")
 async def index():
-    return RedirectResponse("/meh.ui/dashboard")
+    return RedirectResponse("/meh/ui/dashboard")
 
-@app.get("/meh.ui/dashboard")
-async def dashboard(request: Request, version: str = Depends(get_current_version)):
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request,
-        "version": version
-    })
 
-@app.get("/meh.ui/dashboard/status")
-async def status_fragment(request: Request):
-    return templates.TemplateResponse("partials/status_fragment.html", {
-        "request": request,
-        "status": midiapp.get_status(),
-    })
+# --- Static files (must be last) ----------------------------------------------
 
-# --- ADMIN routes -------------------------------------------------------------
-
-@app.post("/meh.api/restart")
-async def request_restart():
-    Path(".runtime").mkdir(exist_ok=True)
-    Path(".runtime/restart.flag").touch()
-    return {"status": "restart requested"}
-
-# Mount static as html at the end
 app.mount("/static", StaticFiles(directory=get_static_path(), html=True), name="static")

@@ -62,14 +62,53 @@ def listen_ports(port_names: list[str]):
             print(f"Opened: {name}")
         
         print("-" * 60)
+        print("Activity check every 2 seconds. Try disconnecting/reconnecting.")
+        print("-" * 60)
         print()
 
+        last_check = time.time()
+        check_interval = 2.0
+        port_was_available = {name: True for name, _ in ports}
+        message_count = {name: 0 for name, _ in ports}
+
         while True:
+            # Process messages
             for name, port in ports:
                 for msg in port.iter_pending():
                     timestamp = time.strftime("%H:%M:%S")
                     short_name = name.split()[0] if ' ' in name else name[:20]
+                    message_count[name] += 1
                     print(f"[{timestamp}] {short_name:<20} | {msg}")
+            
+            # Periodic availability check
+            now = time.time()
+            if now - last_check >= check_interval:
+                last_check = now
+                current_inputs = mido.get_input_names()
+                timestamp = time.strftime("%H:%M:%S")
+                
+                for name, port in ports:
+                    is_available = name in current_inputs
+                    was_available = port_was_available[name]
+                    
+                    if was_available and not is_available:
+                        print(f"[{timestamp}] !! PORT DISAPPEARED: {name}")
+                        print(f"[{timestamp}]    port.closed = {port.closed}")
+                        print(f"[{timestamp}]    Messages received so far: {message_count[name]}")
+                    elif not was_available and is_available:
+                        print(f"[{timestamp}] !! PORT REAPPEARED: {name}")
+                        print(f"[{timestamp}]    port.closed = {port.closed}")
+                        print(f"[{timestamp}]    Will messages resume? Keep playing...")
+                    
+                    port_was_available[name] = is_available
+                
+                # Show current state
+                status = []
+                for name, _ in ports:
+                    avail = "OK" if port_was_available[name] else "GONE"
+                    status.append(f"{name.split()[0][:10]}:{avail}")
+                print(f"[{timestamp}] Status: {', '.join(status)} | Available ports: {len(current_inputs)}")
+            
             time.sleep(0.001)
 
     except KeyboardInterrupt:

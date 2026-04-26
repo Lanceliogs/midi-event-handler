@@ -1,389 +1,42 @@
-/* ====== Global Layout ====== */
-body {
-  margin: 0;
-  font-family: sans-serif;
-  background-color: #f8f9fa;
-  color: #333;
-}
+/*
+ * MIDI Event Handler - Main Stylesheet
+ * 
+ * This file imports all component stylesheets.
+ * Edit individual component files to modify styles.
+ */
 
-.page-body {
-  background: #f0f2f5;
-  color: #333;
-}
+/* Base styles: reset, icons, utilities */
+@import url('components/base.css');
 
-.page-container {
-  max-width: 100%;
-  margin: 0 auto;
-}
+/* Layout: topbar, sidebar, footer, main content */
+@import url('components/layout.css');
 
-.page-container.with-sidebar-right {
-  display: flex;
-  height: calc(100vh - 110px - 32px);
-  padding: 0;
-}
+/* Buttons: all button variants */
+@import url('components/buttons.css');
 
-/* ====== Top Bar ====== */
-.topbar {
-  height: 110px;
-  background: #222;
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
+/* Forms: inputs, selects, form layouts */
+@import url('components/forms.css');
 
-.topbar-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  max-width: 100%;
-  box-sizing: border-box;
-}
+/* Modals: modal backdrop, containers, overlays */
+@import url('components/modals.css');
 
-.topbar-nav {
-  display: flex;
-  gap: 0.75rem;
-}
+/* Toasts: notification system */
+@import url('components/toasts.css');
 
-.topbar-nav .btn {
-  color: white;
-  border-color: #ccc;
-  font-size: 0.9rem;
-  padding: 0.4rem 0.9rem;
-  text-decoration: none;
-}
+/* Badges: note, port, event type, message badges */
+@import url('components/badges.css');
 
-.topbar-nav .btn:hover {
-  background-color: #444;
-}
+/* Cards: status cards, event blocks */
+@import url('components/cards.css');
 
-.topbar-title {
-  font-size: 1.8rem;
-  font-weight: bold;
-  text-shadow: 1px 1px 2px #222;
-}
+/* Ports: MIDI port displays and lists */
+@import url('components/ports.css');
 
-/* ====== Sidebar ====== */
-.sidebar-right {
-  width: 240px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  background: #f9f9f9;
-  border-left: 1px solid #ccc;
-  box-sizing: border-box;
-}
+/* Editor: mapping editor page styles */
+@import url('components/editor.css');
 
-.sidebar-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
+/* Dashboard: live monitoring page styles */
+@import url('components/dashboard.css');
 
-.sidebar-right hr {
-  border: none;
-  border-top: 1px solid #ccc;
-  margin: 1rem 0;
-}
-
-/* ====== Footer ====== */
-
-.footer-version {
-  height: 15px;
-  background-color: #f0f2f5;
-  color: #666;
-  text-align: center;
-  font-size: 0.75rem;
-  padding: 0.5rem 0;
-  border-top: 1px solid #ccc;
-}
-
-.footer-inner {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.footer-text {
-  font-family: sans-serif;
-}
-
-/* ====== Status Card & Container ====== */
-.status-card {
-  flex: 1;
-  background: white;
-  padding: 1.5rem;
-  margin: 0;
-  border-right: 1px solid #ddd;
-  overflow-y: auto;
-  box-sizing: border-box;
-}
-
-.status-loading {
-  font-style: italic;
-  color: #888;
-}
-
-.status-container {
-  padding: 1rem;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin: 1rem 0;
-}
-
-.status-section {
-  margin-bottom: 1.5rem;
-}
-
-.status-label {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #444;
-}
-
-.status-value {
-  font-size: 1.8rem;
-  font-weight: bold;
-  margin-top: 0.25rem;
-}
-
-.status-value.running {
-  color: #28a745;
-}
-
-.status-value.stopped {
-  color: #dc3545;
-}
-
-.status-divider {
-  border: none;
-  border-top: 1px solid #ccc;
-  margin: 1.5rem 0;
-}
-
-.status-list {
-  padding-left: 1.2rem;
-  list-style-type: disc;
-}
-
-.status-none {
-  font-style: italic;
-  color: #999;
-}
-
-.status-footer {
-  text-align: right;
-  font-size: 0.75rem;
-  color: #777;
-  padding-top: 0.5rem;
-  border-top: 1px solid #e0e0e0;
-  margin-top: 1rem;
-}
-
-.debug-label {
-  font-family: monospace;
-}
-
-/* ====== Event Display ====== */
-.event-block {
-  border: 1px solid #ccc;
-  background: #fff;
-  padding: 1rem;
-  margin-top: 0.5rem;
-  border-radius: 6px;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.03);
-}
-
-.event-title {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #444;
-  margin-bottom: 0.5rem;
-}
-
-.event-info {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.event-info li {
-  font-size: 0.9rem;
-  margin-bottom: 0.3rem;
-}
-
-.event-none {
-  font-style: italic;
-  color: #999;
-}
-
-/* ====== MIDI Ports ====== */
-.midi-port-blocks {
-  display: flex;
-  gap: 1.5rem;
-  margin-top: 1rem;
-}
-
-.midi-port-group {
-  flex: 1;
-  background: #fefefe;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-}
-
-.midi-port-group h4 {
-  margin: 0 0 0.5rem;
-  color: #333;
-  font-size: 1.1rem;
-}
-
-.midi-port-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.midi-port-list li {
-  padding: 0.3rem 0;
-  border-bottom: 1px dashed #ccc;
-  font-size: 0.95rem;
-}
-
-.port-label {
-  font-weight: bold;
-  color: #444;
-}
-
-.port-id {
-  font-size: 0.85rem;
-  color: #888;
-  margin-left: 0.4rem;
-}
-
-.port-unavailable .port-label {
-  color: #aaa;
-}
-
-.port-unavailable .port-id {
-  color: #bbb;
-}
-
-/* ====== WebSocket Indicator ====== */
-.ws-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 0 0;
-  font-size: 0.85rem;
-  color: #444;
-  border-top: 1px solid #ddd;
-  margin-top: auto;
-}
-
-.led {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: red;
-  box-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.led.up {
-  background-color: #3fcf3f;
-  box-shadow: 0 0 6px rgba(63, 207, 63, 0.6);
-}
-
-.led.down {
-  background-color: red;
-  box-shadow: 0 0 6px rgba(255, 0, 0, 0.6);
-}
-
-/* ====== Upload Area ====== */
-.drop-zone {
-  border: 2px dashed #aaa;
-  border-radius: 6px;
-  padding: 1rem;
-  text-align: center;
-  font-size: 0.75rem;
-  color: #666;
-  background-color: #fafafa;
-  transition: background 0.2s ease-in-out;
-}
-
-.drop-zone:hover {
-  background-color: #f0f0f0;
-}
-
-.drop-zone.dragover {
-  background-color: #e0f7fa;
-  border-color: #26c6da;
-  color: #007c91;
-}
-
-/* ====== Feedback Area ====== */
-.hx-feedback-box {
-  display: none;
-  margin-top: 0;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.7rem;
-  color: #444;
-  background: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.hx-feedback-box:not(:empty) {
-  display: block;
-}
-
-.hx-feedback-timestamp {
-  font-size: 0.6rem;
-  color: #999;
-  margin-top: 0;
-  text-align: right;
-}
-
-/* ====== Buttons ====== */
-.btn {
-  display: inline-block;
-  padding: 0.6rem 1rem;
-  font-weight: 600;
-  text-align: center;
-  background: none;
-  color: #333;
-  border: 1px solid #888;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.btn:hover {
-  background-color: #f0f0f0;
-}
-
-/* ====== Whatsnew ====== */
-.prose h1 {
-  font-size: 1.75rem;
-  margin-top: 1em;
-}
-
-.prose p {
-  margin-bottom: 1em;
-}
-
-.prose ul {
-  list-style-type: disc;
-  padding-left: 1.5em;
-  margin-bottom: 1em;
-}
+/* Misc: dropzone, alerts, prose, legacy styles */
+@import url('components/misc.css');

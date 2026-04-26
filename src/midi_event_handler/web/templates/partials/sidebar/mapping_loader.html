@@ -1,0 +1,20 @@
+<div class="sidebar-section">
+    <label for="mapping-upload" class="btn">
+        <img src="/static/assets/icons/arrow-up-tray.svg" class="icon" alt="">
+        <span>LOAD MAPPING</span>
+    </label>
+    <input id="mapping-upload" type="file" name="file" accept=".yaml,.yml"
+        style="display: none;" 
+        hx-post="/meh/api/upload-mapping"
+        hx-trigger="change"
+        hx-encoding="multipart/form-data"
+        hx-swap="none"
+        hx-on::after-request="this.value = null">
+
+    <div id="drop-zone"
+        class="drop-zone"
+        data-upload-url="/meh/api/upload-mapping">
+        <img src="/static/assets/icons/document-text.svg" class="drop-zone-icon" alt="">
+        <p>Drop mapping file here</p>
+    </div>
+</div>

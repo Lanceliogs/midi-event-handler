@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.post("/meh.api/shutdown")
+@router.post("/meh/api/shutdown")
 async def shutdown(request: Request):
     client_host = request.client.host
     if client_host != "127.0.0.1" and client_host != "::1":
@@ -28,7 +28,7 @@ async def shutdown(request: Request):
 
 def request_shutdown(port: int) -> bool:
     """Send shutdown request to the app. Returns True if accepted."""
-    url = f"http://127.0.0.1:{port}/meh.api/shutdown"
+    url = f"http://127.0.0.1:{port}/meh/api/shutdown"
     try:
         log.info(f"🛑 Sending shutdown request to {url}")
         response = requests.post(url, timeout=5)

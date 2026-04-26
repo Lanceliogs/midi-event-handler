@@ -1,0 +1,15 @@
+{% from "macros/icons.html" import icon %}
+<div class="sidebar-section sidebar-controls">
+    <button id="start-button" class="btn btn-success"
+        hx-post="/meh/api/start"
+        hx-swap="none">
+        <img src="/static/assets/icons/play.svg" class="icon" alt="">
+        <span>START</span>
+    </button>
+    <button id="stop-button" class="btn btn-danger"
+        hx-post="/meh/api/stop"
+        hx-swap="none">
+        <img src="/static/assets/icons/stop.svg" class="icon" alt="">
+        <span>STOP</span>
+    </button>
+</div>

@@ -1,9 +1,31 @@
 import asyncio
+import traceback
 from fastapi import WebSocket, WebSocketDisconnect
 from asyncio import Queue
 
 import logging
 log = logging.getLogger(__name__)
+
+
+def broadcast_error(short: str, detail: str = None, exc: Exception = None):
+    """
+    Broadcast an error to all connected WebSocket clients.
+    
+    Args:
+        short: Short error message for toast
+        detail: Full error detail (optional)
+        exc: Exception to extract traceback from (optional)
+    """
+    if exc and not detail:
+        detail = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+    
+    manager = ConnectionManager("meh-app")
+    manager.notify_nowait({
+        "error": True,
+        "short": short,
+        "detail": detail or short
+    })
+
 
 class ConnectionManager():
 

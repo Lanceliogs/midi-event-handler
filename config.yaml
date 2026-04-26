@@ -2,6 +2,11 @@
 app:
   host: 127.0.0.1
   port: 8000
+  
+  # Port activity thresholds (seconds) for dashboard colors
+  # green = active, orange = warning, red = inactive
+  activity_warning: 60    # orange after 1 minute
+  activity_danger: 300    # red after 5 minutes
 
 updates:
   prereleases: True
