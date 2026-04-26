@@ -3,6 +3,7 @@
  */
 
 import { getSocket } from '../modules/websocket.js';
+import { noteToName } from '../modules/utils.js';
 
 let timerInterval = null;
 let reconcileInterval = null;
@@ -16,11 +17,16 @@ const RECONCILE_INTERVAL_MS = 5000;  // Refresh from server every 5s
 // Timers (Show + Handler countdowns)
 // =============================================================================
 
-function formatTime(seconds) {
+function formatDuration(seconds) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = Math.floor(seconds % 60);
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+function formatTimeOfDay(timestamp) {
+  const date = new Date(timestamp * 1000);
+  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
 }
 
 function updateTimerNumerics() {
@@ -30,7 +36,7 @@ function updateTimerNumerics() {
   const showTimerEl = document.getElementById('show-timer');
   if (showTimerEl && startedAt) {
     const elapsed = now - startedAt;
-    showTimerEl.textContent = formatTime(elapsed);
+    showTimerEl.textContent = formatDuration(elapsed);
   }
   
   // Update handler timers (elapsed + remaining text only)
@@ -137,13 +143,6 @@ function stopTimers() {
 // MIDI Input Display
 // =============================================================================
 
-function noteToName(noteNum) {
-  const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-  const octave = Math.floor(noteNum / 12) - 1;
-  const note = notes[noteNum % 12];
-  return `${note}${octave}`;
-}
-
 function addMidiInput(port, notes, timestamp) {
   const display = document.getElementById('midi-input-display');
   if (!display) return;
@@ -156,9 +155,7 @@ function addMidiInput(port, notes, timestamp) {
   const entry = document.createElement('div');
   entry.className = 'midi-entry new';
   
-  const time = new Date(timestamp * 1000);
-  const timeStr = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
-  
+  const timeStr = formatTimeOfDay(timestamp);
   const noteNames = notes.map(n => `${n} (${noteToName(n)})`).join(', ');
   
   entry.innerHTML = `
@@ -195,8 +192,7 @@ function addLogEntry(eventName, action, timestamp) {
   const entry = document.createElement('div');
   entry.className = `log-entry ${action} new`;
   
-  const time = new Date(timestamp * 1000);
-  const timeStr = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
+  const timeStr = formatTimeOfDay(timestamp);
   
   entry.innerHTML = `
     <span class="log-time">${timeStr}</span>

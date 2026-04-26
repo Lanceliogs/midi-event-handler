@@ -2,6 +2,7 @@
 Event CRUD, testing (PAD), and MIDI recording routes.
 """
 
+import asyncio
 import json
 from fastapi import APIRouter, HTTPException
 from fastapi.requests import Request
@@ -19,6 +20,9 @@ import logging
 log = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# Track active recordings per port (stores the recorder instance for abort)
+_active_recordings: dict[str, MidiRecorder] = {}
 
 
 # =============================================================================
@@ -241,13 +245,25 @@ async def record_midi(request: Request):
             status_code=400
         )
     
+    # Prevent concurrent recordings on the same port
+    if port in _active_recordings:
+        return Response(
+            content='{"error": "Recording already in progress on this port"}',
+            media_type="application/json",
+            status_code=409
+        )
+    
+    recorder = MidiRecorder(port, timeout=5.0)
+    _active_recordings[port] = recorder
     try:
-        recorder = MidiRecorder(port, timeout=5.0)
         notes = await recorder.record()
         
         if notes:
             return {"notes": [note_to_name(n) for n in notes]}
-        return {"timeout": True}
+        elif recorder.was_aborted:
+            return {"aborted": True}
+        else:
+            return {"timeout": True}
         
     except MidiAppError as e:
         return Response(
@@ -255,6 +271,21 @@ async def record_midi(request: Request):
             media_type="application/json",
             status_code=400
         )
+    finally:
+        _active_recordings.pop(port, None)
+
+
+@router.post("/record/abort")
+async def abort_recording(request: Request):
+    """Abort an active recording on a port."""
+    data = await request.json()
+    port = data.get("port", "")
+    
+    recorder = _active_recordings.get(port)
+    if recorder:
+        await recorder.abort()
+        return {"aborted": True}
+    return {"aborted": False}
 
 
 @router.get("/resolve-note")

@@ -86,11 +86,9 @@ class TestGetPortsStatus:
     def test_returns_all_fields(self):
         from midi_event_handler.core.midi import utils
         
-        with patch.object(utils, 'get_configured_inputs', return_value=["input1"]):
-            with patch.object(utils, 'get_configured_outputs', return_value=["output1"]):
-                with patch('mido.get_input_names', return_value=["input1 0"]):
-                    with patch('mido.get_output_names', return_value=["output1 0"]):
-                        result = utils.get_ports_status()
+        with patch('mido.get_input_names', return_value=["input1 0"]):
+            with patch('mido.get_output_names', return_value=["output1 0"]):
+                result = utils.get_ports_status(inputs=["input1"], outputs=["output1"])
         
         assert "inputs" in result
         assert "outputs" in result
@@ -100,11 +98,9 @@ class TestGetPortsStatus:
     def test_inputs_resolved(self):
         from midi_event_handler.core.midi import utils
         
-        with patch.object(utils, 'get_configured_inputs', return_value=["myInput"]):
-            with patch.object(utils, 'get_configured_outputs', return_value=[]):
-                with patch('mido.get_input_names', return_value=["myInput 0", "otherInput 0"]):
-                    with patch('mido.get_output_names', return_value=[]):
-                        result = utils.get_ports_status()
+        with patch('mido.get_input_names', return_value=["myInput 0", "otherInput 0"]):
+            with patch('mido.get_output_names', return_value=[]):
+                result = utils.get_ports_status(inputs=["myInput"], outputs=[])
         
         assert len(result["inputs"]) == 1
         assert result["inputs"][0]["friendly_name"] == "myInput"
@@ -114,11 +110,9 @@ class TestGetPortsStatus:
     def test_outputs_resolved(self):
         from midi_event_handler.core.midi import utils
         
-        with patch.object(utils, 'get_configured_inputs', return_value=[]):
-            with patch.object(utils, 'get_configured_outputs', return_value=["myOutput"]):
-                with patch('mido.get_input_names', return_value=[]):
-                    with patch('mido.get_output_names', return_value=["myOutput 0"]):
-                        result = utils.get_ports_status()
+        with patch('mido.get_input_names', return_value=[]):
+            with patch('mido.get_output_names', return_value=["myOutput 0"]):
+                result = utils.get_ports_status(inputs=[], outputs=["myOutput"])
         
         assert len(result["outputs"]) == 1
         assert result["outputs"][0]["friendly_name"] == "myOutput"

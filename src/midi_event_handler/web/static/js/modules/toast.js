@@ -2,6 +2,8 @@
  * Toast notification module.
  */
 
+import { escapeHtml } from './utils.js';
+
 const TOAST_DURATIONS = {
   success: 3000,
   info: 3000,
@@ -67,12 +69,6 @@ export function dismissAll() {
   });
   
   updateToastHeader();
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 export function dismiss(toastOrButton) {

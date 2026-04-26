@@ -8,6 +8,13 @@ export function escapeHtml(text) {
   return div.innerHTML;
 }
 
+export function noteToName(noteNum) {
+  const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const octave = Math.floor(noteNum / 12) - 1;
+  const note = notes[noteNum % 12];
+  return `${note}${octave}`;
+}
+
 export function copyToClipboard(text, button) {
   return navigator.clipboard.writeText(text).then(() => {
     if (button) {

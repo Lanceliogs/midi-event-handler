@@ -2,6 +2,8 @@
  * Editor page module.
  */
 
+import { escapeHtml, noteToName } from '../modules/utils.js';
+
 // Event filtering
 function filterEvents(query) {
   const q = query.toLowerCase().trim();
@@ -181,6 +183,19 @@ async function resolveNote(input) {
 // =============================================================================
 
 let isRecording = false;
+let recordingPort = null;
+
+async function abortRecording(port) {
+  try {
+    await fetch('/meh/ui/editor/record/abort', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ port })
+    });
+  } catch (err) {
+    console.error('[Record] Abort error:', err);
+  }
+}
 
 async function startRecording() {
   const portSelect = document.getElementById('trigger-port');
@@ -197,13 +212,26 @@ async function startRecording() {
   
   if (isRecording) return;
   isRecording = true;
+  recordingPort = port;
+  
+  // Save original badges to restore on timeout/cancel
+  const originalBadgesHtml = badges ? badges.innerHTML : '';
+  
+  const handleEsc = (e) => {
+    if (e.key === 'Escape' && isRecording && recordingPort) {
+      e.preventDefault();
+      e.stopPropagation();
+      abortRecording(recordingPort);
+    }
+  };
+  document.addEventListener('keydown', handleEsc, true);
   
   recButton.classList.add('recording');
   modalButtons?.forEach(btn => btn.disabled = true);
   
   // Show recording indicator in badges area
   if (badges) {
-    badges.innerHTML = '<span class="record-status-text">Recording...</span>';
+    badges.innerHTML = '<span class="record-status-text">Recording... (ESC to cancel)</span>';
   }
   
   try {
@@ -225,18 +253,14 @@ async function startRecording() {
         }
       }
       syncNotesInput();
-    } else if (data.timeout) {
-      badges.innerHTML = '<span class="record-status-text text-muted">No notes detected</span>';
-      setTimeout(() => {
-        if (badges.querySelector('.record-status-text')) {
-          badges.innerHTML = '';
-        }
-      }, 2000);
+    } else if (data.timeout || data.aborted) {
+      // Timeout or aborted: restore original notes
+      badges.innerHTML = originalBadgesHtml;
     } else if (data.error) {
       badges.innerHTML = `<span class="record-status-text text-error">${data.error}</span>`;
       setTimeout(() => {
         if (badges.querySelector('.record-status-text')) {
-          badges.innerHTML = '';
+          badges.innerHTML = originalBadgesHtml;
         }
       }, 3000);
     }
@@ -244,11 +268,18 @@ async function startRecording() {
     console.error('[Record] Error:', err);
     if (badges) {
       badges.innerHTML = '<span class="record-status-text text-error">Recording failed</span>';
+      setTimeout(() => {
+        if (badges.querySelector('.record-status-text')) {
+          badges.innerHTML = originalBadgesHtml;
+        }
+      }, 3000);
     }
   } finally {
+    document.removeEventListener('keydown', handleEsc, true);
     recButton.classList.remove('recording');
     modalButtons?.forEach(btn => btn.disabled = false);
     isRecording = false;
+    recordingPort = null;
   }
 }
 
@@ -257,10 +288,12 @@ async function startRecording() {
 // =============================================================================
 
 let quickRecordingEvent = null;
+let quickRecordingPort = null;
 
 async function startQuickRecord(eventName, port) {
   if (quickRecordingEvent) return;
   quickRecordingEvent = eventName;
+  quickRecordingPort = port;
   
   const recButton = document.querySelector(`[data-action="quick-record"][data-event="${eventName}"]`);
   const triggerNotes = document.querySelector(`.event-trigger-notes[data-event="${eventName}"]`);
@@ -269,9 +302,18 @@ async function startQuickRecord(eventName, port) {
   
   const originalContent = triggerNotes.innerHTML;
   
+  const handleEsc = (e) => {
+    if (e.key === 'Escape' && quickRecordingEvent && quickRecordingPort) {
+      e.preventDefault();
+      e.stopPropagation();
+      abortRecording(quickRecordingPort);
+    }
+  };
+  document.addEventListener('keydown', handleEsc, true);
+  
   recButton.classList.add('recording');
   triggerNotes.classList.add('recording');
-  triggerNotes.innerHTML = '<span class="record-status-text">Recording...</span>';
+  triggerNotes.innerHTML = '<span class="record-status-text">Recording... (ESC to cancel)</span>';
   
   try {
     const resp = await fetch('/meh/ui/editor/record', {
@@ -285,12 +327,10 @@ async function startQuickRecord(eventName, port) {
     if (data.notes && data.notes.length > 0) {
       triggerNotes.innerHTML = '<span class="record-status-text">Saving...</span>';
       await saveQuickRecord(eventName, data.notes.join(','));
-    } else if (data.timeout) {
-      triggerNotes.innerHTML = '<span class="record-status-text text-muted">No notes detected</span>';
-      setTimeout(() => {
-        triggerNotes.innerHTML = originalContent;
-        triggerNotes.classList.remove('recording');
-      }, 2000);
+    } else if (data.timeout || data.aborted) {
+      // Timeout or aborted: restore original notes
+      triggerNotes.innerHTML = originalContent;
+      triggerNotes.classList.remove('recording');
     } else if (data.error) {
       triggerNotes.innerHTML = `<span class="record-status-text text-error">${data.error}</span>`;
       setTimeout(() => {
@@ -306,8 +346,10 @@ async function startQuickRecord(eventName, port) {
       triggerNotes.classList.remove('recording');
     }, 2000);
   } finally {
+    document.removeEventListener('keydown', handleEsc, true);
     recButton.classList.remove('recording');
     quickRecordingEvent = null;
+    quickRecordingPort = null;
   }
 }
 
@@ -428,19 +470,6 @@ function renderMessagesList(editor, messages) {
   `).join('');
 }
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function noteToName(noteNum) {
-  const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-  const octave = Math.floor(noteNum / 12) - 1;
-  const note = notes[noteNum % 12];
-  return `${note}${octave}`;
-}
-
 function getOutputsList(editorId) {
   // Get outputs from a data attribute on the messages editor
   const editor = document.getElementById(editorId);
@@ -454,13 +483,17 @@ function getOutputsList(editorId) {
   return [];
 }
 
-function showMessageForm(editorId, existingMsg = null, editIndex = null, defaults = 'start') {
+function showMessageForm(editorId, existingMsg = null, editIndex = null, defaults = 'start', targetBadge = null) {
   const editor = document.getElementById(editorId);
   if (!editor) return;
   
-  // Remove any existing form
+  // Remove any existing form and restore any hidden badges
   const existingForm = editor.querySelector('.message-form');
-  if (existingForm) existingForm.remove();
+  if (existingForm) {
+    const hiddenBadge = editor.querySelector('.message-badge.editing-hidden');
+    if (hiddenBadge) hiddenBadge.classList.remove('editing-hidden');
+    existingForm.remove();
+  }
   
   // Defaults based on start/end
   const defaultType = defaults === 'end' ? 'note_off' : 'note_on';
@@ -505,9 +538,15 @@ function showMessageForm(editorId, existingMsg = null, editIndex = null, default
     </button>
   `;
   
-  // Insert before the add button
-  const addBtn = editor.querySelector('[data-action="add-message"]');
-  editor.insertBefore(form, addBtn);
+  // If editing, hide the badge and insert form in its place
+  if (targetBadge) {
+    targetBadge.classList.add('editing-hidden');
+    targetBadge.insertAdjacentElement('afterend', form);
+  } else {
+    // New message: insert before the add button
+    const addBtn = editor.querySelector('[data-action="add-message"]');
+    editor.insertBefore(form, addBtn);
+  }
   
   form.querySelector('input[name="note"]').focus();
 }
@@ -526,7 +565,7 @@ function editMessage(badge) {
     velocity: parseInt(badge.dataset.velocity)
   };
   
-  showMessageForm(editorId, msg, index, defaults);
+  showMessageForm(editorId, msg, index, defaults, badge);
 }
 
 async function saveMessage(form) {
@@ -567,6 +606,12 @@ async function saveMessage(form) {
 }
 
 function cancelMessageForm(form) {
+  // Restore any hidden badge before removing form
+  const editor = document.getElementById(form.dataset.editor);
+  if (editor) {
+    const hiddenBadge = editor.querySelector('.message-badge.editing-hidden');
+    if (hiddenBadge) hiddenBadge.classList.remove('editing-hidden');
+  }
   form.remove();
 }
 
@@ -578,6 +623,54 @@ function deleteMessage(badge) {
   
   messages.splice(index, 1);
   saveMessagesToEditor(editorId, messages);
+}
+
+// =============================================================================
+// Download with Save As dialog
+// =============================================================================
+
+async function downloadMapping() {
+  try {
+    const resp = await fetch('/meh/ui/editor/api/mapping/download');
+    if (!resp.ok) throw new Error('Download failed');
+    
+    const content = await resp.text();
+    const blob = new Blob([content], { type: 'application/x-yaml' });
+    
+    // Try File System Access API for native Save As dialog (Chrome/Edge)
+    if ('showSaveFilePicker' in window) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: 'mapping.yml',
+          types: [{
+            description: 'YAML files',
+            accept: { 'application/x-yaml': ['.yml', '.yaml'] }
+          }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') return; // User cancelled
+        // Fall through to legacy download
+      }
+    }
+    
+    // Fallback: trigger browser download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mapping.yml';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+  } catch (err) {
+    console.error('[Download] Error:', err);
+    alert('Download failed');
+  }
 }
 
 // =============================================================================
@@ -672,6 +765,12 @@ function init() {
       updateDirtyIndicator();
     }
   });
+  
+  // Download button with Save As dialog
+  const downloadBtn = document.getElementById('download-btn');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', downloadMapping);
+  }
   
   // Listen for WebSocket state/event updates
   document.body.addEventListener('update', () => {

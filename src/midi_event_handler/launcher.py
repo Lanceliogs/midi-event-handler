@@ -66,8 +66,8 @@ def wait_for_exit_or_restart(proc):
 def monitor_loop(console_mode=False):
     port = app_conf.get('port', 8000)
 
-    dashboard_url = f"http://127.0.0.1:{port}/meh.ui/dashboard"
-    whatsnew_url = f"http://127.0.0.1:{port}/meh.ui/whatsnew"
+    dashboard_url = f"http://127.0.0.1:{port}/meh/ui/dashboard"
+    whatsnew_url = f"http://127.0.0.1:{port}/meh/ui/whatsnew"
 
     setup_tray_icon(dashboard_url)
     webbrowser.open(whatsnew_url if WHATSNEW_PATH.exists() else dashboard_url)

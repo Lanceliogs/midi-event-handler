@@ -1,0 +1,169 @@
+/* ====== MIDI Ports Blocks ====== */
+.midi-port-blocks {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.midi-port-group {
+  flex: 1;
+  background: #fefefe;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.midi-port-group h4 {
+  margin: 0 0 0.5rem;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.midi-port-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.midi-port-list li {
+  padding: 0.3rem 0;
+  border-bottom: 1px dashed #ccc;
+  font-size: 0.95rem;
+}
+
+.port-label {
+  font-weight: bold;
+  color: #444;
+}
+
+.port-id {
+  font-size: 0.85rem;
+  color: #888;
+  margin-left: 0.4rem;
+}
+
+.port-unavailable .port-label {
+  color: #aaa;
+}
+
+.port-unavailable .port-id {
+  color: #bbb;
+}
+
+/* ====== Sidebar MIDI Ports (Compact) ====== */
+.midi-ports-sidebar {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.midi-ports-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+/* Port List */
+.port-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem 0;
+  overflow-x: auto;
+}
+
+.port-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.port-item:last-child {
+  border-bottom: none;
+}
+
+.port-type {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.35rem;
+  border-radius: 3px;
+  background: #e5e7eb;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.port-name {
+  font-weight: 500;
+  color: #374151;
+}
+
+.port-ok .port-badge {
+  color: #22c55e;
+}
+
+.port-err .port-badge {
+  color: #ef4444;
+}
+
+.port-err .port-name {
+  color: #9ca3af;
+}
+
+.port-none {
+  color: #9ca3af;
+  font-style: italic;
+  justify-content: center;
+}
+
+/* Available Ports Expandable */
+.available-ports {
+  font-size: 0.75rem;
+}
+
+.available-ports summary {
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0.25rem 0;
+}
+
+.available-ports summary:hover {
+  color: #374151;
+}
+
+.available-list {
+  list-style: none;
+  padding: 0.5rem 0 0 0;
+  margin: 0;
+}
+
+.available-list li {
+  padding: 0.2rem 0;
+  color: #6b7280;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.port-type-sm {
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 0.1rem 0.25rem;
+  border-radius: 2px;
+  background: #f3f4f6;
+  color: #9ca3af;
+  margin-right: 0.35rem;
+}
+
+/* ====== Port Health (Dashboard) ====== */
+.port-health {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}

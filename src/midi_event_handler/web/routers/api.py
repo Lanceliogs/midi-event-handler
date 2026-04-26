@@ -35,11 +35,11 @@ async def upload_mapping(file: UploadFile = File(...)):
             status_code=400,
             headers={"X-Toast": "Stop the app before loading a new mapping", "X-Toast-Type": "error"}
         )
-    if not file.filename.endswith(".yaml"):
+    if not (file.filename.endswith(".yaml") or file.filename.endswith(".yml")):
         return Response(
             content='',
             status_code=400,
-            headers={"X-Toast": "File must be a .yaml", "X-Toast-Type": "error"}
+            headers={"X-Toast": "File must be .yaml or .yml", "X-Toast-Type": "error"}
         )
 
     RUNTIME_PATH.mkdir(exist_ok=True)

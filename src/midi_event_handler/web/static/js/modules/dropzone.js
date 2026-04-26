@@ -27,7 +27,7 @@ export function init() {
     const file = files[0];
 
     if (!file.name.endsWith(".yaml") && !file.name.endsWith(".yml")) {
-      toast.error("Only .yaml files are supported.");
+      toast.error("Only .yaml/.yml files are supported.");
       return;
     }
 
