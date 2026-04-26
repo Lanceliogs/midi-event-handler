@@ -250,5 +250,5 @@ Quand des erreurs surviennent, une notification apparaît. Cliquez sur **Détail
 ---
 
 <p align="center">
-  <i>Pour plus d'informations, visitez le <a href="https://github.com/your-repo">dépôt GitHub</a>.</i>
+  <i>Pour plus d'informations, visitez le <a href="https://github.com/Lanceliogs/midi-event-handler">dépôt GitHub</a>.</i>
 </p>

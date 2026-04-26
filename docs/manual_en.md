@@ -250,5 +250,5 @@ When errors occur, a notification appears. Click **Details** to see more informa
 ---
 
 <p align="center">
-  <i>For more information, visit the <a href="https://github.com/your-repo">GitHub repository</a>.</i>
+  <i>For more information, visit the <a href="https://github.com/Lanceliogs/midi-event-handler">GitHub repository</a>.</i>
 </p>
