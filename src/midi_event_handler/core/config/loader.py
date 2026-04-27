@@ -33,9 +33,9 @@ def is_embedded() -> bool:
     return python_dir.exists() and (python_dir / "python.exe").exists()
 
 
-def get_current_version() -> str:
+def get_current_version(with_commit: bool = True) -> str:
     """Get current app version from version.txt or package metadata."""
-    if VERSION_PATH.exists():
+    if with_commit and VERSION_PATH.exists():
         return VERSION_PATH.read_text().strip()
     from importlib.metadata import version
     try:

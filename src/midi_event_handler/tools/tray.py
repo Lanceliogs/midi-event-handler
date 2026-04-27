@@ -83,7 +83,7 @@ def run_update_check_threaded(icon):
             disable_menu_item()
             set_status("Checking...")
 
-            current_version = get_current_version()
+            current_version = get_current_version(with_commit=False)
             result = get_latest_release_asset(current_version=current_version)
             if result is None:
                 set_status("Up-to-date ✅")
