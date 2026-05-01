@@ -1,7 +1,6 @@
 # updater.py
 import requests
 import re
-from pathlib import Path
 from packaging import version
 
 from midi_event_handler.core.config import get_updates_config
@@ -9,15 +8,17 @@ from midi_event_handler.core.config import get_updates_config
 GITHUB_OWNER = "Lanceliogs"
 GITHUB_REPO = "midi-event-handler"
 API_URL_ALL = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/releases"
-FILENAME_PATTERN = re.compile(r"midi-event-handler-setup_.*\.exe")
+FILENAME_PATTERN = re.compile(r"(meh-[\w.\-]+-setup|midi-event-handler-setup_.*)\.exe")
+
 
 def format_release_notes(tag: str, notes: str) -> str:
     return f"## **Version**: {tag}\n---\n{notes.strip()}"
 
+
 def get_latest_release_asset(current_version: str = "v0.0.0"):
     headers = {
         "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28"
+        "X-GitHub-Api-Version": "2022-11-28",
     }
 
     include_prereleases = get_updates_config().get("prereleases", False)

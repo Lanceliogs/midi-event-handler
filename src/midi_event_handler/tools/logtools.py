@@ -2,7 +2,7 @@ import logging
 import logging.config
 import yaml
 from pathlib import Path
-from os import getenv
+
 
 def setup_logger():
     config_path = Path("config.yaml")

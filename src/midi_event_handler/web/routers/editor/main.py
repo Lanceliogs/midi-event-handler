@@ -17,24 +17,32 @@ router = APIRouter()
 async def editor(request: Request, version: str = Depends(get_current_version)):
     """Main editor page."""
     editor_state.load_from_runtime()
-    return common.templates.TemplateResponse(request, "editor.html", {
-        "version": version,
-        "mapping": editor_state.mapping,
-        "dirty": editor_state.dirty,
-        "app_running": common.midiapp.running if common.midiapp else False,
-        "active_events": common.get_active_events(),
-        "ports": common.get_ports(),
-        "ports_refresh_url": "/meh/ui/editor/partials/ports",
-    })
+    return common.templates.TemplateResponse(
+        request,
+        "editor.html",
+        {
+            "version": version,
+            "mapping": editor_state.mapping,
+            "dirty": editor_state.dirty,
+            "app_running": common.midiapp.running if common.midiapp else False,
+            "active_events": common.get_active_events(),
+            "ports": common.get_ports(),
+            "ports_refresh_url": "/meh/ui/editor/partials/ports",
+        },
+    )
 
 
 @router.get("/partials/ports")
 async def editor_ports(request: Request):
     """Refresh ports status."""
-    return common.templates.TemplateResponse(request, "partials/sidebar/midi_ports.html", {
-        "ports": common.get_ports(),
-        "ports_refresh_url": "/meh/ui/editor/partials/ports",
-    })
+    return common.templates.TemplateResponse(
+        request,
+        "partials/sidebar/midi_ports.html",
+        {
+            "ports": common.get_ports(),
+            "ports_refresh_url": "/meh/ui/editor/partials/ports",
+        },
+    )
 
 
 @router.get("/partials/content")

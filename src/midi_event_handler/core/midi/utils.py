@@ -14,27 +14,31 @@ def _resolve_ports_status(configured: List[str], available: List[str]) -> List[d
     result = []
     for name in configured:
         matched = resolve_port(name, available)
-        result.append({
-            "friendly_name": name,
-            "real_name": matched or "Unavailable",
-            "available": matched is not None
-        })
+        result.append(
+            {
+                "friendly_name": name,
+                "real_name": matched or "Unavailable",
+                "available": matched is not None,
+            }
+        )
     return result
 
 
 def get_ports_status(inputs: Optional[List[str]] = None, outputs: Optional[List[str]] = None) -> dict:
     """
     Get ports status for configured inputs/outputs.
-    
+
     If inputs/outputs not provided, uses global config.
     """
     if inputs is None or outputs is None:
         from midi_event_handler.core.config import (
-            get_configured_inputs, get_configured_outputs
+            get_configured_inputs,
+            get_configured_outputs,
         )
+
         inputs = inputs or get_configured_inputs()
         outputs = outputs or get_configured_outputs()
-    
+
     available_inputs = mido.get_input_names()
     available_outputs = mido.get_output_names()
 

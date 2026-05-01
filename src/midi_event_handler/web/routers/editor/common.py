@@ -34,12 +34,16 @@ def get_active_events() -> set:
 
 def render_content(request: Request):
     """Render editor content after mutations."""
-    return templates.TemplateResponse(request, "partials/editor/editor_content.html", {
-        "mapping": editor_state.mapping,
-        "dirty": editor_state.dirty,
-        "app_running": midiapp.running if midiapp else False,
-        "active_events": get_active_events(),
-    })
+    return templates.TemplateResponse(
+        request,
+        "partials/editor/editor_content.html",
+        {
+            "mapping": editor_state.mapping,
+            "dirty": editor_state.dirty,
+            "app_running": midiapp.running if midiapp else False,
+            "active_events": get_active_events(),
+        },
+    )
 
 
 def get_ports():

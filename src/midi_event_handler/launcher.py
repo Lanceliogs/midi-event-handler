@@ -1,6 +1,5 @@
 import subprocess
 import time
-import signal
 from pathlib import Path
 import yaml
 import webbrowser
@@ -11,11 +10,14 @@ from midi_event_handler.debug import list_ports, listen_ports
 from midi_event_handler.tools.logtools import setup_logger
 from midi_event_handler.tools.tray import setup_tray_icon
 from midi_event_handler.core.config import (
-    default_app_conf, RUNTIME_PATH, WHATSNEW_PATH, is_embedded
+    default_app_conf,
+    WHATSNEW_PATH,
+    is_embedded,
 )
 from midi_event_handler.web.shutdown import request_shutdown
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -30,20 +32,21 @@ with open("config.yaml", "r") as f:
 
 app_conf: dict = conf.get("app", default_app_conf())
 
+
 # === App Launch ===
 def launch_app(console_mode=False):
     command = ["meh.exe", "--app"] if is_embedded() else ["poetry", "run", "start-app"]
-    
+
     if console_mode:
         command.append("--console")
-    
+
     log.info(f"Launching app: {' '.join(command)}")
-    
+
     # Hide console window on Windows unless console mode
     kwargs = {}
     if is_embedded() and not console_mode:
         kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
-    
+
     return subprocess.Popen(command, **kwargs)
 
 
@@ -53,18 +56,18 @@ def wait_for_exit_or_restart(proc):
         if RESTART_FLAG.exists():
             log.warning("🔁 Restart flag detected")
             return "restart"
-        
+
         # Check if process exited
         ret = proc.poll()
         if ret is not None:
             log.info(f"🛑 Process exited with code {ret}")
             return "exit"
-        
+
         time.sleep(0.5)
 
 
 def monitor_loop(console_mode=False):
-    port = app_conf.get('port', 8000)
+    port = app_conf.get("port", 8000)
 
     dashboard_url = f"http://127.0.0.1:{port}/meh/ui/dashboard"
     whatsnew_url = f"http://127.0.0.1:{port}/meh/ui/whatsnew"
@@ -98,7 +101,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description="MIDI Event Handler Launcher",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     subparsers = parser.add_subparsers(dest="command")
 
@@ -115,11 +118,7 @@ def main():
 
     # debug listen
     listen_parser = debug_subparsers.add_parser("listen", help="Listen to MIDI input ports")
-    listen_parser.add_argument(
-        "ports",
-        nargs="+",
-        help="Port names (or partial matches) to listen on"
-    )
+    listen_parser.add_argument("ports", nargs="+", help="Port names (or partial matches) to listen on")
 
     args = parser.parse_args()
 
@@ -129,8 +128,8 @@ def main():
         elif args.debug_command == "listen":
             listen_ports(args.ports)
     elif args.app:
-        host = app_conf.get('host', '127.0.0.1')
-        port = app_conf.get('port', 8000)
+        host = app_conf.get("host", "127.0.0.1")
+        port = app_conf.get("port", 8000)
         run_app(host=host, port=port)
     else:
         # Monitoring loop (default in compiled mode)

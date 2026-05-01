@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field, asdict
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, List, Tuple
 import mido
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -64,13 +65,10 @@ class MidiEvent:
     def from_dict(cls, data: dict) -> "MidiEvent":
         """Create MidiEvent from YAML-style dictionary."""
         trigger = data.get("trigger", {})
-        chord = MidiChord(
-            notes=trigger.get("notes", []),
-            port=trigger.get("port", "")
-        )
+        chord = MidiChord(notes=trigger.get("notes", []), port=trigger.get("port", ""))
         start = [MidiMessage(**m) for m in data.get("start_messages", [])]
         end = [MidiMessage(**m) for m in data.get("end_messages", [])]
-        
+
         return cls(
             name=data.get("name", ""),
             type=data.get("type", ""),
@@ -82,7 +80,7 @@ class MidiEvent:
             fallback_event=data.get("fallback_event"),
             comment=data.get("comment"),
         )
-    
+
     def to_dict(self) -> dict:
         """Convert to YAML-style dictionary."""
         d = {
@@ -93,7 +91,7 @@ class MidiEvent:
                 "notes": list(self.chord.notes),
             },
         }
-        
+
         if self.start_messages:
             d["start_messages"] = [asdict(m) for m in self.start_messages]
         if self.end_messages:
@@ -106,15 +104,15 @@ class MidiEvent:
             d["fallback_event"] = self.fallback_event
         if self.comment:
             d["comment"] = self.comment
-            
+
         return d
 
     def chord_signature(self) -> Tuple[str, Tuple[int, ...]]:
         return self.chord.signature()
-    
+
     def __repr__(self):
         return f"<MidiEvent: name={self.name} type={self.type}>"
-    
+
     def __eq__(self, other: "MidiEvent") -> bool:
         if not other:
             return False
