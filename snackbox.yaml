@@ -1,7 +1,7 @@
 app:
   name: "MIDI Event Handler"
   slug: "meh"
-  version_from: "pyproject.toml"
+  version_from: "git"
   icon: "meh-icon.ico"
 
 python:
