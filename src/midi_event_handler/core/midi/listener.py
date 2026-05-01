@@ -4,20 +4,24 @@ from typing import Optional
 
 import mido
 from midi_event_handler.core.events.models import MidiMessage, MidiChord
-from midi_event_handler.core.exceptions import MidiAppError, port_not_found, port_open_failed
+from midi_event_handler.core.exceptions import (
+    port_not_found,
+    port_open_failed,
+)
 from midi_event_handler.tools.connection import broadcast_error
 
 import threading
 import time
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 class MidiListener:
     """
     Listens for MIDI messages on an input port and queues chords for processing.
-    
+
     Lifecycle:
         listener = MidiListener("PortName", queue)
         listener.open()      # Raises MidiAppError if port unavailable
@@ -27,17 +31,17 @@ class MidiListener:
         await task           # Wait for loop to finish
         listener.close()     # Close the port
     """
-    
+
     def __init__(self, port_name: str, chord_queue: asyncio.Queue):
         self.chord_queue = chord_queue
         self.buffer: deque[MidiMessage] = deque()
         self.stop_event = threading.Event()
 
         self.friendly_port_name = port_name  # For display/indexer usage
-        self.port_name = ""                  # Resolved real MIDI port name
+        self.port_name = ""  # Resolved real MIDI port name
         self._port: Optional[mido.ports.BaseInput] = None
         self._loop: Optional[asyncio.AbstractEventLoop] = None  # Set at run time
-        
+
         self._resolve_port(port_name)
 
     def _resolve_port(self, port_name: str) -> None:
@@ -53,13 +57,13 @@ class MidiListener:
     def open(self) -> None:
         """
         Open the MIDI port.
-        
+
         Raises:
             MidiAppError: If port not found or cannot be opened.
         """
         if self._port is not None:
             return  # Already open
-        
+
         if not self.port_name:
             available = mido.get_input_names()
             raise port_not_found(
@@ -67,7 +71,7 @@ class MidiListener:
                 port_type="input",
                 available=available,
             )
-        
+
         try:
             self._port = mido.open_input(self.port_name)
             log.info(f"[Open] Port opened: {self.port_name}")
@@ -75,6 +79,7 @@ class MidiListener:
             error_str = str(e).lower()
             if "busy" in error_str or "use" in error_str:
                 from midi_event_handler.core.exceptions import port_busy
+
                 raise port_busy(
                     port=self.friendly_port_name,
                     port_type="input",
@@ -105,7 +110,7 @@ class MidiListener:
     async def run(self) -> None:
         """
         Run the listener loop. Port must be opened first via open().
-        
+
         Raises:
             RuntimeError: If port not opened.
             MidiAppError: If an error occurs during listening.
@@ -129,24 +134,19 @@ class MidiListener:
                                 continue
                             chord = MidiChord(
                                 notes=[m.note for m in self.buffer],
-                                port=self.friendly_port_name
+                                port=self.friendly_port_name,
                             )
                             self.buffer.clear()
-                            self._loop.call_soon_threadsafe(
-                                self.chord_queue.put_nowait, chord
-                            )
+                            self._loop.call_soon_threadsafe(self.chord_queue.put_nowait, chord)
                     time.sleep(0.001)  # prevent tight CPU loop
             except Exception as e:
                 log.exception(f"[Run] Exception in listener: {self.friendly_port_name}")
-                broadcast_error(
-                    short=f"Listener error: {self.friendly_port_name}",
-                    exc=e
-                )
+                broadcast_error(short=f"Listener error: {self.friendly_port_name}", exc=e)
                 raise  # Re-raise so task monitor can catch it
             finally:
                 self.stop_event.clear()
                 log.info(f"[Run] Listener loop stopped: {self.friendly_port_name}")
-        
+
         await asyncio.to_thread(loop)
 
     def stop(self) -> None:

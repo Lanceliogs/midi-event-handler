@@ -4,18 +4,21 @@
 *$py.class
 .pytest*
 
+# lint
+.ruff_cache/
+
 # Distribution / packaging
 *.build/
 *.dist/
 *.egg-info/
 .eggs/
-build/
 dist/
-.build-cache/
-.innosetup.conf
+meh-release/
+build/
 
 # VSCode settings (recommended to exclude from repo)
 .vscode/
+.cursor/
 
 # Downloadable assets
 htmx.min.js

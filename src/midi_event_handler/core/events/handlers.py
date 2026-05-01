@@ -9,28 +9,37 @@ from midi_event_handler.core.midi.outputs import MidiOutputManager
 from midi_event_handler.tools.connection import ConnectionManager
 
 import logging
+
 log = logging.getLogger(__name__)
+
+
 def _log_event_state(flag: str, event: MidiEvent):
     log.info(f"[{flag.upper()}] {event}")
 
+
 manager = ConnectionManager("meh-app")
+
 
 async def notify_event_change(event_name: str, action: str):
     """Notify dashboard of event change."""
-    await manager.notify({
-        "notify": "event",
-        "event_name": event_name,
-        "action": action,
-        "timestamp": time.time(),
-    })
+    await manager.notify(
+        {
+            "notify": "event",
+            "event_name": event_name,
+            "action": action,
+            "timestamp": time.time(),
+        }
+    )
+
 
 class MidiChordProcessor:
     def __init__(
-            self, chord_queue: asyncio.Queue,
-            event_queues: Dict[str, asyncio.Queue],
-            event_index: MidiEventIndex,
-            on_activity: Optional[Callable[[str], None]] = None
-        ):
+        self,
+        chord_queue: asyncio.Queue,
+        event_queues: Dict[str, asyncio.Queue],
+        event_index: MidiEventIndex,
+        on_activity: Optional[Callable[[str], None]] = None,
+    ):
         self.chord_queue = chord_queue
         self.event_queues = event_queues
         self.event_index = event_index
@@ -40,19 +49,21 @@ class MidiChordProcessor:
         while True:
             chord: MidiChord = await self.chord_queue.get()
             now = time.time()
-            
+
             # Record activity for this port
             if self.on_activity:
                 self.on_activity(chord.port)
-            
+
             # Notify dashboard of MIDI input
-            manager.notify_nowait({
-                "midi_input": True,
-                "port": chord.port,
-                "notes": list(chord.notes),
-                "timestamp": now,
-            })
-            
+            manager.notify_nowait(
+                {
+                    "midi_input": True,
+                    "port": chord.port,
+                    "notes": list(chord.notes),
+                    "timestamp": now,
+                }
+            )
+
             events: List[MidiEvent] = self.event_index.lookup_by_signature(chord.signature())
             if events:
                 log.info(f"Event(s) found: {chord}: {' '.join([e.name for e in events])}")
@@ -63,9 +74,13 @@ class MidiChordProcessor:
 
 
 class MidiEventHandler:
-
-    def __init__(self, event_queue: asyncio.Queue, event_index: MidiEventIndex, midiout: MidiOutputManager,
-                 on_event_change: Optional[Callable[[str, str], None]] = None):
+    def __init__(
+        self,
+        event_queue: asyncio.Queue,
+        event_index: MidiEventIndex,
+        midiout: MidiOutputManager,
+        on_event_change: Optional[Callable[[str, str], None]] = None,
+    ):
         self.event_queue = event_queue
         self.event_index = event_index
         self.midiout = midiout
@@ -81,18 +96,18 @@ class MidiEventHandler:
         _log_event_state("END", self.event)
         if not self.event:
             return
-        
+
         event_name = self.event.name
         self.midiout.send_multiple(self.event.end_messages)
         self._event_started_at = None
-        
+
         # Should NOT happen
         if self._min_duration_task and not self._min_duration_task.done():
             self._min_duration_task.cancel()
         # Will happen if the full duration is not expanded
         if self._fallback_scheduler_task and not self._fallback_scheduler_task.done():
             self._fallback_scheduler_task.cancel()
-        
+
         await notify_event_change(event_name, "end")
         if self.on_event_change:
             self.on_event_change(event_name, "end")
@@ -109,7 +124,7 @@ class MidiEventHandler:
             self._fallback_scheduler_task = asyncio.create_task(self._schedule_fallback_event())
             await asyncio.sleep(0.001)
         _log_event_state("STARTED", self.event)
-        
+
         await notify_event_change(self.event.name, "start")
         if self.on_event_change:
             self.on_event_change(self.event.name, "start")
@@ -128,10 +143,10 @@ class MidiEventHandler:
             log.info(f"[FALLBACK] Sending fallback event: {fallback_name}")
             await self.event_queue.put(fallback_event)
         except asyncio.CancelledError:
-            log.info(f"[CANCELLED] Fallback task was cancelled")
+            log.info("[CANCELLED] Fallback task was cancelled")
 
     async def _cleanup_tasks(self):
-        # Reset event - Empty queue 
+        # Reset event - Empty queue
         self.event = None
         while not self.event_queue.empty():
             self.event_queue.get_nowait()
@@ -146,12 +161,12 @@ class MidiEventHandler:
             if not self._fallback_scheduler_task.done():
                 self._fallback_scheduler_task.cancel()
             tasks_to_cancel.append(self._fallback_scheduler_task)
-        
+
         if tasks_to_cancel:
             await asyncio.gather(*tasks_to_cancel, return_exceptions=True)
 
     async def run(self):
-        log.debug(f"[STARTED] handler main task running")
+        log.debug("[STARTED] handler main task running")
         try:
             while True:
                 next_event: MidiEvent = await self.event_queue.get()
@@ -165,9 +180,8 @@ class MidiEventHandler:
                 if not self.event:
                     continue  # None was injected inside the queue
                 await self._start_next_event()
-                
+
         except asyncio.CancelledError:
-            log.debug(f"[CANCELLED] Handler main task stopped")
+            log.debug("[CANCELLED] Handler main task stopped")
         finally:
             await self._cleanup_tasks()
-

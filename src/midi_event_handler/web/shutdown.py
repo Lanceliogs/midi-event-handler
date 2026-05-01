@@ -4,9 +4,11 @@ import requests
 from midi_event_handler.tools.connection import ConnectionManager
 
 import logging
+
 log = logging.getLogger(__name__)
 
 router = APIRouter()
+
 
 @router.post("/meh/api/shutdown")
 async def shutdown(request: Request):
@@ -19,10 +21,11 @@ async def shutdown(request: Request):
     await manager.shutdown()
 
     from midi_event_handler.main import server
+
     if server:
         server.should_exit = True
         log.info("✅ server.should_exit set to True")
-    
+
     return {"message": "Shutting down..."}
 
 
@@ -39,5 +42,5 @@ def request_shutdown(port: int) -> bool:
             log.warning(f"⚠️ Shutdown request returned status {response.status_code}: {response.text}")
             return False
     except requests.exceptions.RequestException:
-        log.exception(f"❌ Failed to send shutdown request")
+        log.exception("❌ Failed to send shutdown request")
         return False

@@ -13,6 +13,7 @@ router = APIRouter(prefix="/meh/ui/partials", tags=["partials"])
 # Will be set by main app
 templates: Jinja2Templates = None
 
+
 def configure(t: Jinja2Templates):
     global templates
     templates = t
@@ -20,7 +21,11 @@ def configure(t: Jinja2Templates):
 
 @router.get("/sidebar/ports")
 async def sidebar_ports(request: Request):
-    return templates.TemplateResponse(request, "partials/sidebar/midi_ports.html", {
-        "ports": get_ports_status(),
-        "ports_refresh_url": "/meh/ui/partials/sidebar/ports",
-    })
+    return templates.TemplateResponse(
+        request,
+        "partials/sidebar/midi_ports.html",
+        {
+            "ports": get_ports_status(),
+            "ports_refresh_url": "/meh/ui/partials/sidebar/ports",
+        },
+    )

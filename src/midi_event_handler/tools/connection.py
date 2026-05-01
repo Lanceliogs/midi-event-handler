@@ -4,37 +4,33 @@ from fastapi import WebSocket, WebSocketDisconnect
 from asyncio import Queue
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 def broadcast_error(short: str, detail: str = None, exc: Exception = None):
     """
     Broadcast an error to all connected WebSocket clients.
-    
+
     Args:
         short: Short error message for toast
         detail: Full error detail (optional)
         exc: Exception to extract traceback from (optional)
     """
     if exc and not detail:
-        detail = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__))
-    
+        detail = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+
     manager = ConnectionManager("meh-app")
-    manager.notify_nowait({
-        "error": True,
-        "short": short,
-        "detail": detail or short
-    })
+    manager.notify_nowait({"error": True, "short": short, "detail": detail or short})
 
 
-class ConnectionManager():
-
+class ConnectionManager:
     _instances = {}
 
     def __new__(cls, key: str):
         if key in cls._instances:
             return cls._instances[key]
-        cls._instances[key] = super().__new__(cls) 
+        cls._instances[key] = super().__new__(cls)
         return cls._instances[key]
 
     def __init__(self, key: str):
@@ -49,7 +45,7 @@ class ConnectionManager():
     @property
     def connections_num(self):
         return len(self._websockets)
-    
+
     def notify_nowait(self, item):
         if not item:
             return
@@ -74,16 +70,15 @@ class ConnectionManager():
                 await asyncio.sleep(3)
             except (WebSocketDisconnect, asyncio.CancelledError):
                 self._websockets.discard(ws)
-        
+
         log.info(f"Disconnected: {self._name}")
 
-    
     async def _manage_forever(self):
         log.info(f"Starting task ({self._name})")
         while self._websockets:
             item = await self._queue.get()
             if not item:
-                break # None injection break the loop
+                break  # None injection break the loop
             websockets = self._websockets.copy()
             for ws in websockets:
                 try:
@@ -91,12 +86,11 @@ class ConnectionManager():
                 except WebSocketDisconnect:
                     self._websockets.discard(ws)
                     log.info(f"Connection removed from manager: {self._name}")
-        
-    
+
     async def shutdown(self):
         log.info(f"🔻 Shutting down connection manager: {self._name}")
 
-        await self._queue.put(None) # None injection to break the loop
+        await self._queue.put(None)  # None injection to break the loop
         if self._task and not self._task.done():
             await asyncio.gather(self._task, return_exceptions=True)
         log.info("✅ Manager task cancelled cleanly")

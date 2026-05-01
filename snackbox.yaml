@@ -1,0 +1,41 @@
+app:
+  name: "MIDI Event Handler"
+  slug: "meh"
+  version_from: "pyproject.toml"
+  icon: "meh-icon.ico"
+
+python:
+  version: "3.12.10"
+
+build:
+  wheel:
+    backend: "poetry"
+
+launcher:
+  entry_point: "midi_event_handler.launcher"
+  console: "attach"
+
+assets:
+  - "config.yaml"
+  - "meh-icon.ico"
+  - "src/midi_event_handler/web/static:static"
+  - "src/midi_event_handler/web/templates:templates"
+  - "tools/scripts/debug.bat"
+  - "tools/scripts/start.bat"
+
+version:
+  git_hash: true
+  dirty_flag: true
+  save_patch: true
+
+installer:
+  enabled: true
+  app_guid: "{61E7BD3B-F815-4BA5-B8AD-AFF42431A546}"
+  publisher: "Julien LANCELOT"
+  url: "https://github.com/Lanceliogs/midi-event-handler"
+  install_dir: r"{localappdata}\Programs\MIDI Event Handler"
+  add_to_path: true
+  start_menu: true
+  desktop_shortcut: true
+  run_after_install: true
+  output_dir: "dist/installer"

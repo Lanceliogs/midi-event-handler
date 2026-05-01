@@ -18,6 +18,7 @@ from midi_event_handler.web.routers import api, ws, dashboard, editor, partials
 from midi_event_handler.web import help, shutdown
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -37,8 +38,9 @@ def get_static_path():
 
 # Shared instances (created before lifespan to be accessible)
 templates = Jinja2Templates(directory=get_templates_path())
-templates.env.filters['note_name'] = note_to_name
+templates.env.filters["note_name"] = note_to_name
 midiapp = MidiApp()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -48,6 +50,7 @@ async def lifespan(app: FastAPI):
     if midiapp.running:
         await midiapp.stop()
     log.info("[Lifespan] Cleanup complete")
+
 
 app = FastAPI(lifespan=lifespan)
 
@@ -68,6 +71,7 @@ app.include_router(shutdown.router)
 
 
 # --- Root redirect ------------------------------------------------------------
+
 
 @app.get("/")
 async def index():

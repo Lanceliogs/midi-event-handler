@@ -1,7 +1,6 @@
 """Pytest configuration and shared fixtures."""
 
 import pytest
-import asyncio
 import tempfile
 from pathlib import Path
 
@@ -42,14 +41,14 @@ def full_event(sample_chord, sample_message):
         end_messages=[end_message],
         duration_min=5,
         duration_max=30,
-        fallback_event="fallback"
+        fallback_event="fallback",
     )
 
 
 @pytest.fixture
 def temp_yaml_file():
     """Create a temporary YAML file for testing."""
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         yield Path(f.name)
     # Cleanup happens automatically when test ends
 

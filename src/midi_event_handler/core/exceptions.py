@@ -9,22 +9,22 @@ All application-specific exceptions should be defined here with:
 """
 
 from enum import Enum
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 
 class ErrorCode(Enum):
     """Error categories for MidiAppError."""
-    
+
     # Port errors
     PORT_NOT_FOUND = "port_not_found"
     PORT_BUSY = "port_busy"
     PORT_OPEN_FAILED = "port_open_failed"
-    
+
     # Configuration errors
     NO_EVENTS = "no_events"
     NO_INPUTS = "no_inputs"
     NO_OUTPUTS = "no_outputs"
-    
+
     # Runtime errors
     TASK_CRASHED = "task_crashed"
 
@@ -58,7 +58,6 @@ To fix this:
 2. Update your mapping.yaml with the correct port name
 3. Restart the application
 """.strip(),
-
     ErrorCode.PORT_BUSY: """
 The {port_type} port '{port}' is already in use by another application.
 
@@ -72,7 +71,6 @@ To fix this:
 2. If the problem persists, try unplugging and reconnecting the device
 3. As a last resort, restart your computer
 """.strip(),
-
     ErrorCode.PORT_OPEN_FAILED: """
 Failed to open the {port_type} port '{port}'.
 
@@ -88,7 +86,6 @@ To fix this:
 2. Check if the device works in other applications
 3. Try restarting the application
 """.strip(),
-
     ErrorCode.NO_EVENTS: """
 No events are configured in your mapping.
 
@@ -99,7 +96,6 @@ To fix this:
 2. Add at least one event with a trigger (MIDI notes) and messages (what to send)
 3. Save your mapping
 """.strip(),
-
     ErrorCode.NO_INPUTS: """
 No input ports are configured in your mapping.
 
@@ -111,7 +107,6 @@ To fix this:
 3. Make sure the port name matches your MIDI device
 4. Save your mapping
 """.strip(),
-
     ErrorCode.NO_OUTPUTS: """
 No output ports are configured in your mapping.
 
@@ -123,7 +118,6 @@ To fix this:
 3. Make sure the port name matches your target MIDI device
 4. Save your mapping
 """.strip(),
-
     ErrorCode.TASK_CRASHED: """
 An internal task crashed unexpectedly.
 
@@ -143,7 +137,7 @@ What you can do:
 class MidiAppError(Exception):
     """
     Application exception with user-friendly messages.
-    
+
     Usage:
         raise MidiAppError(
             ErrorCode.PORT_NOT_FOUND,
@@ -152,12 +146,12 @@ class MidiAppError(Exception):
             available_ports=["Port A", "Port B"]
         )
     """
-    
+
     def __init__(self, code: ErrorCode, **context):
         self.code = code
         self.context = context
         super().__init__(self.short_message)
-    
+
     @property
     def short_message(self) -> str:
         """Short message for toast display."""
@@ -166,12 +160,12 @@ class MidiAppError(Exception):
             return template.format(**self.context)
         except KeyError:
             return template
-    
+
     @property
     def detailed_message(self) -> str:
         """Detailed message for modal display."""
         template = DETAILED_MESSAGES.get(self.code, self.short_message)
-        
+
         # Format available_ports as a bullet list if present
         ctx = self.context.copy()
         if "available_ports" in ctx:
@@ -181,12 +175,12 @@ class MidiAppError(Exception):
                     ctx["available_ports"] = "\n".join(f"  • {p}" for p in ports)
                 else:
                     ctx["available_ports"] = "  (none detected)"
-        
+
         try:
             return template.format(**ctx)
         except KeyError as e:
             return f"{self.short_message}\n\n(Missing context: {e})"
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dict for JSON serialization."""
         return {
@@ -198,6 +192,7 @@ class MidiAppError(Exception):
 
 
 # Convenience factory functions for common errors
+
 
 def port_not_found(port: str, port_type: str, available: list) -> MidiAppError:
     """Create a PORT_NOT_FOUND error."""

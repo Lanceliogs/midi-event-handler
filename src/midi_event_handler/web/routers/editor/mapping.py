@@ -27,7 +27,7 @@ async def download_mapping():
     return Response(
         content=editor_state.to_yaml(),
         media_type="application/x-yaml",
-        headers={"Content-Disposition": 'attachment; filename="mapping.yml"'}
+        headers={"Content-Disposition": 'attachment; filename="mapping.yml"'},
     )
 
 
@@ -35,14 +35,22 @@ async def download_mapping():
 async def save_confirm(request: Request):
     """Show save confirmation modal with diff."""
     if common.midiapp.running:
-        return common.templates.TemplateResponse(request, "partials/editor/modals/save_blocked.html", {
-            "reason": "Cannot save while app is running. Stop it first.",
-        })
-    
-    return common.templates.TemplateResponse(request, "partials/editor/modals/save_confirm.html", {
-        "diff": editor_state.compute_diff(),
-        "has_changes": editor_state.has_changes(),
-    })
+        return common.templates.TemplateResponse(
+            request,
+            "partials/editor/modals/save_blocked.html",
+            {
+                "reason": "Cannot save while app is running. Stop it first.",
+            },
+        )
+
+    return common.templates.TemplateResponse(
+        request,
+        "partials/editor/modals/save_confirm.html",
+        {
+            "diff": editor_state.compute_diff(),
+            "has_changes": editor_state.has_changes(),
+        },
+    )
 
 
 @router.post("/api/mapping/save")
@@ -51,16 +59,16 @@ async def save_mapping(request: Request):
     if common.midiapp.running:
         return Response(
             content='<span class="feedback-error">Cannot save while app is running.</span>',
-            media_type="text/html"
+            media_type="text/html",
         )
-    
+
     if editor_state.save_to_runtime():
         common.midiapp.reload_mapping()
         return Response(
             content='<span class="feedback-success">Mapping saved!</span>',
-            media_type="text/html"
+            media_type="text/html",
         )
     return Response(
         content='<span class="feedback-error">Failed to save mapping</span>',
-        media_type="text/html"
+        media_type="text/html",
     )
