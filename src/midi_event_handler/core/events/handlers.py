@@ -146,8 +146,9 @@ class MidiEventHandler:
             log.info("[CANCELLED] Fallback task was cancelled")
 
     async def _cleanup_tasks(self):
-        # Reset event - Empty queue
+        # Reset event state
         self.event = None
+        self.locked = False
         while not self.event_queue.empty():
             self.event_queue.get_nowait()
 
@@ -167,6 +168,8 @@ class MidiEventHandler:
 
     async def run(self):
         log.debug("[STARTED] handler main task running")
+        self.locked = False
+        self.event = None
         try:
             while True:
                 next_event: MidiEvent = await self.event_queue.get()
