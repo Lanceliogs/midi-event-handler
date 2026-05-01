@@ -7,8 +7,7 @@ Map **MIDI inputs (single notes or chords)** to **custom MIDI outputs** with opt
 ## Requirements
 
 - **Python 3.12**+
-- Windows first, but everything but the INNO SETUP installer is mostly platform independant.
-- MIDI backend via `mido` + `python-rtmidi`
+- Should be cross-platform, but only tested on Windows — MIDI via `mido` + `python-rtmidi`
 
 ## Install
 
@@ -171,31 +170,33 @@ When the app is running, you can manually trigger events from the Editor:
 | `GET` | `/meh/api/logs` | Get recent application logs |
 | `WS` | `/meh/ws/events` | Real-time notifications for UI updates |
 
-## Building releases
+## Building & releasing
 
-This project moved from Nuitka to embedded Python distribution. Why?
-
-- **Open source friendly** — no proprietary compilation step, just Python
-- **Fast builds** — Nuitka took 10+ minutes, embedded builds take seconds (Python is cached)
-- **Easy patching** — need to fix something? Edit the `.py` files directly in the release folder
-- **Cleaner release** — a small native CLI launcher (`meh.exe`) + standard Python, no compiled blobs
-
-Helper scripts are wired in `pyproject.toml`:
+Builds and installers are handled by [**snackbox**](https://github.com/Lanceliogs/snackbox), a tool that packages Python apps into standalone Windows releases with an embedded Python runtime and a native launcher.
 
 ```bash
-# Build the release (downloads Python, builds wheel, compiles CLI launcher)
-poetry run build
+# Build the release folder (embedded Python + wheel + launcher)
+snackbox build
 
-# Build a Windows installer with Inno Setup (reads .innosetup.conf for ISCC.exe path)
-poetry run build-installer
+# Build + create a Windows installer (.exe) via Inno Setup
+snackbox installer
 ```
 
-Notes:
+A `Makefile` is provided for common shortcuts:
 
-- Embedded Python and CLI exe are cached in `.build-cache/` for fast rebuilds.
-- Installer output goes to `dist/installer/midi-event-handler-setup_<version>.exe`.
-- The launcher handles graceful shutdown/restart by calling the app's `/shutdown` endpoint.
-- Release checks pull from GitHub Releases and download the correct `midi-event-handler-setup_*.exe`.
+| Command | Action |
+|---------|--------|
+| `make` | `snackbox build` |
+| `make installer` | `snackbox installer` |
+| `make test` | `poetry run pytest` |
+| `make lint` | `ruff check` |
+| `make format` | `ruff format` |
+| `make check` | lint + format check + tests |
+
+### CI/CD
+
+- **Pull requests** to `main` run lint (ruff) and tests (pytest) automatically.
+- **Tagging `vX.X.X`** triggers a release pipeline that builds the installer via the [snackbox Docker image](https://ghcr.io/lanceliogs/snackbox) and publishes it as a GitHub Release.
 
 ## Usage tips & troubleshooting
 
