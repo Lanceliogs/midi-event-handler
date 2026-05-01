@@ -3,6 +3,15 @@
 import pytest
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
+
+import sys
+
+# Patch mido MIDI port discovery on Linux (CI has no ALSA).
+# This must happen before any app module tries to enumerate ports at import time.
+if sys.platform == "linux":
+    patch("mido.get_input_names", return_value=[]).start()
+    patch("mido.get_output_names", return_value=[]).start()
 
 from midi_event_handler.core.events.models import MidiEvent, MidiChord, MidiMessage
 
