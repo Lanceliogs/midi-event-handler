@@ -21,11 +21,12 @@ async def output_new(request: Request):
     """New output form modal."""
     return context.templates.TemplateResponse(
         request,
-        "partials/editor/modals/output_form.html",
+        "partials/editor/modals/port_form.html",
         {
+            "port_type": "output",
             "is_new": True,
             "current_name": "",
-            "available_outputs": mido.get_output_names(),
+            "available_ports": mido.get_output_names(),
         },
     )
 
@@ -39,12 +40,13 @@ async def output_edit(request: Request, name: str):
     available = mido.get_output_names()
     return context.templates.TemplateResponse(
         request,
-        "partials/editor/modals/output_form.html",
+        "partials/editor/modals/port_form.html",
         {
+            "port_type": "output",
             "is_new": False,
             "current_name": name,
             "original_name": name,
-            "available_outputs": available,
+            "available_ports": available,
             "resolved_port": resolve_port(name, available),
         },
     )

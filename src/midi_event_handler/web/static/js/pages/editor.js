@@ -197,6 +197,28 @@ async function abortRecording(port) {
   }
 }
 
+function addEscAbortHandler(getPort) {
+  const handler = (e) => {
+    const port = getPort();
+    if (e.key === 'Escape' && port) {
+      e.preventDefault();
+      e.stopPropagation();
+      abortRecording(port);
+    }
+  };
+  document.addEventListener('keydown', handler, true);
+  return () => document.removeEventListener('keydown', handler, true);
+}
+
+async function fetchRecording(port) {
+  const resp = await fetch('/meh/ui/editor/record', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ port })
+  });
+  return await resp.json();
+}
+
 async function startRecording() {
   const portSelect = document.getElementById('trigger-port');
   const port = portSelect?.value;
@@ -217,14 +239,7 @@ async function startRecording() {
   // Save original badges to restore on timeout/cancel
   const originalBadgesHtml = badges ? badges.innerHTML : '';
   
-  const handleEsc = (e) => {
-    if (e.key === 'Escape' && isRecording && recordingPort) {
-      e.preventDefault();
-      e.stopPropagation();
-      abortRecording(recordingPort);
-    }
-  };
-  document.addEventListener('keydown', handleEsc, true);
+  const removeEscHandler = addEscAbortHandler(() => isRecording ? recordingPort : null);
   
   recButton.classList.add('recording');
   modalButtons?.forEach(btn => btn.disabled = true);
@@ -235,13 +250,7 @@ async function startRecording() {
   }
   
   try {
-    const resp = await fetch('/meh/ui/editor/record', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ port })
-    });
-    
-    const data = await resp.json();
+    const data = await fetchRecording(port);
     
     if (data.notes && data.notes.length > 0) {
       // Resolve notes and create badges
@@ -275,7 +284,7 @@ async function startRecording() {
       }, 3000);
     }
   } finally {
-    document.removeEventListener('keydown', handleEsc, true);
+    removeEscHandler();
     recButton.classList.remove('recording');
     modalButtons?.forEach(btn => btn.disabled = false);
     isRecording = false;
@@ -302,27 +311,14 @@ async function startQuickRecord(eventName, port) {
   
   const originalContent = triggerNotes.innerHTML;
   
-  const handleEsc = (e) => {
-    if (e.key === 'Escape' && quickRecordingEvent && quickRecordingPort) {
-      e.preventDefault();
-      e.stopPropagation();
-      abortRecording(quickRecordingPort);
-    }
-  };
-  document.addEventListener('keydown', handleEsc, true);
+  const removeEscHandler = addEscAbortHandler(() => quickRecordingEvent ? quickRecordingPort : null);
   
   recButton.classList.add('recording');
   triggerNotes.classList.add('recording');
   triggerNotes.innerHTML = '<span class="record-status-text">Recording... (ESC to cancel)</span>';
   
   try {
-    const resp = await fetch('/meh/ui/editor/record', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ port })
-    });
-    
-    const data = await resp.json();
+    const data = await fetchRecording(port);
     
     if (data.notes && data.notes.length > 0) {
       triggerNotes.innerHTML = '<span class="record-status-text">Saving...</span>';
@@ -346,7 +342,7 @@ async function startQuickRecord(eventName, port) {
       triggerNotes.classList.remove('recording');
     }, 2000);
   } finally {
-    document.removeEventListener('keydown', handleEsc, true);
+    removeEscHandler();
     recButton.classList.remove('recording');
     quickRecordingEvent = null;
     quickRecordingPort = null;
@@ -378,42 +374,28 @@ async function saveQuickRecord(eventName, notes) {
 // Event Testing (PAD)
 // =============================================================================
 
-async function playEvent(eventName) {
+async function postAndRefreshContent(url, label) {
   try {
-    const resp = await fetch(`/meh/ui/editor/event/${encodeURIComponent(eventName)}/play`, {
-      method: 'POST'
-    });
-    
+    const resp = await fetch(url, { method: 'POST' });
     if (resp.ok) {
       const html = await resp.text();
       document.getElementById('main-content').innerHTML = html;
       htmx.process(document.getElementById('main-content'));
     } else {
       const data = await resp.json();
-      console.error('[PlayEvent] Error:', data.error);
+      console.error(`[${label}] Error:`, data.error);
     }
   } catch (err) {
-    console.error('[PlayEvent] Error:', err);
+    console.error(`[${label}] Error:`, err);
   }
 }
 
+async function playEvent(eventName) {
+  await postAndRefreshContent(`/meh/ui/editor/event/${encodeURIComponent(eventName)}/play`, 'PlayEvent');
+}
+
 async function stopEvent(eventName) {
-  try {
-    const resp = await fetch(`/meh/ui/editor/event/${encodeURIComponent(eventName)}/stop`, {
-      method: 'POST'
-    });
-    
-    if (resp.ok) {
-      const html = await resp.text();
-      document.getElementById('main-content').innerHTML = html;
-      htmx.process(document.getElementById('main-content'));
-    } else {
-      const data = await resp.json();
-      console.error('[StopEvent] Error:', data.error);
-    }
-  } catch (err) {
-    console.error('[StopEvent] Error:', err);
-  }
+  await postAndRefreshContent(`/meh/ui/editor/event/${encodeURIComponent(eventName)}/stop`, 'StopEvent');
 }
 
 // =============================================================================

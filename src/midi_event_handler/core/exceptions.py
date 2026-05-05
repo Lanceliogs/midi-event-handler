@@ -8,8 +8,10 @@ All application-specific exceptions should be defined here with:
 - Detailed message for modal/help display
 """
 
+from __future__ import annotations
+
 from enum import Enum
-from typing import Dict, Any
+from typing import Any
 
 
 class ErrorCode(Enum):
@@ -34,7 +36,7 @@ class ErrorCode(Enum):
 
 
 # Short messages for toast display
-SHORT_MESSAGES: Dict[ErrorCode, str] = {
+SHORT_MESSAGES: dict[ErrorCode, str] = {
     ErrorCode.PORT_NOT_FOUND: "Port '{port}' not found",
     ErrorCode.PORT_BUSY: "Port '{port}' is busy",
     ErrorCode.PORT_OPEN_FAILED: "Cannot open port '{port}'",
@@ -47,7 +49,7 @@ SHORT_MESSAGES: Dict[ErrorCode, str] = {
 }
 
 # Detailed messages for modal display
-DETAILED_MESSAGES: Dict[ErrorCode, str] = {
+DETAILED_MESSAGES: dict[ErrorCode, str] = {
     ErrorCode.PORT_NOT_FOUND: """
 The {port_type} port '{port}' could not be found.
 
@@ -214,7 +216,7 @@ class MidiAppError(Exception):
         except KeyError as e:
             return f"{self.short_message}\n\n(Missing context: {e})"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dict for JSON serialization."""
         return {
             "code": self.code.value,

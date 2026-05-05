@@ -1,17 +1,18 @@
+from __future__ import annotations
+
 import mido
-from typing import List, Optional
 
 PORT_UNAVAILABLE = "Unavailable"
 
 
-def resolve_port(name: str, available: List[str]) -> Optional[str]:
+def resolve_port(name: str, available: list[str]) -> str | None:
     """Try to resolve a friendly port name to an available port."""
     if not name:
         return None
     return next((a for a in available if name in a), None)
 
 
-def _resolve_ports_status(configured: List[str], available: List[str]) -> List[dict]:
+def _resolve_ports_status(configured: list[str], available: list[str]) -> list[dict]:
     """Build status list for configured ports."""
     result = []
     for name in configured:
@@ -26,7 +27,7 @@ def _resolve_ports_status(configured: List[str], available: List[str]) -> List[d
     return result
 
 
-def get_ports_status(inputs: Optional[List[str]] = None, outputs: Optional[List[str]] = None) -> dict:
+def get_ports_status(inputs: list[str] | None = None, outputs: list[str] | None = None) -> dict:
     """
     Get ports status for configured inputs/outputs.
 

@@ -2,8 +2,9 @@
 MIDI note conversion utilities.
 """
 
+from __future__ import annotations
+
 import re
-from typing import List, Tuple
 
 NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
@@ -62,7 +63,7 @@ def name_to_note(name: str, middle_c: int = 60) -> int:
     return base + (octave + 1 + octave_offset) * 12
 
 
-def format_note_badge(note: int, middle_c: int = 60) -> Tuple[int, str]:
+def format_note_badge(note: int, middle_c: int = 60) -> tuple[int, str]:
     """
     Format a note for badge display.
     Returns (note_number, note_name).
@@ -70,14 +71,14 @@ def format_note_badge(note: int, middle_c: int = 60) -> Tuple[int, str]:
     return (note, note_to_name(note, middle_c))
 
 
-def format_notes_badges(notes: List[int], middle_c: int = 60) -> List[Tuple[int, str]]:
+def format_notes_badges(notes: list[int], middle_c: int = 60) -> list[tuple[int, str]]:
     """
     Format multiple notes for badge display.
     """
     return [format_note_badge(n, middle_c) for n in notes]
 
 
-def parse_notes_input(text: str, middle_c: int = 60) -> List[int]:
+def parse_notes_input(text: str, middle_c: int = 60) -> list[int]:
     """
     Parse user input that can contain note numbers or names.
     Accepts comma or space separated values.

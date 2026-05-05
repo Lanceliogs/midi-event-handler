@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import yaml
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any
 
 from midi_event_handler.core.events.models import MidiEvent
 
@@ -56,7 +58,7 @@ def get_current_version(with_commit: bool = True) -> str:
 class AppConfig:
     """Application configuration from config.yaml."""
 
-    _data: Dict[str, Any] = field(default_factory=dict)
+    _data: dict[str, Any] = field(default_factory=dict)
 
     def load(self, path: Path = Path("config.yaml")) -> None:
         """Load config from YAML file."""
@@ -128,9 +130,9 @@ def default_app_conf() -> dict:
 class MappingConfig:
     """Mapping configuration from mapping.yaml."""
 
-    _data: Dict[str, Any] = field(default_factory=dict)
+    _data: dict[str, Any] = field(default_factory=dict)
 
-    def load(self, path: Optional[Path] = None) -> None:
+    def load(self, path: Path | None = None) -> None:
         """Load mapping from YAML file."""
         path = path or RUNTIME_MAPPING_PATH
         if not path.exists():
@@ -141,19 +143,19 @@ class MappingConfig:
             self._data = yaml.safe_load(f) or {}
 
     @property
-    def inputs(self) -> List[str]:
+    def inputs(self) -> list[str]:
         return self._data.get("inputs", [])
 
     @property
-    def outputs(self) -> List[str]:
+    def outputs(self) -> list[str]:
         return self._data.get("outputs", [])
 
     @property
-    def event_types(self) -> List[str]:
+    def event_types(self) -> list[str]:
         return self._data.get("event_types", [])
 
     @property
-    def events(self) -> List[MidiEvent]:
+    def events(self) -> list[MidiEvent]:
         result = []
         for e in self._data.get("events", []):
             try:
@@ -168,21 +170,21 @@ mapping_config = MappingConfig()
 
 
 # Backward-compatible functions
-def load_mapping_yaml(path: Optional[Path] = None) -> None:
+def load_mapping_yaml(path: Path | None = None) -> None:
     mapping_config.load(path)
 
 
-def get_configured_inputs() -> List[str]:
+def get_configured_inputs() -> list[str]:
     return mapping_config.inputs
 
 
-def get_configured_outputs() -> List[str]:
+def get_configured_outputs() -> list[str]:
     return mapping_config.outputs
 
 
-def get_event_types() -> List[str]:
+def get_event_types() -> list[str]:
     return mapping_config.event_types
 
 
-def get_event_list() -> List[MidiEvent]:
+def get_event_list() -> list[MidiEvent]:
     return mapping_config.events
