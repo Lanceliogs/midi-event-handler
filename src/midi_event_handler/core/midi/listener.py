@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+import logging
+import threading
+import time
 from collections import deque
 
-POLL_INTERVAL = 0.001
-
 import mido
+
 from midi_event_handler.core.events.models import MidiMessage, MidiChord
 from midi_event_handler.core.exceptions import (
     port_not_found,
@@ -14,12 +16,9 @@ from midi_event_handler.core.exceptions import (
 from midi_event_handler.core.midi.utils import resolve_port
 from midi_event_handler.tools.connection import broadcast_error
 
-import threading
-import time
-
-import logging
-
 log = logging.getLogger(__name__)
+
+POLL_INTERVAL = 0.001
 
 
 class MidiListener:

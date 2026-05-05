@@ -65,9 +65,7 @@ class TestGetLatestReleaseAsset:
             "tag_name": "v2.0.0-beta",
             "prerelease": True,
             "body": "Beta notes",
-            "assets": [
-                {"name": "meh-2.0.0-beta-setup.exe", "browser_download_url": "https://example.com/beta.exe"}
-            ],
+            "assets": [{"name": "meh-2.0.0-beta-setup.exe", "browser_download_url": "https://example.com/beta.exe"}],
         },
     ]
 
