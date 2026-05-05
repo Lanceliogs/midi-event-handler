@@ -135,13 +135,25 @@ class MidiApp:
             return StartResult(success=True)
 
         result = StartResult(success=True)
+        try:
+            self._validate_mapping()
+            self._check_port_collisions()
+            self._open_ports(result)
+            if not result.success:
+                self._cleanup_ports()
+                return result
+            await self._spawn_tasks()
+        except MidiAppError as e:
+            result.add_error(e)
+        return result
 
-        # Step 0: Check for mapping errors (e.g. duplicate event names)
+    def _validate_mapping(self) -> None:
+        """Raise if the mapping has errors (e.g. duplicate event names)."""
         if self._mapping_error:
-            result.add_error(self._mapping_error)
-            return result
+            raise self._mapping_error
 
-        # Step 0b: Check for port collisions (multiple inputs resolving to same port)
+    def _check_port_collisions(self) -> None:
+        """Raise if multiple inputs resolve to the same actual MIDI port."""
         resolved_map: Dict[str, List[str]] = defaultdict(list)
         for listener in self.listeners:
             if listener.port_name:
@@ -149,11 +161,10 @@ class MidiApp:
         for resolved, friendly_names in resolved_map.items():
             if len(friendly_names) > 1:
                 log.error(f"[Start] Port collision: {friendly_names} -> {resolved}")
-                result.add_error(port_collision(friendly_names, resolved))
-        if not result.success:
-            return result
+                raise port_collision(friendly_names, resolved)
 
-        # Step 1: Try to open all input ports
+    def _open_ports(self, result: StartResult) -> None:
+        """Open input ports and register output ports, adding errors to result."""
         log.info("[Start] Opening input ports...")
         for listener in self.listeners:
             try:
@@ -162,7 +173,6 @@ class MidiApp:
                 log.error(f"[Start] Failed to open input: {e.short_message}")
                 result.add_error(e)
 
-        # Step 2: Try to register all output ports
         log.info("[Start] Registering output ports...")
         for name in get_configured_outputs():
             try:
@@ -171,15 +181,15 @@ class MidiApp:
                 log.error(f"[Start] Failed to register output: {e.short_message}")
                 result.add_error(e)
 
-        # If any port failed, clean up and return
-        if not result.success:
-            log.error(f"[Start] Failed with {len(result.errors)} error(s), cleaning up...")
-            for listener in self.listeners:
-                listener.close()
-            self.outputs.close_all()
-            return result
+    def _cleanup_ports(self) -> None:
+        """Close all listeners and outputs after a failed start."""
+        log.error("[Start] Cleaning up ports after failure...")
+        for listener in self.listeners:
+            listener.close()
+        self.outputs.close_all()
 
-        # All ports OK - spawn tasks
+    async def _spawn_tasks(self) -> None:
+        """Set running state and create async tasks for handlers, listeners, and monitor."""
         self.running = True
         self.started_at = time.time()
         self.trigger_counts.clear()
@@ -198,13 +208,10 @@ class MidiApp:
             + [asyncio.create_task(self.chord_processor.run(), name="chord-processor")]
         )
 
-        # Start task monitor
         self._monitor_task = asyncio.create_task(self._monitor_tasks(), name="task-monitor")
 
         log.info(f"[Start] Spawned {len(self._tasks)} tasks + monitor")
         await notify_app_state()
-
-        return result
 
     async def _monitor_tasks(self) -> None:
         """
@@ -377,46 +384,47 @@ class MidiApp:
         """Record MIDI activity on a port."""
         self.last_activity[port] = time.time()
 
-    async def trigger_event(self, event_name: str) -> bool:
-        """Manually trigger an event by name. Returns True if triggered."""
+    def _resolve_event_queue(self, event_name: str):
+        """Resolve an event name to its (MidiEvent, Queue) pair, or None."""
         if not self.running:
-            log.warning(f"[Trigger] Cannot trigger event '{event_name}' - app not running")
-            return False
+            log.warning(f"[Trigger] App not running, cannot process '{event_name}'")
+            return None
 
         event = self.index.lookup_by_name(event_name)
         if not event:
             log.warning(f"[Trigger] Event not found: {event_name}")
-            return False
+            return None
 
-        if event.type not in self.event_queues:
+        queue = self.event_queues.get(event.type)
+        if not queue:
             log.warning(f"[Trigger] Unknown event type: {event.type}")
+            return None
+
+        return event, queue
+
+    async def trigger_event(self, event_name: str) -> bool:
+        """Manually trigger an event by name. Returns True if triggered."""
+        resolved = self._resolve_event_queue(event_name)
+        if not resolved:
             return False
 
+        event, queue = resolved
         log.info(f"[Trigger] Manually triggering event: {event_name}")
-        await self.event_queues[event.type].put(event)
+        await queue.put(event)
         return True
 
     async def stop_event(self, event_name: str) -> bool:
         """Manually stop an event by name. Returns True if stopped."""
-        if not self.running:
-            log.warning(f"[Trigger] Cannot stop event '{event_name}' - app not running")
+        resolved = self._resolve_event_queue(event_name)
+        if not resolved:
             return False
 
-        event = self.index.lookup_by_name(event_name)
-        if not event:
-            log.warning(f"[Trigger] Event not found: {event_name}")
-            return False
-
-        if event.type not in self.event_queues:
-            log.warning(f"[Trigger] Unknown event type: {event.type}")
-            return False
-
-        # Check if this event is actually active
+        event, queue = resolved
         handler = self.handlers.get(event.type)
         if not handler or not handler.event or handler.event.name != event_name:
             log.warning(f"[Trigger] Event '{event_name}' is not currently active")
             return False
 
         log.info(f"[Trigger] Manually stopping event: {event_name}")
-        await self.event_queues[event.type].put(None)
+        await queue.put(None)
         return True
