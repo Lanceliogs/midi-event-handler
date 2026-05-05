@@ -13,11 +13,17 @@
            name="name" 
            value="{{ event.name }}"
            autocomplete="off"
-           required>
+           required
+           hx-get="/meh/ui/editor/check-event-name"
+           hx-trigger="input changed delay:300ms"
+           hx-target="#event-resolution"
+           hx-include="this"
+           hx-vals='{"original_name": "{{ original_name or '' }}"}'>
     {% if original_name %}
     <input type="hidden" name="original_name" value="{{ original_name }}">
     {% endif %}
 </div>
+<div id="event-resolution" class="port-resolution"></div>
 
 <div class="form-group">
     <label for="event-comment">Comment <span class="optional">(optional)</span></label>

@@ -44,6 +44,13 @@ class EditorState:
             self._original = copy.deepcopy(self.mapping)
             return False
 
+    def load_empty(self):
+        """Reset editor to a fresh empty mapping and write it to the runtime file."""
+        self.mapping = empty_mapping()
+        self._original = copy.deepcopy(self.mapping)
+        self.save_to_runtime()
+        log.info("Reset editor to empty mapping")
+
     @property
     def dirty(self) -> bool:
         """Check if there are unsaved changes."""

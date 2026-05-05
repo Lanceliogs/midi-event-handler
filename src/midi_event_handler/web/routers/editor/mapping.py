@@ -11,6 +11,7 @@ from midi_event_handler.core.editor import editor_state
 
 from midi_event_handler.web import context
 from midi_event_handler.web.context import get_midiapp
+from . import common
 
 router = APIRouter()
 
@@ -69,6 +70,23 @@ async def save_confirm(request: Request, midiapp: MidiApp = Depends(get_midiapp)
             "has_changes": editor_state.has_changes(),
         },
     )
+
+
+@router.get("/new-confirm")
+async def new_confirm(request: Request):
+    """Show confirmation modal before resetting to empty mapping."""
+    return context.templates.TemplateResponse(
+        request,
+        "partials/editor/modals/new_mapping_confirm.html",
+        {},
+    )
+
+
+@router.post("/api/mapping/new")
+async def new_mapping(request: Request):
+    """Reset editor to an empty mapping."""
+    editor_state.load_empty()
+    return common.render_content(request)
 
 
 @router.post("/api/mapping/save")

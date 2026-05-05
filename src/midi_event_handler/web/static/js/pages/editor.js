@@ -756,7 +756,7 @@ function init() {
   // Disable submit button when a resolution-error is present in a modal form
   document.body.addEventListener('htmx:afterSettle', (e) => {
     const target = e.detail.target;
-    if (target.id === 'port-resolution' || target.id === 'type-resolution') {
+    if (target.id === 'port-resolution' || target.id === 'type-resolution' || target.id === 'event-resolution') {
       const modal = target.closest('.modal');
       if (!modal) return;
       const submitBtn = modal.querySelector('button[type="submit"]');
@@ -800,8 +800,9 @@ async function refreshEditorContent() {
   }
 }
 
-// Export for use by save_confirm modal (still uses inline hx-on)
+// Export for use by modal inline handlers (hx-on, onclick)
 window.updateDirtyIndicator = updateDirtyIndicator;
+window.downloadMapping = downloadMapping;
 
 // Initialize
 init();

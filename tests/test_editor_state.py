@@ -239,6 +239,32 @@ class TestEditorState:
                 assert state.inputs == ["testinput"]
                 assert not state.dirty
 
+    def test_load_empty(self):
+        state = EditorState()
+        state.add_input("input1")
+        state.add_output("output1")
+        state.add_event_type("light")
+        state.add_event(MidiEvent(name="e1", type="light", chord=MidiChord(port="input1", notes=[60])))
+        assert state.dirty
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            runtime_path = Path(tmpdir) / "mapping.yaml"
+            runtime_path.write_text("inputs:\n  - input1\n")
+
+            with patch(
+                "midi_event_handler.core.editor.state.RUNTIME_MAPPING_PATH",
+                runtime_path,
+            ):
+                state.load_empty()
+
+                assert state.inputs == []
+                assert state.outputs == []
+                assert state.event_types == []
+                assert state.events == []
+                assert not state.dirty
+                assert runtime_path.exists()
+                assert "input1" not in runtime_path.read_text()
+
     def test_load_from_runtime_missing_file(self):
         state = EditorState()
 
