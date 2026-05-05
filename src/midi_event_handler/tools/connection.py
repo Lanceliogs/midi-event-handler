@@ -8,7 +8,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def broadcast_error(short: str, detail: str = None, exc: Exception = None):
+def broadcast_error(short: str, detail: str | None = None, exc: Exception | None = None):
     """
     Broadcast an error to all connected WebSocket clients.
 
