@@ -2,11 +2,14 @@
 Configuration models.
 """
 
+import logging
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Optional, List
 
 from midi_event_handler.core.events.models import MidiEvent
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -22,11 +25,15 @@ class Mapping:
     def from_dict(cls, data: dict) -> "Mapping":
         """Load mapping from YAML-style dictionary."""
         events = []
-        for e in data.get("events", []):
+        skipped = 0
+        for i, e in enumerate(data.get("events", [])):
             try:
                 events.append(MidiEvent.from_dict(e))
-            except Exception:
-                pass  # Skip invalid events
+            except Exception as exc:
+                log.warning(f"Skipping invalid event at index {i}: {exc}")
+                skipped += 1
+        if skipped:
+            log.warning(f"Skipped {skipped} invalid event(s) while loading mapping")
 
         return cls(
             inputs=list(data.get("inputs", [])),

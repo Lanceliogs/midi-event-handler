@@ -27,8 +27,12 @@ RESTART_FLAG = RUNTIME_DIR / "restart.flag"
 ICON_PATH = Path("meh-icon.ico")
 
 # === Config Load ===
-with open("config.yaml", "r") as f:
-    conf = yaml.safe_load(f)
+try:
+    with open("config.yaml", "r") as f:
+        conf = yaml.safe_load(f) or {}
+except FileNotFoundError:
+    log.warning("config.yaml not found, using defaults")
+    conf = {}
 
 app_conf: dict = conf.get("app", default_app_conf())
 

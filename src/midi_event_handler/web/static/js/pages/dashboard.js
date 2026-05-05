@@ -157,12 +157,20 @@ function addMidiInput(port, notes, timestamp) {
   
   const timeStr = formatTimeOfDay(timestamp);
   const noteNames = notes.map(n => `${n} (${noteToName(n)})`).join(', ');
-  
-  entry.innerHTML = `
-    <span class="midi-time">${timeStr}</span>
-    <span class="midi-port">${port}</span>
-    <span class="midi-notes">${noteNames}</span>
-  `;
+
+  const timeSpan = document.createElement('span');
+  timeSpan.className = 'midi-time';
+  timeSpan.textContent = timeStr;
+
+  const portSpan = document.createElement('span');
+  portSpan.className = 'midi-port';
+  portSpan.textContent = port;
+
+  const notesSpan = document.createElement('span');
+  notesSpan.className = 'midi-notes';
+  notesSpan.textContent = noteNames;
+
+  entry.append(timeSpan, portSpan, notesSpan);
   
   // Add to top
   display.insertBefore(entry, display.firstChild);
@@ -193,12 +201,20 @@ function addLogEntry(eventName, action, timestamp) {
   entry.className = `log-entry ${action} new`;
   
   const timeStr = formatTimeOfDay(timestamp);
-  
-  entry.innerHTML = `
-    <span class="log-time">${timeStr}</span>
-    <span class="log-action ${action}">${action.toUpperCase()}</span>
-    <span class="log-event">${eventName}</span>
-  `;
+
+  const timeSpan = document.createElement('span');
+  timeSpan.className = 'log-time';
+  timeSpan.textContent = timeStr;
+
+  const actionSpan = document.createElement('span');
+  actionSpan.className = `log-action ${action}`;
+  actionSpan.textContent = action.toUpperCase();
+
+  const eventSpan = document.createElement('span');
+  eventSpan.className = 'log-event';
+  eventSpan.textContent = eventName;
+
+  entry.append(timeSpan, actionSpan, eventSpan);
   
   // Add to top
   log.insertBefore(entry, log.firstChild);
