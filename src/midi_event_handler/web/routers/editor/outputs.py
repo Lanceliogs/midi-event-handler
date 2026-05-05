@@ -5,6 +5,7 @@ Output port CRUD routes.
 import mido
 from fastapi import APIRouter, HTTPException
 from fastapi.requests import Request
+from fastapi.responses import Response
 
 from midi_event_handler.core.editor import editor_state
 from midi_event_handler.core.midi.utils import resolve_port
@@ -61,7 +62,12 @@ async def output_save(request: Request):
     if original_name:
         editor_state.update_output(original_name, name)
     else:
-        editor_state.add_output(name)
+        if not editor_state.add_output(name):
+            return Response(
+                content="",
+                status_code=400,
+                headers={"X-Toast": f"'{name}' already exists", "X-Toast-Type": "error"},
+            )
 
     return common.render_content(request)
 

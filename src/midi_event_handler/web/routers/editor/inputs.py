@@ -5,6 +5,7 @@ Input port CRUD routes.
 import mido
 from fastapi import APIRouter, HTTPException
 from fastapi.requests import Request
+from fastapi.responses import Response
 
 from midi_event_handler.core.editor import editor_state
 from midi_event_handler.core.midi.utils import resolve_port
@@ -61,7 +62,12 @@ async def input_save(request: Request):
     if original_name:
         editor_state.update_input(original_name, name)
     else:
-        editor_state.add_input(name)
+        if not editor_state.add_input(name):
+            return Response(
+                content="",
+                status_code=400,
+                headers={"X-Toast": f"'{name}' already exists", "X-Toast-Type": "error"},
+            )
 
     return common.render_content(request)
 
@@ -88,15 +94,19 @@ async def confirm_delete_input(request: Request, name: str):
 
 
 @router.get("/resolve-port")
-async def resolve_port_route(request: Request, name: str = "", type: str = "input"):
+async def resolve_port_route(request: Request, name: str = "", type: str = "input", original_name: str = ""):
     """Live port resolution preview."""
-    from fastapi.responses import Response
+    name = name.strip()
+    if not name:
+        return Response("")
+
+    existing = editor_state.inputs if type == "input" else editor_state.outputs
+    if name != original_name and name in existing:
+        return Response('<span class="resolution-error">Already exists</span>')
 
     available = mido.get_input_names() if type == "input" else mido.get_output_names()
     resolved = resolve_port(name, available)
 
     if resolved:
         return Response(f'<span class="resolution-ok">Resolves to: {resolved}</span>')
-    elif name:
-        return Response('<span class="resolution-warn">No matching port found</span>')
-    return Response("")
+    return Response('<span class="resolution-warn">No matching port found</span>')

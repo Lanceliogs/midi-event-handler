@@ -116,7 +116,7 @@ class TestMidiEventIndex:
             MidiEventIndex(events)
 
         assert exc_info.value.code == ErrorCode.DUPLICATE_EVENT_NAMES
-        assert "same_name" in exc_info.value.short_message
+        assert "Duplicate event names" in exc_info.value.short_message
 
     def test_duplicate_names_rejected_on_reload(self):
         """Reloading with duplicate names should also raise."""

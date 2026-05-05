@@ -359,6 +359,30 @@ class TestMapping:
         assert data["events"][0]["trigger"]["port"] == "in1"
         assert data["events"][0]["trigger"]["notes"] == [60, 64]
 
+    def test_duplicate_inputs(self):
+        mapping = Mapping(inputs=["a", "b", "a"])
+        assert mapping.duplicate_inputs() == ["a"]
+
+    def test_duplicate_inputs_none(self):
+        mapping = Mapping(inputs=["a", "b", "c"])
+        assert mapping.duplicate_inputs() == []
+
+    def test_duplicate_outputs(self):
+        mapping = Mapping(outputs=["x", "x", "y"])
+        assert mapping.duplicate_outputs() == ["x"]
+
+    def test_duplicate_outputs_none(self):
+        mapping = Mapping(outputs=["x", "y"])
+        assert mapping.duplicate_outputs() == []
+
+    def test_duplicate_event_types(self):
+        mapping = Mapping(event_types=["light", "music", "light"])
+        assert mapping.duplicate_event_types() == ["light"]
+
+    def test_duplicate_event_types_none(self):
+        mapping = Mapping(event_types=["light", "music"])
+        assert mapping.duplicate_event_types() == []
+
     def test_duplicate_event_names_none(self):
         """Should return empty list when no duplicates."""
         mapping = Mapping(

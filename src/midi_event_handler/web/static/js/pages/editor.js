@@ -770,6 +770,19 @@ function init() {
       updateDirtyIndicator();
     }
   });
+
+  // Disable submit button when a resolution-error is present in a modal form
+  document.body.addEventListener('htmx:afterSettle', (e) => {
+    const target = e.detail.target;
+    if (target.id === 'port-resolution' || target.id === 'type-resolution') {
+      const modal = target.closest('.modal');
+      if (!modal) return;
+      const submitBtn = modal.querySelector('button[type="submit"]');
+      if (!submitBtn) return;
+      const hasError = target.querySelector('.resolution-error');
+      submitBtn.disabled = !!hasError;
+    }
+  });
   
   // Download button with Save As dialog
   const downloadBtn = document.getElementById('download-btn');
