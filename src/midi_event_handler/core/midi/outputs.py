@@ -69,6 +69,8 @@ class MidiOutputManager:
                 raise port_busy(port=name, port_type="output")
             raise port_open_failed(port=name, port_type="output", error=str(e))
         except Exception as e:
+            # Broad catch: rtmidi can raise RuntimeError beyond OSError.
+            # Surface everything to the user as a port failure.
             raise port_open_failed(port=name, port_type="output", error=str(e))
 
     def get(self, name: str) -> Optional[mido.ports.BaseOutput]:
@@ -87,12 +89,14 @@ class MidiOutputManager:
         else:
             raise RuntimeError(f"MIDI output port '{message.port}' not registered")
 
-    def send_multiple(self, messages: MidiMessage):
+    def send_multiple(self, messages: List[MidiMessage]):
         log.info(f"[SendMultiple] Sending {len(messages)} message(s)")
         for msg in messages:
             try:
                 self.send(msg)
             except Exception as e:
+                # Broad catch: rtmidi can raise RuntimeError, OSError, or ValueError.
+                # We keep sending remaining messages and notify the user.
                 log.exception("[SendMultiple] Exception while sending message!")
                 broadcast_error(short=f"MIDI send failed: {msg.port}", exc=e)
 

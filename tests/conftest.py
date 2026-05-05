@@ -58,8 +58,9 @@ def full_event(sample_chord, sample_message):
 def temp_yaml_file():
     """Create a temporary YAML file for testing."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        yield Path(f.name)
-    # Cleanup happens automatically when test ends
+        path = Path(f.name)
+    yield path
+    path.unlink(missing_ok=True)
 
 
 @pytest.fixture

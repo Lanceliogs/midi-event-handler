@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "midi-event-handler"
 version = "0.0.0" # dynamic versioning
-description = ""
+description = "Map MIDI inputs to custom outputs with time-based behaviors"
 authors = ["Julien LANCELOT <julienlancelot91@gmail.com>"]
 readme = "README.md"
 packages = [{include = "midi_event_handler", from = "src"}]
