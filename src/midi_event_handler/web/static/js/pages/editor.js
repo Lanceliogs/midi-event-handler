@@ -24,6 +24,37 @@ function clearFilter() {
   }
 }
 
+// =============================================================================
+// Widget state persistence (localStorage)
+// =============================================================================
+
+const WIDGET_STATE_KEY = 'meh-editor-widget-states';
+
+function saveWidgetStates() {
+  const states = {};
+  document.querySelectorAll('.editor-card[id]').forEach(card => {
+    states[card.id] = { collapsed: card.classList.contains('collapsed') };
+  });
+  document.querySelectorAll('details[id]').forEach(details => {
+    states[details.id] = { open: details.open };
+  });
+  try { localStorage.setItem(WIDGET_STATE_KEY, JSON.stringify(states)); }
+  catch (e) { /* localStorage unavailable (e.g. private browsing) */ }
+}
+
+function restoreWidgetStates() {
+  try {
+    const states = JSON.parse(localStorage.getItem(WIDGET_STATE_KEY));
+    if (!states) return;
+    for (const [id, state] of Object.entries(states)) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      if ('collapsed' in state) el.classList.toggle('collapsed', state.collapsed);
+      if ('open' in state) el.open = state.open;
+    }
+  } catch (e) { /* ignore corrupt data */ }
+}
+
 // Dirty state tracking
 function isDirty() {
   const container = document.querySelector('.editor-container');
@@ -660,6 +691,8 @@ async function downloadMapping() {
 // =============================================================================
 
 function init() {
+  restoreWidgetStates();
+
   // Event delegation for editor actions
   document.addEventListener('click', (e) => {
     // Handle note badge click (for editing)
@@ -725,7 +758,10 @@ function init() {
         break;
       case 'toggle-card': {
         const card = document.getElementById(action.dataset.target);
-        if (card) card.classList.toggle('collapsed');
+        if (card) {
+          card.classList.toggle('collapsed');
+          saveWidgetStates();
+        }
         break;
       }
     }
@@ -746,9 +782,18 @@ function init() {
     }
   });
   
-  // Update dirty indicator on HTMX swap
+  // Persist <details> open/close state
+  document.addEventListener('toggle', (e) => {
+    if (e.target.tagName === 'DETAILS' && e.target.id) saveWidgetStates();
+  }, true);
+
+  // Restore widget states and dirty indicator on HTMX swap
   document.body.addEventListener('htmx:afterSwap', (e) => {
-    if (e.detail.target.id === 'main-content') {
+    const targetId = e.detail.target.id;
+    if (targetId === 'main-content' || targetId === 'midi-ports-container') {
+      restoreWidgetStates();
+    }
+    if (targetId === 'main-content') {
       updateDirtyIndicator();
     }
   });
@@ -793,6 +838,7 @@ async function refreshEditorContent() {
       const html = await resp.text();
       mainContent.innerHTML = html;
       htmx.process(mainContent);
+      restoreWidgetStates();
       updateDirtyIndicator();
     }
   } catch (err) {
