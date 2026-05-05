@@ -2,10 +2,6 @@ from dataclasses import dataclass, field, asdict
 from typing import Optional, List, Tuple
 import mido
 
-import logging
-
-log = logging.getLogger(__name__)
-
 
 @dataclass
 class MidiMessage:

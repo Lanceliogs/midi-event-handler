@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 # === Runtime Paths ===
 RUNTIME_DIR = Path(".runtime")
 RESTART_FLAG = RUNTIME_DIR / "restart.flag"
-ICON_PATH = Path("meh-icon.ico")
+
 
 # === Config Load ===
 try:

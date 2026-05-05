@@ -1,6 +1,8 @@
 import mido
 from typing import List, Optional
 
+PORT_UNAVAILABLE = "Unavailable"
+
 
 def resolve_port(name: str, available: List[str]) -> Optional[str]:
     """Try to resolve a friendly port name to an available port."""
@@ -17,7 +19,7 @@ def _resolve_ports_status(configured: List[str], available: List[str]) -> List[d
         result.append(
             {
                 "friendly_name": name,
-                "real_name": matched or "Unavailable",
+                "real_name": matched or PORT_UNAVAILABLE,
                 "available": matched is not None,
             }
         )
