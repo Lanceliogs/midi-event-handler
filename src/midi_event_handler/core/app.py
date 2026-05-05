@@ -237,7 +237,9 @@ class MidiApp:
 
         while self.running and self._tasks:
             # Wait for any task to complete or timeout
-            done, pending = await asyncio.wait(self._tasks, timeout=TASK_MONITOR_INTERVAL, return_when=asyncio.FIRST_COMPLETED)
+            done, pending = await asyncio.wait(
+                self._tasks, timeout=TASK_MONITOR_INTERVAL, return_when=asyncio.FIRST_COMPLETED
+            )
 
             if not self.running:
                 break
