@@ -11,6 +11,14 @@
         hx-swap="none"
         hx-on::after-request="this.value = null; document.body.dispatchEvent(new CustomEvent('update'))">
 
+    <button type="button" class="btn"
+            hx-get="/meh/ui/editor/new-confirm"
+            hx-target="#modal-container"
+            hx-swap="innerHTML">
+        <img src="/static/assets/icons/plus.svg" class="icon" alt="">
+        <span>NEW MAPPING</span>
+    </button>
+
     <div id="drop-zone"
         class="drop-zone"
         data-upload-url="/meh/api/upload-mapping">

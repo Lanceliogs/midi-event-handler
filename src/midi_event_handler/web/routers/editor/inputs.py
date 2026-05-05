@@ -107,7 +107,7 @@ async def resolve_port_route(request: Request, name: str = "", type: str = "inpu
 
     existing = editor_state.inputs if type == "input" else editor_state.outputs
     if name != original_name and name in existing:
-        return Response('<span class="resolution-error">Already exists</span>')
+        return context.templates.TemplateResponse(request, "partials/editor/resolution_error.html", {})
 
     available = mido.get_input_names() if type == "input" else mido.get_output_names()
     resolved = resolve_port(name, available)

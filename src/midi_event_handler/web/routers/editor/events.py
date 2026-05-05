@@ -158,9 +158,25 @@ async def event_save(request: Request):
     if original_name:
         editor_state.update_event(original_name, event)
     else:
-        editor_state.add_event(event)
+        if not editor_state.add_event(event):
+            return Response(
+                content="",
+                status_code=400,
+                headers={"X-Toast": f"'{name}' already exists", "X-Toast-Type": "error"},
+            )
 
     return common.render_content(request)
+
+
+@router.get("/check-event-name")
+async def check_event_name(request: Request, name: str = "", original_name: str = ""):
+    """Live uniqueness check for event names."""
+    name = name.strip()
+    if not name:
+        return Response("")
+    if name != original_name and any(e.name == name for e in editor_state.events):
+        return context.templates.TemplateResponse(request, "partials/editor/resolution_error.html", {})
+    return Response("")
 
 
 @router.delete("/event/{name}")

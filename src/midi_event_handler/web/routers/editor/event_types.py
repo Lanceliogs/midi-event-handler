@@ -68,13 +68,13 @@ async def event_type_save(request: Request):
 
 
 @router.get("/check-event-type")
-async def check_event_type(name: str = "", original_name: str = ""):
+async def check_event_type(request: Request, name: str = "", original_name: str = ""):
     """Live uniqueness check for event type names."""
     name = name.strip()
     if not name:
         return Response("")
     if name != original_name and name in editor_state.event_types:
-        return Response('<span class="resolution-error">Already exists</span>')
+        return context.templates.TemplateResponse(request, "partials/editor/resolution_error.html", {})
     return Response("")
 
 
