@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field, asdict
-from typing import Optional, List, Tuple
 import mido
 
 
@@ -29,7 +30,7 @@ class MidiMessage:
 
 @dataclass
 class MidiChord:
-    notes: List[int]
+    notes: list[int]
     port: str
 
     def __post_init__(self):
@@ -38,7 +39,7 @@ class MidiChord:
     def __str__(self):
         return f"{self.port} - Chord({', '.join(map(str, self.notes))})"
 
-    def signature(self) -> Tuple[str, Tuple[int, ...]]:
+    def signature(self) -> tuple[str, tuple[int, ...]]:
         return (self.port, tuple(self.notes))
 
     def contains(self, note: int) -> bool:
@@ -50,12 +51,12 @@ class MidiEvent:
     name: str
     type: str
     chord: MidiChord
-    start_messages: List[MidiMessage] = field(default_factory=list)
-    end_messages: List[MidiMessage] = field(default_factory=list)
-    duration_min: Optional[int] = None
-    duration_max: Optional[int] = None
-    fallback_event: Optional[str] = None
-    comment: Optional[str] = None
+    start_messages: list[MidiMessage] = field(default_factory=list)
+    end_messages: list[MidiMessage] = field(default_factory=list)
+    duration_min: int | None = None
+    duration_max: int | None = None
+    fallback_event: str | None = None
+    comment: str | None = None
 
     @classmethod
     def from_dict(cls, data: dict) -> "MidiEvent":
@@ -110,7 +111,7 @@ class MidiEvent:
 
         return d
 
-    def chord_signature(self) -> Tuple[str, Tuple[int, ...]]:
+    def chord_signature(self) -> tuple[str, tuple[int, ...]]:
         return self.chord.signature()
 
     def __repr__(self):

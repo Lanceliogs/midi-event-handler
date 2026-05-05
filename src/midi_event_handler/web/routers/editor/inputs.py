@@ -23,11 +23,12 @@ async def input_new(request: Request):
     """New input form modal."""
     return context.templates.TemplateResponse(
         request,
-        "partials/editor/modals/input_form.html",
+        "partials/editor/modals/port_form.html",
         {
+            "port_type": "input",
             "is_new": True,
             "current_name": "",
-            "available_inputs": mido.get_input_names(),
+            "available_ports": mido.get_input_names(),
         },
     )
 
@@ -41,12 +42,13 @@ async def input_edit(request: Request, name: str):
     available = mido.get_input_names()
     return context.templates.TemplateResponse(
         request,
-        "partials/editor/modals/input_form.html",
+        "partials/editor/modals/port_form.html",
         {
+            "port_type": "input",
             "is_new": False,
             "current_name": name,
             "original_name": name,
-            "available_inputs": available,
+            "available_ports": available,
             "resolved_port": resolve_port(name, available),
         },
     )

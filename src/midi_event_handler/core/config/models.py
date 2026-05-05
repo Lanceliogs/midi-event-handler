@@ -2,10 +2,11 @@
 Configuration models.
 """
 
+from __future__ import annotations
+
 import logging
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Optional, List
 
 from midi_event_handler.core.events.models import MidiEvent
 
@@ -16,10 +17,10 @@ log = logging.getLogger(__name__)
 class Mapping:
     """Complete mapping configuration."""
 
-    inputs: List[str] = field(default_factory=list)
-    outputs: List[str] = field(default_factory=list)
-    event_types: List[str] = field(default_factory=list)
-    events: List[MidiEvent] = field(default_factory=list)
+    inputs: list[str] = field(default_factory=list)
+    outputs: list[str] = field(default_factory=list)
+    event_types: list[str] = field(default_factory=list)
+    events: list[MidiEvent] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, data: dict) -> "Mapping":
@@ -51,36 +52,36 @@ class Mapping:
             "events": [e.to_dict() for e in self.events],
         }
 
-    def get_event(self, name: str) -> Optional[MidiEvent]:
+    def get_event(self, name: str) -> MidiEvent | None:
         """Find event by name."""
         for e in self.events:
             if e.name == name:
                 return e
         return None
 
-    def get_events_by_type(self, event_type: str) -> List[MidiEvent]:
+    def get_events_by_type(self, event_type: str) -> list[MidiEvent]:
         """Get all events of a given type."""
         return [e for e in self.events if e.type == event_type]
 
-    def get_event_names(self) -> List[str]:
+    def get_event_names(self) -> list[str]:
         """Get list of all event names."""
         return [e.name for e in self.events]
 
-    def _duplicates(self, items: List[str]) -> List[str]:
+    def _duplicates(self, items: list[str]) -> list[str]:
         """Return items that appear more than once."""
         counts = Counter(items)
         return sorted(name for name, count in counts.items() if count > 1)
 
-    def duplicate_inputs(self) -> List[str]:
+    def duplicate_inputs(self) -> list[str]:
         return self._duplicates(self.inputs)
 
-    def duplicate_outputs(self) -> List[str]:
+    def duplicate_outputs(self) -> list[str]:
         return self._duplicates(self.outputs)
 
-    def duplicate_event_types(self) -> List[str]:
+    def duplicate_event_types(self) -> list[str]:
         return self._duplicates(self.event_types)
 
-    def duplicate_event_names(self) -> List[str]:
+    def duplicate_event_names(self) -> list[str]:
         return self._duplicates([e.name for e in self.events])
 
     def __eq__(self, other: "Mapping") -> bool:

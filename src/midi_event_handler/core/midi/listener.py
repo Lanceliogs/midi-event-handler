@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import asyncio
 from collections import deque
-from typing import Optional
+
+POLL_INTERVAL = 0.001
 
 import mido
 from midi_event_handler.core.events.models import MidiMessage, MidiChord
@@ -40,8 +43,8 @@ class MidiListener:
 
         self.friendly_port_name = port_name  # For display/indexer usage
         self.port_name = ""  # Resolved real MIDI port name
-        self._port: Optional[mido.ports.BaseInput] = None
-        self._loop: Optional[asyncio.AbstractEventLoop] = None  # Set at run time
+        self._port: mido.ports.BaseInput | None = None
+        self._loop: asyncio.AbstractEventLoop | None = None  # Set at run time
 
         self._resolve_port(port_name)
 
@@ -138,7 +141,7 @@ class MidiListener:
                             )
                             self.buffer.clear()
                             self._loop.call_soon_threadsafe(self.chord_queue.put_nowait, chord)
-                    time.sleep(0.001)  # prevent tight CPU loop
+                    time.sleep(POLL_INTERVAL)
             except Exception as e:
                 log.exception(f"[Run] Exception in listener: {self.friendly_port_name}")
                 broadcast_error(short=f"Listener error: {self.friendly_port_name}", exc=e)

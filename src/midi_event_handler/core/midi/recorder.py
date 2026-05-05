@@ -6,8 +6,9 @@ Usage:
     chord = await recorder.record()  # Returns list of notes or None on timeout
 """
 
+from __future__ import annotations
+
 import asyncio
-from typing import Optional, List
 
 from midi_event_handler.core.midi.listener import MidiListener
 
@@ -27,12 +28,12 @@ class MidiRecorder:
     def __init__(self, port_name: str, timeout: float = 5.0):
         self.port_name = port_name
         self.timeout = timeout
-        self._listener: Optional[MidiListener] = None
-        self._queue: Optional[asyncio.Queue] = None
-        self._task: Optional[asyncio.Task] = None
+        self._listener: MidiListener | None = None
+        self._queue: asyncio.Queue | None = None
+        self._task: asyncio.Task | None = None
         self._abort_event: asyncio.Event = asyncio.Event()
 
-    async def record(self) -> Optional[List[int]]:
+    async def record(self) -> list[int] | None:
         """
         Record a chord from the MIDI port.
 

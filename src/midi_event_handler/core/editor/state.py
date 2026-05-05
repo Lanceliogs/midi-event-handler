@@ -2,10 +2,11 @@
 Editor State - manages in-memory mapping for the editor.
 """
 
+from __future__ import annotations
+
 import copy
 import yaml
 from collections import Counter
-from typing import Optional, List
 
 from midi_event_handler.core.config import RUNTIME_MAPPING_PATH, Mapping, empty_mapping
 from midi_event_handler.core.events.models import MidiEvent
@@ -70,25 +71,25 @@ class EditorState:
     # ==========================================================================
 
     @property
-    def inputs(self) -> List[str]:
+    def inputs(self) -> list[str]:
         return self.mapping.inputs
 
     @property
-    def outputs(self) -> List[str]:
+    def outputs(self) -> list[str]:
         return self.mapping.outputs
 
     @property
-    def event_types(self) -> List[str]:
+    def event_types(self) -> list[str]:
         return self.mapping.event_types
 
     @property
-    def events(self) -> List[MidiEvent]:
+    def events(self) -> list[MidiEvent]:
         return self.mapping.events
 
-    def get_event(self, name: str) -> Optional[MidiEvent]:
+    def get_event(self, name: str) -> MidiEvent | None:
         return self.mapping.get_event(name)
 
-    def get_events_by_type(self, event_type: str) -> List[MidiEvent]:
+    def get_events_by_type(self, event_type: str) -> list[MidiEvent]:
         return self.mapping.get_events_by_type(event_type)
 
     # ==========================================================================

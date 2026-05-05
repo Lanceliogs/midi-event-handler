@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import mido
-from typing import Dict, Optional, List
 
 from midi_event_handler.core.events.models import MidiMessage
 from midi_event_handler.core.exceptions import (
@@ -26,8 +27,8 @@ class MidiOutputManager:
         manager.close_all()
     """
 
-    def __init__(self, names: Optional[List[str]] = None):
-        self._outputs: Dict[str, mido.ports.BaseOutput] = {}
+    def __init__(self, names: list[str] | None = None):
+        self._outputs: dict[str, mido.ports.BaseOutput] = {}
         if names:
             for name in names:
                 self.register(name)
@@ -73,10 +74,10 @@ class MidiOutputManager:
             # Surface everything to the user as a port failure.
             raise port_open_failed(port=name, port_type="output", error=str(e))
 
-    def get(self, name: str) -> Optional[mido.ports.BaseOutput]:
+    def get(self, name: str) -> mido.ports.BaseOutput | None:
         return self._outputs.get(name)
 
-    def get_real_name(self, name: str) -> Optional[str]:
+    def get_real_name(self, name: str) -> str | None:
         port = self.get(name)
         if port:
             return port.name
@@ -89,7 +90,7 @@ class MidiOutputManager:
         else:
             raise RuntimeError(f"MIDI output port '{message.port}' not registered")
 
-    def send_multiple(self, messages: List[MidiMessage]):
+    def send_multiple(self, messages: list[MidiMessage]):
         log.info(f"[SendMultiple] Sending {len(messages)} message(s)")
         for msg in messages:
             try:
@@ -105,5 +106,5 @@ class MidiOutputManager:
             port.close()
         self._outputs.clear()
 
-    def get_open_ports(self) -> List[str]:
+    def get_open_ports(self) -> list[str]:
         return list(self._outputs.keys())

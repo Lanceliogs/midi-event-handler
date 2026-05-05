@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import asyncio
 import time
-from typing import Optional, Dict, List, Callable
+from typing import Callable
 
 from midi_event_handler.core.events.models import MidiEvent, MidiChord
 from midi_event_handler.core.events.indexer import MidiEventIndex
@@ -11,6 +13,8 @@ from midi_event_handler.tools.connection import ConnectionManager
 import logging
 
 log = logging.getLogger(__name__)
+
+TASK_YIELD_DELAY = 0.001
 
 
 def _log_event_state(flag: str, event: MidiEvent):
@@ -36,9 +40,9 @@ class MidiChordProcessor:
     def __init__(
         self,
         chord_queue: asyncio.Queue,
-        event_queues: Dict[str, asyncio.Queue],
+        event_queues: dict[str, asyncio.Queue],
         event_index: MidiEventIndex,
-        on_activity: Optional[Callable[[str], None]] = None,
+        on_activity: Callable[[str], None] | None = None,
     ):
         self.chord_queue = chord_queue
         self.event_queues = event_queues
@@ -64,7 +68,7 @@ class MidiChordProcessor:
                 }
             )
 
-            events: List[MidiEvent] = self.event_index.lookup_by_signature(chord.signature())
+            events: list[MidiEvent] = self.event_index.lookup_by_signature(chord.signature())
             if events:
                 log.info(f"Event(s) found: {chord}: {' '.join([e.name for e in events])}")
                 for e in events:
@@ -79,18 +83,18 @@ class MidiEventHandler:
         event_queue: asyncio.Queue,
         event_index: MidiEventIndex,
         midiout: MidiOutputManager,
-        on_event_change: Optional[Callable[[str, str], None]] = None,
+        on_event_change: Callable[[str, str], None] | None = None,
     ):
         self.event_queue = event_queue
         self.event_index = event_index
         self.midiout = midiout
         self.on_event_change = on_event_change  # Callback for logging
 
-        self.event: Optional[MidiEvent] = None
+        self.event: MidiEvent | None = None
         self.locked: bool = False
-        self._event_started_at: Optional[float] = None
-        self._min_duration_task: Optional[asyncio.Task] = None
-        self._fallback_scheduler_task: Optional[asyncio.Task] = None
+        self._event_started_at: float | None = None
+        self._min_duration_task: asyncio.Task | None = None
+        self._fallback_scheduler_task: asyncio.Task | None = None
 
     async def _end_current_event(self):
         _log_event_state("END", self.event)
@@ -119,10 +123,10 @@ class MidiEventHandler:
         if self.event.duration_min:
             self.locked = True
             self._min_duration_task = asyncio.create_task(self._unlock_after_min_duration())
-            await asyncio.sleep(0.001)
+            await asyncio.sleep(TASK_YIELD_DELAY)
         if self.event.duration_max:
             self._fallback_scheduler_task = asyncio.create_task(self._schedule_fallback_event())
-            await asyncio.sleep(0.001)
+            await asyncio.sleep(TASK_YIELD_DELAY)
         _log_event_state("STARTED", self.event)
 
         await notify_event_change(self.event.name, "start")

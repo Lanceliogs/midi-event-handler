@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 import logging
 
@@ -24,6 +26,14 @@ from midi_event_handler.tools.connection import ConnectionManager
 
 log = logging.getLogger(__name__)
 
+# Timing constants (seconds)
+LISTENER_STOP_DELAY = 0.100
+TASK_MONITOR_INTERVAL = 5.0
+
+# Status log limits
+MAX_EVENT_LOG_SIZE = 50
+STATUS_EVENT_LOG_TAIL = 20
+
 manager = ConnectionManager("meh-app")
 
 
@@ -40,7 +50,7 @@ class StartResult:
     """Result of MidiApp.start() with success status and error details."""
 
     success: bool
-    errors: List[MidiAppError] = field(default_factory=list)
+    errors: list[MidiAppError] = field(default_factory=list)
 
     def add_error(self, error: MidiAppError):
         """Add an error to the result."""
@@ -48,7 +58,7 @@ class StartResult:
         self.success = False
 
     @property
-    def error_message(self) -> Optional[str]:
+    def error_message(self) -> str | None:
         """Combined short message for toast display."""
         if not self.errors:
             return None
@@ -62,7 +72,7 @@ class StartResult:
         return len(self.errors) > 0
 
     @property
-    def error_details(self) -> List[Dict[str, Any]]:
+    def error_details(self) -> list[dict[str, Any]]:
         """Errors as list of dicts for JSON/template use."""
         return [e.to_dict() for e in self.errors]
 
@@ -70,17 +80,17 @@ class StartResult:
 class MidiApp:
     def __init__(self):
         self.running = False
-        self._tasks: List[asyncio.Task] = []
-        self._monitor_task: Optional[asyncio.Task] = None
+        self._tasks: list[asyncio.Task] = []
+        self._monitor_task: asyncio.Task | None = None
 
         # Show tracking
-        self.started_at: Optional[float] = None
-        self.trigger_counts: Dict[str, int] = defaultdict(int)
-        self.event_log: List[Dict[str, Any]] = []  # Recent events
-        self.max_log_size = 50
-        self.last_activity: Dict[str, float] = {}  # Last MIDI input per port
+        self.started_at: float | None = None
+        self.trigger_counts: dict[str, int] = defaultdict(int)
+        self.event_log: list[dict[str, Any]] = []  # Recent events
+        self.max_log_size = MAX_EVENT_LOG_SIZE
+        self.last_activity: dict[str, float] = {}  # Last MIDI input per port
 
-        self._mapping_error: Optional[MidiAppError] = None
+        self._mapping_error: MidiAppError | None = None
         self._setup_from_mapping()
 
     def _setup_from_mapping(self):
@@ -154,7 +164,7 @@ class MidiApp:
 
     def _check_port_collisions(self) -> None:
         """Raise if multiple inputs resolve to the same actual MIDI port."""
-        resolved_map: Dict[str, List[str]] = defaultdict(list)
+        resolved_map: dict[str, list[str]] = defaultdict(list)
         for listener in self.listeners:
             if listener.port_name:
                 resolved_map[listener.port_name].append(listener.friendly_port_name)
@@ -227,7 +237,7 @@ class MidiApp:
 
         while self.running and self._tasks:
             # Wait for any task to complete or timeout
-            done, pending = await asyncio.wait(self._tasks, timeout=5.0, return_when=asyncio.FIRST_COMPLETED)
+            done, pending = await asyncio.wait(self._tasks, timeout=TASK_MONITOR_INTERVAL, return_when=asyncio.FIRST_COMPLETED)
 
             if not self.running:
                 break
@@ -282,7 +292,7 @@ class MidiApp:
         log.info("[Stop] Stopping listeners...")
         for listener in self.listeners:
             listener.stop()
-        await asyncio.sleep(0.100)
+        await asyncio.sleep(LISTENER_STOP_DELAY)
 
         # Cancel monitor task first (it watches _tasks)
         if self._monitor_task and not self._monitor_task.done():
@@ -312,7 +322,7 @@ class MidiApp:
         log.info("[Stop] Stopped!")
         await notify_app_state()
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         now = time.time()
 
         # Build handler states with timing info
@@ -363,7 +373,7 @@ class MidiApp:
             "handlers": handler_states,
             "midi_ports": ports_status,
             "trigger_counts": dict(sorted(self.trigger_counts.items(), key=lambda x: x[1], reverse=True)),
-            "event_log": self.event_log[-20:],  # Last 20 events
+            "event_log": self.event_log[-STATUS_EVENT_LOG_TAIL:],
             "tasks": len(self._tasks),
         }
 

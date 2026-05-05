@@ -35,7 +35,7 @@ def get_latest_release_asset(current_version: str = "v0.0.0"):
         if not tag:
             continue
 
-        notes = release.get("body", "")
+        notes = release.get("body") or ""
 
         # Compare versions
         if version.parse(tag) <= version.parse(current_version):
