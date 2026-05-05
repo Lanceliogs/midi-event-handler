@@ -2,6 +2,8 @@
 Input port CRUD routes.
 """
 
+from html import escape
+
 import mido
 from fastapi import APIRouter, HTTPException
 from fastapi.requests import Request
@@ -108,5 +110,5 @@ async def resolve_port_route(request: Request, name: str = "", type: str = "inpu
     resolved = resolve_port(name, available)
 
     if resolved:
-        return Response(f'<span class="resolution-ok">Resolves to: {resolved}</span>')
+        return Response(f'<span class="resolution-ok">Resolves to: {escape(resolved)}</span>')
     return Response('<span class="resolution-warn">No matching port found</span>')

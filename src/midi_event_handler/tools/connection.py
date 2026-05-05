@@ -62,7 +62,7 @@ class ConnectionManager:
         self._websockets.add(ws)
 
         if self._task is None or self._task.done():
-            asyncio.create_task(self._manage_forever())
+            self._task = asyncio.create_task(self._manage_forever())
 
         while ws in self._websockets:
             try:

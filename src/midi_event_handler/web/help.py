@@ -32,6 +32,8 @@ def whatsnew_page(request: Request, version=Depends(get_current_version)):
     if not WHATSNEW_PATH.exists():
         raise HTTPException(status_code=404, detail="Nothing new")
 
+    # WHATSNEW_PATH is author-controlled (ships with the app), so | safe in the
+    # template is acceptable. If this ever accepts user content, sanitize first.
     content = markdown.markdown(WHATSNEW_PATH.read_text())
     WHATSNEW_PATH.unlink()
     return templates.TemplateResponse(request, "whatsnew.html", {"content": content, "version": version})
