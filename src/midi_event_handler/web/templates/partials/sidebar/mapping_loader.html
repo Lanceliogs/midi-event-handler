@@ -9,7 +9,7 @@
         hx-trigger="change"
         hx-encoding="multipart/form-data"
         hx-swap="none"
-        hx-on::after-request="this.value = null">
+        hx-on::after-request="this.value = null; document.body.dispatchEvent(new CustomEvent('update'))">
 
     <div id="drop-zone"
         class="drop-zone"

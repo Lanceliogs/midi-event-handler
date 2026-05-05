@@ -741,6 +741,11 @@ function init() {
       case 'cancel-message':
         cancelMessageForm(action.closest('.message-form'));
         break;
+      case 'toggle-card': {
+        const card = document.getElementById(action.dataset.target);
+        if (card) card.classList.toggle('collapsed');
+        break;
+      }
     }
   });
   

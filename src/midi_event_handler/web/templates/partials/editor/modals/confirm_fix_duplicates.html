@@ -1,0 +1,16 @@
+{% from "macros/modal.html" import modal_confirm %}
+
+{% call modal_confirm(
+    title="Rename Duplicates",
+    message="Events with duplicate names will be automatically renamed by appending ~1, ~2, etc.",
+    action_url="/meh/ui/editor/fix-duplicates",
+    method="post",
+    confirm_text="Rename",
+    danger=false
+) %}
+<div class="alert alert-warning">
+    <img src="/static/assets/icons/exclamation-triangle.svg" class="icon" alt="">
+    <div>You may need to update fallback events after renaming.</div>
+</div>
+<pre class="duplicate-names-list">{{ duplicate_names | join('\n') }}</pre>
+{% endcall %}

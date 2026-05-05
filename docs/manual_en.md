@@ -159,6 +159,19 @@ When the app is running:
 - Click ■ **STOP** to end an active event
 - Edit/Delete buttons are disabled while running
 
+### Duplicate Event Names
+
+Each event must have a unique name. If a mapping file is loaded with duplicate event names (e.g. from a hand-edited YAML file):
+
+- Duplicate names are **highlighted in red** in the events list
+- A **RENAME DUPLICATES** button appears in the events card header
+- **Saving** and **starting** are blocked until duplicates are resolved
+
+To fix duplicates:
+1. Click **RENAME DUPLICATES** to auto-rename them (appends ~1, ~2, etc.)
+2. Or manually rename/delete the duplicates using the edit button
+3. Save your mapping once all names are unique
+
 ### Saving Changes
 
 ![Diff Modal](assets/diff_modal.png)
@@ -225,6 +238,15 @@ When errors occur, a notification appears. Click **Details** to see more informa
 - Check that MIDI devices are connected
 - Verify port names match (partial matching supported)
 - Restart the application after connecting devices
+
+### Duplicate Event Names
+
+If event names appear in red and you cannot save or start:
+
+- Your mapping contains events with the same name
+- Click **RENAME DUPLICATES** in the events card header to auto-fix
+- Or manually rename/delete the duplicates
+- This can happen when editing the YAML mapping file by hand
 
 ### Events Not Triggering
 

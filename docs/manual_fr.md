@@ -159,6 +159,19 @@ Quand l'application est en cours :
 - Cliquez sur ■ **STOP** pour arrêter un événement actif
 - Les boutons Éditer/Supprimer sont désactivés pendant l'exécution
 
+### Noms d'Événements en Double
+
+Chaque événement doit avoir un nom unique. Si un fichier de mapping est chargé avec des noms d'événements en double (par ex. depuis un fichier YAML modifié manuellement) :
+
+- Les noms en double sont **affichés en rouge** dans la liste des événements
+- Un bouton **RENAME DUPLICATES** apparaît dans l'en-tête de la carte événements
+- La **sauvegarde** et le **démarrage** sont bloqués tant que les doublons ne sont pas résolus
+
+Pour corriger les doublons :
+1. Cliquez sur **RENAME DUPLICATES** pour les renommer automatiquement (ajoute ~1, ~2, etc.)
+2. Ou renommez/supprimez manuellement les doublons avec le bouton d'édition
+3. Sauvegardez votre mapping une fois que tous les noms sont uniques
+
 ### Sauvegarde des Modifications
 
 ![Modal Diff](assets/diff_modal.png)
@@ -225,6 +238,15 @@ Quand des erreurs surviennent, une notification apparaît. Cliquez sur **Détail
 - Vérifiez que les périphériques MIDI sont connectés
 - Vérifiez que les noms de ports correspondent (correspondance partielle supportée)
 - Redémarrez l'application après avoir connecté les périphériques
+
+### Noms d'Événements en Double
+
+Si les noms d'événements apparaissent en rouge et que vous ne pouvez pas sauvegarder ou démarrer :
+
+- Votre mapping contient des événements avec le même nom
+- Cliquez sur **RENAME DUPLICATES** dans l'en-tête de la carte événements pour corriger automatiquement
+- Ou renommez/supprimez manuellement les doublons
+- Cela peut arriver lors de l'édition manuelle du fichier YAML de mapping
 
 ### Événements Non Déclenchés
 

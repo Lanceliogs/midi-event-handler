@@ -1,7 +1,9 @@
 """Tests for MidiEventIndex."""
 
+import pytest
 from midi_event_handler.core.events.models import MidiEvent, MidiChord
 from midi_event_handler.core.events.indexer import MidiEventIndex
+from midi_event_handler.core.exceptions import MidiAppError, ErrorCode
 
 
 def make_event(name: str, event_type: str, notes: list, port: str = "input1") -> MidiEvent:
@@ -102,3 +104,31 @@ class TestMidiEventIndex:
 
         assert len(result) == 1
         assert result[0].name == "event1"
+
+    def test_duplicate_names_rejected(self):
+        """Loading events with duplicate names should raise MidiAppError."""
+        events = [
+            make_event("same_name", "light", [60]),
+            make_event("same_name", "music", [64]),
+        ]
+
+        with pytest.raises(MidiAppError) as exc_info:
+            MidiEventIndex(events)
+
+        assert exc_info.value.code == ErrorCode.DUPLICATE_EVENT_NAMES
+        assert "same_name" in exc_info.value.short_message
+
+    def test_duplicate_names_rejected_on_reload(self):
+        """Reloading with duplicate names should also raise."""
+        index = MidiEventIndex([make_event("ok", "light", [60])])
+
+        events = [
+            make_event("dup", "light", [60]),
+            make_event("unique", "music", [61]),
+            make_event("dup", "music", [62]),
+        ]
+
+        with pytest.raises(MidiAppError) as exc_info:
+            index.load(events)
+
+        assert exc_info.value.code == ErrorCode.DUPLICATE_EVENT_NAMES

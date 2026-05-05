@@ -167,6 +167,25 @@ async def event_delete(request: Request, name: str):
     return common.render_content(request)
 
 
+@router.get("/fix-duplicates")
+async def confirm_fix_duplicates(request: Request):
+    """Show confirmation modal for auto-renaming duplicates."""
+    dupes = editor_state.mapping.duplicate_event_names()
+    return common.templates.TemplateResponse(
+        request,
+        "partials/editor/modals/confirm_fix_duplicates.html",
+        {"duplicate_names": dupes},
+    )
+
+
+@router.post("/fix-duplicates")
+async def fix_duplicates(request: Request):
+    """Auto-rename duplicate events by appending ~1, ~2, etc."""
+    count = editor_state.rename_duplicates()
+    log.info(f"[FixDuplicates] Renamed {count} event(s)")
+    return common.render_content(request)
+
+
 @router.get("/confirm-delete/event/{name}")
 async def confirm_delete_event(request: Request, name: str):
     """Confirm delete event modal."""

@@ -1,10 +1,13 @@
 <div class="editor-container" data-dirty="{{ 'true' if dirty else 'false' }}" data-app-running="{{ 'true' if app_running else 'false' }}">
     <!-- Config Card -->
-    <div class="editor-card">
+    <div class="editor-card" id="config-card">
         <div class="card-header">
             <h2>Configuration</h2>
+            <button type="button" class="btn-icon collapse-toggle" data-action="toggle-card" data-target="config-card" title="Collapse/Expand">
+                <span class="collapse-chevron"></span>
+            </button>
         </div>
-        <div class="card-body">
+        <div class="card-body card-collapsible">
             <div class="config-grid">
                 <!-- Inputs -->
                 <div class="config-column">
@@ -131,6 +134,15 @@
                     <button type="button" class="btn-clear" data-action="clear-filter" title="Clear filter">&times;</button>
                 </div>
             </div>
+            {% set duplicate_names = mapping.duplicate_event_names() %}
+            {% if duplicate_names %}
+            <button type="button" class="btn btn-warning"
+                    hx-get="/meh/ui/editor/fix-duplicates"
+                    hx-target="#modal-container"
+                    title="Auto-rename duplicate events (appends ~1, ~2, etc.)">
+                RENAME DUPLICATES
+            </button>
+            {% endif %}
             <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Add event' }}"
                     hx-get="/meh/ui/editor/event/new"
                     hx-target="#modal-container"
@@ -146,9 +158,10 @@
                 {% set type_valid = event.type in mapping.event_types %}
                 {% set fallback_valid = (not event.fallback_event) or (event.fallback_event in event_names) %}
                 {% set is_active = event.name in active_events %}
+                {% set is_duplicate = event.name in duplicate_names %}
                 <li class="event-item {{ 'active' if is_active else '' }}" data-event="{{ event.name }}">
                     <div class="event-header">
-                        <span class="event-name">{{ event.name }}</span>
+                        <span class="event-name {{ 'badge-error' if is_duplicate else '' }}">{{ event.name }}</span>
                         <div class="event-header-right">
                             <span class="event-type-badge {{ 'badge-error' if not type_valid else '' }}">{{ event.type }}</span>
                             {% if is_active %}

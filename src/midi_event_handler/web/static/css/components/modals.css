@@ -139,6 +139,23 @@
   color: #333;
 }
 
+/* ====== Duplicate Names List ====== */
+.duplicate-names-list {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 0.75rem 0 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #dc2626;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
 /* ====== Error Details ====== */
 .error-item {
   margin-bottom: 1.5rem;

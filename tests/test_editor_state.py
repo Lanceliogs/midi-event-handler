@@ -255,6 +255,62 @@ class TestEditorState:
                 assert state.inputs == []
 
 
+class TestRenameDuplicates:
+    """Tests for EditorState.rename_duplicates()."""
+
+    def test_no_duplicates(self):
+        """Should return 0 when no duplicates exist."""
+        state = EditorState()
+        state.add_event(MidiEvent(name="a", type="t", chord=MidiChord(port="p", notes=[60])))
+        state.add_event(MidiEvent(name="b", type="t", chord=MidiChord(port="p", notes=[61])))
+
+        assert state.rename_duplicates() == 0
+        assert [e.name for e in state.events] == ["a", "b"]
+
+    def test_rename_two_duplicates(self):
+        """Second occurrence should get ~1 suffix."""
+        state = EditorState()
+        state.mapping.events = [
+            MidiEvent(name="foo", type="t", chord=MidiChord(port="p", notes=[60])),
+            MidiEvent(name="foo", type="t", chord=MidiChord(port="p", notes=[61])),
+        ]
+
+        renamed = state.rename_duplicates()
+
+        assert renamed == 1
+        assert [e.name for e in state.events] == ["foo", "foo~1"]
+
+    def test_rename_three_duplicates(self):
+        """Third occurrence should get ~2 suffix."""
+        state = EditorState()
+        state.mapping.events = [
+            MidiEvent(name="bar", type="t", chord=MidiChord(port="p", notes=[60])),
+            MidiEvent(name="bar", type="t", chord=MidiChord(port="p", notes=[61])),
+            MidiEvent(name="bar", type="t", chord=MidiChord(port="p", notes=[62])),
+        ]
+
+        renamed = state.rename_duplicates()
+
+        assert renamed == 2
+        assert [e.name for e in state.events] == ["bar", "bar~1", "bar~2"]
+
+    def test_rename_mixed(self):
+        """Only duplicate names should be renamed."""
+        state = EditorState()
+        state.mapping.events = [
+            MidiEvent(name="a", type="t", chord=MidiChord(port="p", notes=[60])),
+            MidiEvent(name="b", type="t", chord=MidiChord(port="p", notes=[61])),
+            MidiEvent(name="a", type="t", chord=MidiChord(port="p", notes=[62])),
+            MidiEvent(name="c", type="t", chord=MidiChord(port="p", notes=[63])),
+            MidiEvent(name="b", type="t", chord=MidiChord(port="p", notes=[64])),
+        ]
+
+        renamed = state.rename_duplicates()
+
+        assert renamed == 2
+        assert [e.name for e in state.events] == ["a", "b", "a~1", "c", "b~1"]
+
+
 class TestMapping:
     """Tests for Mapping dataclass."""
 
@@ -302,6 +358,33 @@ class TestMapping:
         assert data["events"][0]["name"] == "test"
         assert data["events"][0]["trigger"]["port"] == "in1"
         assert data["events"][0]["trigger"]["notes"] == [60, 64]
+
+    def test_duplicate_event_names_none(self):
+        """Should return empty list when no duplicates."""
+        mapping = Mapping(
+            events=[
+                MidiEvent(name="a", type="t", chord=MidiChord(port="p", notes=[60])),
+                MidiEvent(name="b", type="t", chord=MidiChord(port="p", notes=[61])),
+            ]
+        )
+        assert mapping.duplicate_event_names() == []
+
+    def test_duplicate_event_names_found(self):
+        """Should return sorted list of duplicate names."""
+        mapping = Mapping(
+            events=[
+                MidiEvent(name="z", type="t", chord=MidiChord(port="p", notes=[60])),
+                MidiEvent(name="a", type="t", chord=MidiChord(port="p", notes=[61])),
+                MidiEvent(name="z", type="t", chord=MidiChord(port="p", notes=[62])),
+                MidiEvent(name="a", type="t", chord=MidiChord(port="p", notes=[63])),
+            ]
+        )
+        assert mapping.duplicate_event_names() == ["a", "z"]
+
+    def test_duplicate_event_names_empty(self):
+        """Should return empty list for empty mapping."""
+        mapping = Mapping()
+        assert mapping.duplicate_event_names() == []
 
     def test_roundtrip(self):
         original = {
