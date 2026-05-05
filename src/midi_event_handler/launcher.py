@@ -1,4 +1,5 @@
 import subprocess
+import sys
 import time
 from pathlib import Path
 import yaml
@@ -6,12 +7,13 @@ import webbrowser
 import argparse
 
 from midi_event_handler.main import run_app
-from midi_event_handler.debug import list_ports, listen_ports
+from midi_event_handler.debug import add_debug_subparsers, run_debug_command
 from midi_event_handler.tools.logtools import setup_logger
 from midi_event_handler.tools.tray import setup_tray_icon
 from midi_event_handler.core.config import (
     default_app_conf,
     WHATSNEW_PATH,
+    WHATSNEW_SEEN_PATH,
     is_embedded,
 )
 from midi_event_handler.web.shutdown import request_shutdown
@@ -46,9 +48,8 @@ def launch_app(console_mode=False):
 
     log.info(f"Launching app: {' '.join(command)}")
 
-    # Hide console window on Windows unless console mode
     kwargs = {}
-    if is_embedded() and not console_mode:
+    if sys.platform == "win32" and is_embedded() and not console_mode:
         kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
 
     return subprocess.Popen(command, **kwargs)
@@ -77,7 +78,8 @@ def monitor_loop(console_mode=False):
     whatsnew_url = f"http://127.0.0.1:{port}/meh/ui/whatsnew"
 
     setup_tray_icon(dashboard_url)
-    webbrowser.open(whatsnew_url if WHATSNEW_PATH.exists() else dashboard_url)
+    has_unseen_whatsnew = WHATSNEW_PATH.exists() and not WHATSNEW_SEEN_PATH.exists()
+    webbrowser.open(whatsnew_url if has_unseen_whatsnew else dashboard_url)
 
     RUNTIME_DIR.mkdir(exist_ok=True)
 
@@ -116,21 +118,12 @@ def main():
     # Debug subcommand
     debug_parser = subparsers.add_parser("debug", help="MIDI debug tools")
     debug_subparsers = debug_parser.add_subparsers(dest="debug_command", required=True)
-
-    # debug list
-    debug_subparsers.add_parser("list", help="List all available MIDI ports")
-
-    # debug listen
-    listen_parser = debug_subparsers.add_parser("listen", help="Listen to MIDI input ports")
-    listen_parser.add_argument("ports", nargs="+", help="Port names (or partial matches) to listen on")
+    add_debug_subparsers(debug_subparsers)
 
     args = parser.parse_args()
 
     if args.command == "debug":
-        if args.debug_command == "list":
-            list_ports()
-        elif args.debug_command == "listen":
-            listen_ports(args.ports)
+        run_debug_command(args)
     elif args.app:
         host = app_conf.get("host", "127.0.0.1")
         port = app_conf.get("port", 8000)

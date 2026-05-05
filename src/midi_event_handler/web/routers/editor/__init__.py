@@ -11,11 +11,7 @@ Split into subrouters for maintainability:
 """
 
 from fastapi import APIRouter
-from fastapi.templating import Jinja2Templates
 
-from midi_event_handler.core.app import MidiApp
-
-from . import common
 from .main import router as main_router
 from .mapping import router as mapping_router
 from .inputs import router as inputs_router
@@ -32,8 +28,3 @@ router.include_router(inputs_router)
 router.include_router(outputs_router)
 router.include_router(event_types_router)
 router.include_router(events_router)
-
-
-def configure(templates: Jinja2Templates, midiapp: MidiApp):
-    """Configure shared dependencies for all editor routers."""
-    common.configure(templates, midiapp)

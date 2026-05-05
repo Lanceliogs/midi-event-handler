@@ -12,6 +12,7 @@ from fastapi.responses import Response
 from midi_event_handler.core.editor import editor_state
 from midi_event_handler.core.midi.utils import resolve_port
 
+from midi_event_handler.web import context
 from . import common
 
 router = APIRouter()
@@ -20,7 +21,7 @@ router = APIRouter()
 @router.get("/input/new")
 async def input_new(request: Request):
     """New input form modal."""
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/input_form.html",
         {
@@ -38,7 +39,7 @@ async def input_edit(request: Request, name: str):
         raise HTTPException(status_code=404, detail="Input not found")
 
     available = mido.get_input_names()
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/input_form.html",
         {
@@ -84,7 +85,7 @@ async def input_delete(request: Request, name: str):
 @router.get("/confirm-delete/input/{name}")
 async def confirm_delete_input(request: Request, name: str):
     """Confirm delete input modal."""
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/confirm_delete.html",
         {

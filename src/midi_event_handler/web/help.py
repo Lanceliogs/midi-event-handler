@@ -1,39 +1,29 @@
 from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-from pathlib import Path
 import markdown
 
 from midi_event_handler.core.config import (
     WHATSNEW_PATH,
+    WHATSNEW_SEEN_PATH,
     get_current_version,
-    is_embedded,
 )
-
-
-def get_templates_path():
-    if is_embedded():
-        return Path("templates")
-    return Path(__file__).parent / "templates"
-
-
-templates = Jinja2Templates(directory=get_templates_path())
+from midi_event_handler.web import context
 
 router = APIRouter()
 
 
 @router.get("/meh/ui/help", response_class=HTMLResponse)
 async def about_page(request: Request, version: str = Depends(get_current_version)):
-    return templates.TemplateResponse(request, "help.html", {"version": version})
+    return context.templates.TemplateResponse(request, "help.html", {"version": version})
 
 
 @router.get("/meh/ui/whatsnew", response_class=HTMLResponse)
-def whatsnew_page(request: Request, version=Depends(get_current_version)):
+async def whatsnew_page(request: Request, version=Depends(get_current_version)):
     if not WHATSNEW_PATH.exists():
         raise HTTPException(status_code=404, detail="Nothing new")
 
     # WHATSNEW_PATH is author-controlled (ships with the app), so | safe in the
     # template is acceptable. If this ever accepts user content, sanitize first.
     content = markdown.markdown(WHATSNEW_PATH.read_text())
-    WHATSNEW_PATH.unlink()
-    return templates.TemplateResponse(request, "whatsnew.html", {"content": content, "version": version})
+    WHATSNEW_SEEN_PATH.touch()
+    return context.templates.TemplateResponse(request, "whatsnew.html", {"content": content, "version": version})

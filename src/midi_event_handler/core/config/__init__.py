@@ -3,6 +3,7 @@ from .loader import (
     RUNTIME_PATH,
     RUNTIME_MAPPING_PATH,
     WHATSNEW_PATH,
+    WHATSNEW_SEEN_PATH,
     LOG_FILE_PATH,
     VERSION_PATH,
     # Utility functions

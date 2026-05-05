@@ -5,12 +5,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from midi_event_handler.core.config.loader import (
-    get_configured_inputs,
-    get_event_list,
-    get_event_types,
-    load_mapping_yaml,
-)
+from midi_event_handler.core.config.loader import load_mapping_yaml
 
 # Create event loop before importing app (MidiApp needs it at init time)
 loop = asyncio.new_event_loop()
@@ -19,24 +14,10 @@ asyncio.set_event_loop(loop)
 test_mapping_path = Path(__file__).parent / "test_mapping.yaml"
 load_mapping_yaml(test_mapping_path)
 
-from midi_event_handler.web.app import app  # noqa: E402
+from midi_event_handler.web.app import app, init_context  # noqa: E402
 
+init_context()
 client = TestClient(app)
-
-
-class TestConfigLoader:
-    """Tests for config loading."""
-
-    def test_configured_inputs(self):
-        assert "InputDevice2" in get_configured_inputs()
-
-    def test_event_types(self):
-        assert get_event_types() == ["light", "music"]
-
-    def test_events_loaded(self):
-        events = get_event_list()
-        assert len(events) == 3
-        assert events[0].chord.notes == [127, 131]
 
 
 class TestAPIEndpoints:

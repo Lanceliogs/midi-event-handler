@@ -112,26 +112,31 @@ def listen_ports(port_names: list[str]):
             print(f"Closed: {name}")
 
 
+def add_debug_subparsers(subparsers):
+    """Register list/listen subcommands on the given subparsers object."""
+    subparsers.add_parser("list", help="List all available MIDI ports")
+    listen_parser = subparsers.add_parser("listen", help="Listen to MIDI input ports")
+    listen_parser.add_argument("ports", nargs="+", help="Port names (or partial matches) to listen on")
+
+
+def run_debug_command(args):
+    """Dispatch a parsed debug command."""
+    if args.debug_command == "list":
+        list_ports()
+    elif args.debug_command == "listen":
+        listen_ports(args.ports)
+
+
 def main():
     parser = ArgumentParser(
         prog="meh-debug",
         description="MIDI Event Handler debug tool for inspecting MIDI ports",
     )
-    subparsers = parser.add_subparsers(dest="command", required=True)
-
-    # List command
-    subparsers.add_parser("list", help="List all available MIDI ports")
-
-    # Listen command
-    listen_parser = subparsers.add_parser("listen", help="Listen to MIDI input ports")
-    listen_parser.add_argument("ports", nargs="+", help="Port names (or partial matches) to listen on")
+    subparsers = parser.add_subparsers(dest="debug_command", required=True)
+    add_debug_subparsers(subparsers)
 
     args = parser.parse_args()
-
-    if args.command == "list":
-        list_ports()
-    elif args.command == "listen":
-        listen_ports(args.ports)
+    run_debug_command(args)
 
 
 if __name__ == "__main__":

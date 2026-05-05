@@ -3,16 +3,19 @@ Event CRUD, testing (PAD), and MIDI recording routes.
 """
 
 import json
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
 from fastapi.responses import Response
 
+from midi_event_handler.core.app import MidiApp
 from midi_event_handler.core.editor import editor_state, empty_event
 from midi_event_handler.core.events.models import MidiEvent, MidiChord, MidiMessage
 from midi_event_handler.core.exceptions import MidiAppError
 from midi_event_handler.core.midi.notes import parse_notes_input, note_to_name
 from midi_event_handler.core.midi.recorder import MidiRecorder
 
+from midi_event_handler.web import context
+from midi_event_handler.web.context import get_midiapp
 from . import common
 
 import logging
@@ -44,7 +47,7 @@ def _messages_to_json(messages: list) -> str:
 async def event_new(request: Request):
     """New event form modal."""
     event = empty_event()
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/event_form.html",
         {
@@ -67,7 +70,7 @@ async def event_edit(request: Request, name: str):
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/event_form.html",
         {
@@ -171,7 +174,7 @@ async def event_delete(request: Request, name: str):
 async def confirm_fix_duplicates(request: Request):
     """Show confirmation modal for auto-renaming duplicates."""
     dupes = editor_state.mapping.duplicate_event_names()
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/confirm_fix_duplicates.html",
         {"duplicate_names": dupes},
@@ -189,7 +192,7 @@ async def fix_duplicates(request: Request):
 @router.get("/confirm-delete/event/{name}")
 async def confirm_delete_event(request: Request, name: str):
     """Confirm delete event modal."""
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/confirm_delete.html",
         {
@@ -206,16 +209,16 @@ async def confirm_delete_event(request: Request, name: str):
 
 
 @router.post("/event/{name}/play")
-async def event_play(request: Request, name: str):
+async def event_play(request: Request, name: str, midiapp: MidiApp = Depends(get_midiapp)):
     """Manually trigger (play) an event."""
-    if not common.midiapp or not common.midiapp.running:
+    if not midiapp or not midiapp.running:
         return Response(
             content='{"error": "App is not running"}',
             media_type="application/json",
             status_code=400,
         )
 
-    success = await common.midiapp.trigger_event(name)
+    success = await midiapp.trigger_event(name)
     if success:
         return common.render_content(request)
     return Response(
@@ -226,16 +229,16 @@ async def event_play(request: Request, name: str):
 
 
 @router.post("/event/{name}/stop")
-async def event_stop(request: Request, name: str):
+async def event_stop(request: Request, name: str, midiapp: MidiApp = Depends(get_midiapp)):
     """Manually stop an active event."""
-    if not common.midiapp or not common.midiapp.running:
+    if not midiapp or not midiapp.running:
         return Response(
             content='{"error": "App is not running"}',
             media_type="application/json",
             status_code=400,
         )
 
-    success = await common.midiapp.stop_event(name)
+    success = await midiapp.stop_event(name)
     if success:
         return common.render_content(request)
     return Response(
@@ -269,12 +272,12 @@ async def event_update_trigger(request: Request, name: str):
 
 
 @router.post("/record")
-async def record_midi(request: Request):
+async def record_midi(request: Request, midiapp: MidiApp = Depends(get_midiapp)):
     """Record MIDI notes from a port (5s timeout)."""
     data = await request.json()
     port = data.get("port", "")
 
-    if common.midiapp and common.midiapp.running:
+    if midiapp and midiapp.running:
         return Response(
             content='{"error": "Cannot record while app is running. Stop the app first."}',
             media_type="application/json",

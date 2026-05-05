@@ -1,5 +1,6 @@
 import threading
 import subprocess
+import sys
 import webbrowser
 from pathlib import Path
 from pystray import Icon, MenuItem as Item, Menu
@@ -7,6 +8,7 @@ from PIL import Image
 
 from midi_event_handler.core.config import (
     WHATSNEW_PATH,
+    WHATSNEW_SEEN_PATH,
     get_current_version,
     safe_runtime_path,
     get_app_config,
@@ -65,15 +67,16 @@ def enable_menu_item():
 
 
 def launch_installer_detached(installer_path):
-    DETACHED_PROCESS = 0x00000008
-    CREATE_NO_WINDOW = 0x08000000
-    subprocess.Popen(
-        [str(installer_path)],
-        creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW,
-        stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+    kwargs = {
+        "stdin": subprocess.DEVNULL,
+        "stdout": subprocess.DEVNULL,
+        "stderr": subprocess.DEVNULL,
+    }
+    if sys.platform == "win32":
+        DETACHED_PROCESS = 0x00000008
+        CREATE_NO_WINDOW = 0x08000000
+        kwargs["creationflags"] = DETACHED_PROCESS | CREATE_NO_WINDOW
+    subprocess.Popen([str(installer_path)], **kwargs)
 
 
 def run_update_check_threaded(icon):
@@ -100,8 +103,9 @@ def run_update_check_threaded(icon):
             icon.notify(f"Downloading {filename}...", "Updater")
             download_with_progress_tray(url, download_path, update_progress)
 
-            # Write version notes
+            # Write version notes and clear seen marker
             WHATSNEW_PATH.write_text(format_release_notes(latest_tag, notes))
+            WHATSNEW_SEEN_PATH.unlink(missing_ok=True)
 
             # Detach and run installer
             launch_installer_detached(download_path)

@@ -1,32 +1,20 @@
 """
-Shared dependencies for editor routers.
+Shared helpers for editor routers.
 """
 
 from fastapi import Request
-from fastapi.templating import Jinja2Templates
 
-from midi_event_handler.core.app import MidiApp
 from midi_event_handler.core.editor import editor_state
 from midi_event_handler.core.midi.utils import get_ports_status
-
-# Will be set by configure()
-templates: Jinja2Templates = None
-midiapp: MidiApp = None
-
-
-def configure(t: Jinja2Templates, app: MidiApp):
-    """Configure shared dependencies."""
-    global templates, midiapp
-    templates = t
-    midiapp = app
+from midi_event_handler.web import context
 
 
 def get_active_events() -> set:
     """Get set of currently active event names."""
-    if not midiapp or not midiapp.running:
+    if not context.midiapp or not context.midiapp.running:
         return set()
     active = set()
-    for handler in midiapp.handlers.values():
+    for handler in context.midiapp.handlers.values():
         if handler.event:
             active.add(handler.event.name)
     return active
@@ -34,13 +22,13 @@ def get_active_events() -> set:
 
 def render_content(request: Request):
     """Render editor content after mutations."""
-    return templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/editor_content.html",
         {
             "mapping": editor_state.mapping,
             "dirty": editor_state.dirty,
-            "app_running": midiapp.running if midiapp else False,
+            "app_running": context.midiapp.running if context.midiapp else False,
             "active_events": get_active_events(),
         },
     )
