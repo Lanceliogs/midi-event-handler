@@ -7,6 +7,7 @@ from midi_event_handler.core.exceptions import (
     port_busy,
     port_open_failed,
 )
+from midi_event_handler.core.midi.utils import resolve_port
 from midi_event_handler.tools.connection import broadcast_error
 
 import logging
@@ -50,13 +51,7 @@ class MidiOutputManager:
             return  # Already registered
 
         available_outputs = mido.get_output_names()
-        real_name = ""
-
-        # Find matching port name
-        for output in available_outputs:
-            if name in output:
-                real_name = output
-                break
+        real_name = resolve_port(name, available_outputs)
 
         if not real_name:
             raise port_not_found(

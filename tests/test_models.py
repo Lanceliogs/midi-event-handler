@@ -145,7 +145,14 @@ class TestMidiEvent:
 
         assert event.chord_signature() == chord.signature()
 
-    def test_equality_by_name(self):
+    def test_equality_by_dict(self):
+        chord = MidiChord(notes=[60], port="input1")
+
+        event1 = MidiEvent(name="same_name", type="light", chord=chord)
+        event2 = MidiEvent(name="same_name", type="light", chord=chord)
+        assert event1 == event2
+
+    def test_inequality_different_content(self):
         chord1 = MidiChord(notes=[60], port="input1")
         chord2 = MidiChord(notes=[64], port="input2")
 
@@ -153,13 +160,14 @@ class TestMidiEvent:
         event2 = MidiEvent(name="same_name", type="music", chord=chord2)
         event3 = MidiEvent(name="different_name", type="light", chord=chord1)
 
-        assert event1 == event2  # Same name
+        assert event1 != event2  # Same name, different content
         assert event1 != event3  # Different name
 
-    def test_equality_with_none(self):
+    def test_equality_with_non_event(self):
         chord = MidiChord(notes=[60], port="input1")
         event = MidiEvent(name="test", type="light", chord=chord)
 
+        assert event != "not an event"
         assert event is not None
 
     def test_repr(self):

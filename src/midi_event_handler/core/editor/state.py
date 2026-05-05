@@ -46,7 +46,7 @@ class EditorState:
     @property
     def dirty(self) -> bool:
         """Check if there are unsaved changes."""
-        return self.mapping != self._original
+        return self.has_changes()
 
     def save_to_runtime(self) -> bool:
         """Save current mapping to runtime file."""

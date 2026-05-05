@@ -2,6 +2,8 @@ import mido
 import time
 from argparse import ArgumentParser
 
+from midi_event_handler.core.midi.utils import resolve_port
+
 
 def list_ports():
     """List all available MIDI input and output ports."""
@@ -24,21 +26,13 @@ def list_ports():
     print()
 
 
-def resolve_port_name(partial: str, available: list[str]) -> str | None:
-    """Find a port by partial name match."""
-    for name in available:
-        if partial.lower() in name.lower():
-            return name
-    return None
-
-
 def listen_ports(port_names: list[str]):
     """Listen to specified MIDI input ports and print messages."""
     available = mido.get_input_names()
 
     resolved_ports: list[str] = []
     for partial in port_names:
-        match = resolve_port_name(partial, available)
+        match = resolve_port(partial, available)
         if match:
             resolved_ports.append(match)
             print(f"Resolved '{partial}' -> '{match}'")

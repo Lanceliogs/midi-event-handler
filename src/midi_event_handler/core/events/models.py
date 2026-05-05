@@ -114,9 +114,9 @@ class MidiEvent:
         return f"<MidiEvent: name={self.name} type={self.type}>"
 
     def __eq__(self, other: "MidiEvent") -> bool:
-        if not other:
+        if not isinstance(other, MidiEvent):
             return False
-        return self.name == other.name
+        return self.to_dict() == other.to_dict()
 
 
 def empty_event() -> MidiEvent:

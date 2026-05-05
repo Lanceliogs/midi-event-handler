@@ -8,6 +8,7 @@ from midi_event_handler.core.exceptions import (
     port_not_found,
     port_open_failed,
 )
+from midi_event_handler.core.midi.utils import resolve_port
 from midi_event_handler.tools.connection import broadcast_error
 
 import threading
@@ -46,13 +47,12 @@ class MidiListener:
 
     def _resolve_port(self, port_name: str) -> None:
         """Resolve friendly name to actual MIDI port name."""
-        available_ports = mido.get_input_names()
-        for name in available_ports:
-            if port_name in name:
-                self.port_name = name
-                log.info(f"[Resolve] '{port_name}' -> '{name}'")
-                return
-        log.warning(f"[Resolve] '{port_name}' not found in available ports")
+        resolved = resolve_port(port_name, mido.get_input_names())
+        if resolved:
+            self.port_name = resolved
+            log.info(f"[Resolve] '{port_name}' -> '{resolved}'")
+        else:
+            log.warning(f"[Resolve] '{port_name}' not found in available ports")
 
     def open(self) -> None:
         """
