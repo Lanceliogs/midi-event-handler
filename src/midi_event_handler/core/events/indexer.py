@@ -1,6 +1,8 @@
+from collections import Counter
 from typing import Dict, Tuple, List, Optional
 
 from midi_event_handler.core.events.models import MidiEvent
+from midi_event_handler.core.exceptions import duplicate_event_names
 
 import logging
 
@@ -19,6 +21,11 @@ class MidiEventIndex:
         self._signature_map.clear()
         self._name_map.clear()
         self._events = events
+
+        counts = Counter(e.name for e in events)
+        dupes = sorted(name for name, count in counts.items() if count > 1)
+        if dupes:
+            raise duplicate_event_names(dupes)
 
         for event in events:
             if event.chord_signature() not in self._signature_map:

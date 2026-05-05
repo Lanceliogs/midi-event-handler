@@ -80,13 +80,21 @@ class MidiApp:
         self.max_log_size = 50
         self.last_activity: Dict[str, float] = {}  # Last MIDI input per port
 
+        self._mapping_error: Optional[MidiAppError] = None
         self._setup_from_mapping()
 
     def _setup_from_mapping(self):
+        self._mapping_error = None
         self.chord_queue = asyncio.Queue()
         self.event_queues = {t: asyncio.Queue() for t in get_event_types()}
-        self.index = MidiEventIndex(get_event_list())
         self.outputs = MidiOutputManager()
+
+        try:
+            self.index = MidiEventIndex(get_event_list())
+        except MidiAppError as e:
+            log.warning(f"[Setup] Mapping error: {e.short_message}")
+            self._mapping_error = e
+            self.index = MidiEventIndex()
 
         self.listeners = [MidiListener(name, self.chord_queue) for name in get_configured_inputs()]
 
@@ -127,6 +135,11 @@ class MidiApp:
             return StartResult(success=True)
 
         result = StartResult(success=True)
+
+        # Step 0: Check for mapping errors (e.g. duplicate event names)
+        if self._mapping_error:
+            result.add_error(self._mapping_error)
+            return result
 
         # Step 1: Try to open all input ports
         log.info("[Start] Opening input ports...")

@@ -7,6 +7,7 @@ from midi_event_handler.core.exceptions import (
     port_busy,
     port_open_failed,
     task_crashed,
+    duplicate_event_names,
 )
 
 
@@ -21,6 +22,7 @@ class TestErrorCode:
         assert ErrorCode.NO_EVENTS.value == "no_events"
         assert ErrorCode.NO_INPUTS.value == "no_inputs"
         assert ErrorCode.NO_OUTPUTS.value == "no_outputs"
+        assert ErrorCode.DUPLICATE_EVENT_NAMES.value == "duplicate_event_names"
         assert ErrorCode.TASK_CRASHED.value == "task_crashed"
 
 
@@ -139,6 +141,17 @@ class TestFactoryFunctions:
         assert error.context["task"] == "listener-Piano"
         assert error.context["error"] == "Connection lost"
         assert "listener-Piano" in error.short_message
+
+    def test_duplicate_event_names(self):
+        """duplicate_event_names should create correct error."""
+        error = duplicate_event_names(["foo", "bar"])
+
+        assert error.code == ErrorCode.DUPLICATE_EVENT_NAMES
+        assert "Duplicate event names" in error.short_message
+        assert "foo" not in error.short_message
+        assert "foo" in error.detailed_message
+        assert "bar" in error.detailed_message
+        assert "unique" in error.detailed_message.lower()
 
 
 class TestStartResult:

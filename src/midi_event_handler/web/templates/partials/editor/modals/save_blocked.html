@@ -10,6 +10,9 @@
             <img src="/static/assets/icons/exclamation-triangle.svg" class="icon" alt="">
             <div>{{ reason }}</div>
         </div>
+        {% if duplicate_names %}
+        <pre class="duplicate-names-list">{{ duplicate_names | join('\n') }}</pre>
+        {% endif %}
     </div>
     <div class="modal-footer">
         <button type="button" class="btn" data-action="close-modal">OK</button>

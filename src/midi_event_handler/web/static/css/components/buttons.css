@@ -76,6 +76,18 @@
   filter: invert(22%) sepia(95%) saturate(5068%) hue-rotate(356deg) brightness(97%) contrast(88%);
 }
 
+.btn-warning {
+  background: #f59e0b;
+  color: white;
+  border-color: #d97706;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.7rem;
+}
+
+.btn-warning:hover {
+  background: #d97706;
+}
+
 .btn-sm {
   padding: 0.25rem 0.75rem;
   font-size: 0.8rem;

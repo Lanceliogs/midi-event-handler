@@ -193,6 +193,19 @@ class EditorState:
         self.mapping.events = [e for e in self.mapping.events if e.name != name]
         return len(self.mapping.events) < original_len
 
+    def rename_duplicates(self) -> int:
+        """Auto-rename duplicate events by appending ~1, ~2, etc. Returns count renamed."""
+        seen: dict[str, int] = {}
+        renamed = 0
+        for event in self.mapping.events:
+            if event.name in seen:
+                seen[event.name] += 1
+                event.name = f"{event.name}~{seen[event.name]}"
+                renamed += 1
+            else:
+                seen[event.name] = 0
+        return renamed
+
     # ==========================================================================
     # Diff computation
     # ==========================================================================

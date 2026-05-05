@@ -25,6 +25,9 @@ class ErrorCode(Enum):
     NO_INPUTS = "no_inputs"
     NO_OUTPUTS = "no_outputs"
 
+    # Mapping errors
+    DUPLICATE_EVENT_NAMES = "duplicate_event_names"
+
     # Runtime errors
     TASK_CRASHED = "task_crashed"
 
@@ -37,6 +40,7 @@ SHORT_MESSAGES: Dict[ErrorCode, str] = {
     ErrorCode.NO_EVENTS: "No events configured",
     ErrorCode.NO_INPUTS: "No input ports configured",
     ErrorCode.NO_OUTPUTS: "No output ports configured",
+    ErrorCode.DUPLICATE_EVENT_NAMES: "Duplicate event names found. Rename or delete them first.",
     ErrorCode.TASK_CRASHED: "Task '{task}' crashed",
 }
 
@@ -117,6 +121,19 @@ To fix this:
 2. Add at least one output port in the Configuration section
 3. Make sure the port name matches your target MIDI device
 4. Save your mapping
+""".strip(),
+    ErrorCode.DUPLICATE_EVENT_NAMES: """
+Multiple events share the same name, which must be unique.
+
+Duplicate names:
+{names_bullet}
+
+Each event must have a unique name for triggers, fallbacks, and the editor to work correctly.
+
+To fix this:
+1. Use the "Rename Duplicates" button to auto-rename them (appends ~1, ~2, etc.)
+2. Or manually rename/delete the duplicates in the editor
+3. Save your mapping once all names are unique
 """.strip(),
     ErrorCode.TASK_CRASHED: """
 An internal task crashed unexpectedly.
@@ -220,6 +237,17 @@ def port_open_failed(port: str, port_type: str, error: str) -> MidiAppError:
         port=port,
         port_type=port_type,
         error=error,
+    )
+
+
+def duplicate_event_names(names: list) -> MidiAppError:
+    """Create a DUPLICATE_EVENT_NAMES error."""
+    formatted = ", ".join(names)
+    bullet_list = "\n".join(f"  • {n}" for n in names)
+    return MidiAppError(
+        ErrorCode.DUPLICATE_EVENT_NAMES,
+        names=formatted,
+        names_bullet=bullet_list,
     )
 
 

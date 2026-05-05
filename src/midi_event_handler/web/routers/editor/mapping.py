@@ -43,6 +43,17 @@ async def save_confirm(request: Request):
             },
         )
 
+    dupes = editor_state.mapping.duplicate_event_names()
+    if dupes:
+        return common.templates.TemplateResponse(
+            request,
+            "partials/editor/modals/save_blocked.html",
+            {
+                "reason": "Duplicate event names found. Rename or delete them before saving.",
+                "duplicate_names": dupes,
+            },
+        )
+
     return common.templates.TemplateResponse(
         request,
         "partials/editor/modals/save_confirm.html",

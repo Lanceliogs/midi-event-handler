@@ -2,6 +2,7 @@
 Configuration models.
 """
 
+from collections import Counter
 from dataclasses import dataclass, field
 from typing import Optional, List
 
@@ -57,6 +58,11 @@ class Mapping:
     def get_event_names(self) -> List[str]:
         """Get list of all event names."""
         return [e.name for e in self.events]
+
+    def duplicate_event_names(self) -> List[str]:
+        """Return names that appear more than once."""
+        counts = Counter(e.name for e in self.events)
+        return sorted(name for name, count in counts.items() if count > 1)
 
     def __eq__(self, other: "Mapping") -> bool:
         """Compare mappings for equality."""
