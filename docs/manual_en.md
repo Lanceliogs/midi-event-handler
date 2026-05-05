@@ -96,9 +96,16 @@ The main area displays:
 
 The Editor page allows full configuration of your MIDI mapping.
 
-### Configuration Panel
+### Overview
 
-![Editor Page](assets/editor_not_running.png)
+![Editor Page](assets/editor.png)
+
+The Editor page is divided into:
+- A **Configuration** card (collapsible) with inputs, outputs and event types
+- The **Events** list with filter, event cards and quick actions
+- The **Sidebar** with controls, mapping loader and MIDI port status
+
+### Configuration Panel
 
 - **Inputs**: MIDI input ports to monitor
 - **Outputs**: MIDI output ports for sending
@@ -163,14 +170,23 @@ When the app is running:
 
 Each event must have a unique name. If a mapping file is loaded with duplicate event names (e.g. from a hand-edited YAML file):
 
+![Duplicates in Editor](assets/editor_with_duplicates.png)
+
 - Duplicate names are **highlighted in red** in the events list
 - A **RENAME DUPLICATES** button appears in the events card header
 - **Saving** and **starting** are blocked until duplicates are resolved
 
+![Cannot Save](assets/cannot_save_modal.png)
+
 To fix duplicates:
-1. Click **RENAME DUPLICATES** to auto-rename them (appends ~1, ~2, etc.)
-2. Or manually rename/delete the duplicates using the edit button
-3. Save your mapping once all names are unique
+1. Click **RENAME DUPLICATES** to open the confirmation modal
+2. Review the list of affected names, then click **Rename** to auto-rename them (appends ~1, ~2, etc.)
+3. Or manually rename/delete the duplicates using the edit button
+4. Save your mapping once all names are unique
+
+![Rename Duplicates](assets/rename_duplicates_modal.png)
+
+> **Note:** After renaming, check your fallback events — they may reference old names that no longer exist.
 
 ### Saving Changes
 
@@ -242,6 +258,8 @@ When errors occur, a notification appears. Click **Details** to see more informa
 ### Duplicate Event Names
 
 If event names appear in red and you cannot save or start:
+
+![Duplicates in Editor](assets/editor_with_duplicates.png)
 
 - Your mapping contains events with the same name
 - Click **RENAME DUPLICATES** in the events card header to auto-fix

@@ -96,9 +96,16 @@ La zone principale affiche :
 
 La page Éditeur permet la configuration complète de votre mapping MIDI.
 
-### Panneau de Configuration
+### Vue d'ensemble
 
-![Page Éditeur](assets/editor_not_running.png)
+![Page Éditeur](assets/editor.png)
+
+La page Éditeur est divisée en :
+- Une carte **Configuration** (repliable) avec les entrées, sorties et types d'événements
+- La liste des **Événements** avec filtre, cartes et actions rapides
+- La **Barre latérale** avec les contrôles, le chargement de mapping et l'état des ports MIDI
+
+### Panneau de Configuration
 
 - **Entrées** : Ports d'entrée MIDI à surveiller
 - **Sorties** : Ports de sortie MIDI pour l'envoi
@@ -163,14 +170,23 @@ Quand l'application est en cours :
 
 Chaque événement doit avoir un nom unique. Si un fichier de mapping est chargé avec des noms d'événements en double (par ex. depuis un fichier YAML modifié manuellement) :
 
+![Doublons dans l'Éditeur](assets/editor_with_duplicates.png)
+
 - Les noms en double sont **affichés en rouge** dans la liste des événements
 - Un bouton **RENAME DUPLICATES** apparaît dans l'en-tête de la carte événements
 - La **sauvegarde** et le **démarrage** sont bloqués tant que les doublons ne sont pas résolus
 
+![Sauvegarde impossible](assets/cannot_save_modal.png)
+
 Pour corriger les doublons :
-1. Cliquez sur **RENAME DUPLICATES** pour les renommer automatiquement (ajoute ~1, ~2, etc.)
-2. Ou renommez/supprimez manuellement les doublons avec le bouton d'édition
-3. Sauvegardez votre mapping une fois que tous les noms sont uniques
+1. Cliquez sur **RENAME DUPLICATES** pour ouvrir le modal de confirmation
+2. Vérifiez la liste des noms concernés, puis cliquez sur **Rename** pour les renommer automatiquement (ajoute ~1, ~2, etc.)
+3. Ou renommez/supprimez manuellement les doublons avec le bouton d'édition
+4. Sauvegardez votre mapping une fois que tous les noms sont uniques
+
+![Renommer les doublons](assets/rename_duplicates_modal.png)
+
+> **Note :** Après le renommage, vérifiez vos événements de repli — ils peuvent référencer d'anciens noms qui n'existent plus.
 
 ### Sauvegarde des Modifications
 
@@ -242,6 +258,8 @@ Quand des erreurs surviennent, une notification apparaît. Cliquez sur **Détail
 ### Noms d'Événements en Double
 
 Si les noms d'événements apparaissent en rouge et que vous ne pouvez pas sauvegarder ou démarrer :
+
+![Doublons dans l'Éditeur](assets/editor_with_duplicates.png)
 
 - Votre mapping contient des événements avec le même nom
 - Cliquez sur **RENAME DUPLICATES** dans l'en-tête de la carte événements pour corriger automatiquement
