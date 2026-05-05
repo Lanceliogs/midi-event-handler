@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 RUNTIME_PATH = Path(".runtime")
 RUNTIME_MAPPING_PATH = RUNTIME_PATH / "mapping.yaml"
 WHATSNEW_PATH = RUNTIME_PATH / "whatsnew.md"
+WHATSNEW_SEEN_PATH = RUNTIME_PATH / "whatsnew.seen"
 LOG_FILE_PATH = RUNTIME_PATH / "app.log"
 VERSION_PATH = Path("version.txt")
 

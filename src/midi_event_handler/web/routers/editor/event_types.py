@@ -8,6 +8,7 @@ from fastapi.responses import Response
 
 from midi_event_handler.core.editor import editor_state
 
+from midi_event_handler.web import context
 from . import common
 
 router = APIRouter()
@@ -16,7 +17,7 @@ router = APIRouter()
 @router.get("/event-type/new")
 async def event_type_new(request: Request):
     """New event type form modal."""
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/event_type_form.html",
         {
@@ -32,7 +33,7 @@ async def event_type_edit(request: Request, name: str):
     if name not in editor_state.event_types:
         raise HTTPException(status_code=404, detail="Event type not found")
 
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/event_type_form.html",
         {
@@ -88,7 +89,7 @@ async def event_type_delete(request: Request, name: str):
 async def confirm_delete_event_type(request: Request, name: str):
     """Confirm delete event type modal with cascade warning."""
     affected = editor_state.get_events_by_type(name)
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/confirm_delete.html",
         {

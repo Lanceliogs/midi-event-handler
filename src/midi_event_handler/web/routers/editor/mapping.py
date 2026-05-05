@@ -2,13 +2,15 @@
 Mapping API routes: save, download, diff.
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.requests import Request
 from fastapi.responses import Response
 
+from midi_event_handler.core.app import MidiApp
 from midi_event_handler.core.editor import editor_state
 
-from . import common
+from midi_event_handler.web import context
+from midi_event_handler.web.context import get_midiapp
 
 router = APIRouter()
 
@@ -32,10 +34,10 @@ async def download_mapping():
 
 
 @router.get("/save-confirm")
-async def save_confirm(request: Request):
+async def save_confirm(request: Request, midiapp: MidiApp = Depends(get_midiapp)):
     """Show save confirmation modal with diff."""
-    if common.midiapp.running:
-        return common.templates.TemplateResponse(
+    if midiapp.running:
+        return context.templates.TemplateResponse(
             request,
             "partials/editor/modals/save_blocked.html",
             {
@@ -50,7 +52,7 @@ async def save_confirm(request: Request):
         + editor_state.mapping.duplicate_event_names()
     )
     if all_dupes:
-        return common.templates.TemplateResponse(
+        return context.templates.TemplateResponse(
             request,
             "partials/editor/modals/save_blocked.html",
             {
@@ -59,7 +61,7 @@ async def save_confirm(request: Request):
             },
         )
 
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/save_confirm.html",
         {
@@ -70,16 +72,16 @@ async def save_confirm(request: Request):
 
 
 @router.post("/api/mapping/save")
-async def save_mapping(request: Request):
+async def save_mapping(request: Request, midiapp: MidiApp = Depends(get_midiapp)):
     """Save current editor state to runtime file."""
-    if common.midiapp.running:
+    if midiapp.running:
         return Response(
             content='<span class="feedback-error">Cannot save while app is running.</span>',
             media_type="text/html",
         )
 
     if editor_state.save_to_runtime():
-        common.midiapp.reload_mapping()
+        midiapp.reload_mapping()
         return Response(
             content='<span class="feedback-success">Mapping saved!</span>',
             media_type="text/html",

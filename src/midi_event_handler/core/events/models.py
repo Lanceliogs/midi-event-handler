@@ -63,9 +63,16 @@ class MidiEvent:
 
     @classmethod
     def from_dict(cls, data: dict) -> "MidiEvent":
-        """Create MidiEvent from YAML-style dictionary."""
+        """Create MidiEvent from YAML-style dictionary.
+
+        Raises TypeError/ValueError on malformed data (caught by Mapping.from_dict).
+        """
+        if not data.get("name"):
+            raise ValueError("Event is missing a 'name' field")
+
         trigger = data.get("trigger", {})
         chord = MidiChord(notes=trigger.get("notes", []), port=trigger.get("port", ""))
+
         start = [MidiMessage(**m) for m in data.get("start_messages", [])]
         end = [MidiMessage(**m) for m in data.get("end_messages", [])]
 

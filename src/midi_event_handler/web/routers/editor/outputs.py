@@ -10,6 +10,7 @@ from fastapi.responses import Response
 from midi_event_handler.core.editor import editor_state
 from midi_event_handler.core.midi.utils import resolve_port
 
+from midi_event_handler.web import context
 from . import common
 
 router = APIRouter()
@@ -18,7 +19,7 @@ router = APIRouter()
 @router.get("/output/new")
 async def output_new(request: Request):
     """New output form modal."""
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/output_form.html",
         {
@@ -36,7 +37,7 @@ async def output_edit(request: Request, name: str):
         raise HTTPException(status_code=404, detail="Output not found")
 
     available = mido.get_output_names()
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/output_form.html",
         {
@@ -82,7 +83,7 @@ async def output_delete(request: Request, name: str):
 @router.get("/confirm-delete/output/{name}")
 async def confirm_delete_output(request: Request, name: str):
     """Confirm delete output modal."""
-    return common.templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "partials/editor/modals/confirm_delete.html",
         {

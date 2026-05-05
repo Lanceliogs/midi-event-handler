@@ -5,26 +5,14 @@ Dashboard UI routes: /meh/ui/dashboard/*
 import time
 from fastapi import APIRouter, Depends
 from fastapi.requests import Request
-from fastapi.templating import Jinja2Templates
 
-from midi_event_handler.core.config import get_current_version
 from midi_event_handler.core.app import MidiApp
+from midi_event_handler.core.config import get_current_version
 from midi_event_handler.core.midi.utils import get_ports_status
+from midi_event_handler.web import context
+from midi_event_handler.web.context import get_midiapp
 
 router = APIRouter(prefix="/meh/ui/dashboard", tags=["dashboard"])
-
-# Will be set by main app
-templates: Jinja2Templates = None
-midiapp: MidiApp = None
-
-
-def configure(t: Jinja2Templates, app: MidiApp):
-    global templates, midiapp
-    templates = t
-    midiapp = app
-
-    # Add custom filter for time formatting
-    templates.env.filters["format_time"] = format_timestamp
 
 
 def format_timestamp(ts):
@@ -37,7 +25,7 @@ def format_timestamp(ts):
 
 @router.get("")
 async def dashboard(request: Request, version: str = Depends(get_current_version)):
-    return templates.TemplateResponse(
+    return context.templates.TemplateResponse(
         request,
         "dashboard.html",
         {
@@ -49,8 +37,8 @@ async def dashboard(request: Request, version: str = Depends(get_current_version
 
 
 @router.get("/status")
-async def status_fragment(request: Request):
-    return templates.TemplateResponse(
+async def status_fragment(request: Request, midiapp: MidiApp = Depends(get_midiapp)):
+    return context.templates.TemplateResponse(
         request,
         "partials/dashboard_content.html",
         {

@@ -9,9 +9,10 @@ import shutil
 import mido
 import os
 
-from midi_event_handler.core.config import RUNTIME_PATH, get_current_version
 from midi_event_handler.core.app import MidiApp
+from midi_event_handler.core.config import RUNTIME_PATH, get_current_version
 from midi_event_handler.core.editor import editor_state
+from midi_event_handler.web.context import get_midiapp
 
 import logging
 
@@ -19,17 +20,9 @@ log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/meh/api", tags=["api"])
 
-# Shared MidiApp instance - will be set by main app
-midiapp: MidiApp = None
-
-
-def set_midiapp(app: MidiApp):
-    global midiapp
-    midiapp = app
-
 
 @router.post("/upload-mapping")
-async def upload_mapping(file: UploadFile = File(...)):
+async def upload_mapping(file: UploadFile = File(...), midiapp: MidiApp = Depends(get_midiapp)):
     if midiapp.running:
         return Response(
             content="",
@@ -71,7 +64,7 @@ async def upload_mapping(file: UploadFile = File(...)):
 
 
 @router.post("/start")
-async def start_show():
+async def start_show(midiapp: MidiApp = Depends(get_midiapp)):
     import json
 
     if midiapp.running:
@@ -124,7 +117,7 @@ async def start_show():
 
 
 @router.post("/stop")
-async def stop_show():
+async def stop_show(midiapp: MidiApp = Depends(get_midiapp)):
     if not midiapp.running:
         return Response(
             content="",
@@ -147,7 +140,7 @@ async def stop_show():
 
 
 @router.get("/status")
-async def get_status():
+async def get_status(midiapp: MidiApp = Depends(get_midiapp)):
     return midiapp.get_status()
 
 
