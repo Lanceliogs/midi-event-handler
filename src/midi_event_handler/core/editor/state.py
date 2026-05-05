@@ -4,6 +4,7 @@ Editor State - manages in-memory mapping for the editor.
 
 import copy
 import yaml
+from collections import Counter
 from typing import Optional, List
 
 from midi_event_handler.core.config import RUNTIME_MAPPING_PATH, Mapping, empty_mapping
@@ -219,12 +220,14 @@ class EditorState:
             "events": {"added": [], "removed": [], "modified": []},
         }
 
-        # Simple list diffs
+        # List diffs (Counter-based to detect duplicate additions/removals)
         for key in ["inputs", "outputs", "event_types"]:
-            orig = set(getattr(self._original, key))
-            curr = set(getattr(self.mapping, key))
-            diff[key]["added"] = sorted(curr - orig)
-            diff[key]["removed"] = sorted(orig - curr)
+            orig = Counter(getattr(self._original, key))
+            curr = Counter(getattr(self.mapping, key))
+            added = curr - orig
+            removed = orig - curr
+            diff[key]["added"] = sorted(added.elements())
+            diff[key]["removed"] = sorted(removed.elements())
 
         # Events diff (by name)
         orig_events = {e.name: e for e in self._original.events}

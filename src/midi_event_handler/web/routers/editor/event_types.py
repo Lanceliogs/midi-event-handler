@@ -4,6 +4,7 @@ Event type CRUD routes.
 
 from fastapi import APIRouter, HTTPException
 from fastapi.requests import Request
+from fastapi.responses import Response
 
 from midi_event_handler.core.editor import editor_state
 
@@ -55,9 +56,25 @@ async def event_type_save(request: Request):
     if original_name:
         editor_state.update_event_type(original_name, name)
     else:
-        editor_state.add_event_type(name)
+        if not editor_state.add_event_type(name):
+            return Response(
+                content="",
+                status_code=400,
+                headers={"X-Toast": f"'{name}' already exists", "X-Toast-Type": "error"},
+            )
 
     return common.render_content(request)
+
+
+@router.get("/check-event-type")
+async def check_event_type(name: str = "", original_name: str = ""):
+    """Live uniqueness check for event type names."""
+    name = name.strip()
+    if not name:
+        return Response("")
+    if name != original_name and name in editor_state.event_types:
+        return Response('<span class="resolution-error">Already exists</span>')
+    return Response("")
 
 
 @router.delete("/event-type/{name}")

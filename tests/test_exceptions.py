@@ -6,6 +6,7 @@ from midi_event_handler.core.exceptions import (
     port_not_found,
     port_busy,
     port_open_failed,
+    port_collision,
     task_crashed,
     duplicate_event_names,
 )
@@ -19,6 +20,7 @@ class TestErrorCode:
         assert ErrorCode.PORT_NOT_FOUND.value == "port_not_found"
         assert ErrorCode.PORT_BUSY.value == "port_busy"
         assert ErrorCode.PORT_OPEN_FAILED.value == "port_open_failed"
+        assert ErrorCode.PORT_COLLISION.value == "port_collision"
         assert ErrorCode.NO_EVENTS.value == "no_events"
         assert ErrorCode.NO_INPUTS.value == "no_inputs"
         assert ErrorCode.NO_OUTPUTS.value == "no_outputs"
@@ -141,6 +143,15 @@ class TestFactoryFunctions:
         assert error.context["task"] == "listener-Piano"
         assert error.context["error"] == "Connection lost"
         assert "listener-Piano" in error.short_message
+
+    def test_port_collision(self):
+        """port_collision should create correct error."""
+        error = port_collision(["Piano", "Piano MIDI"], "Piano MIDI Controller 0")
+
+        assert error.code == ErrorCode.PORT_COLLISION
+        assert "Piano" in error.short_message
+        assert "Piano MIDI" in error.short_message
+        assert "Piano MIDI Controller 0" in error.detailed_message
 
     def test_duplicate_event_names(self):
         """duplicate_event_names should create correct error."""

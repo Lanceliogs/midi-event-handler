@@ -139,6 +139,10 @@
   font-weight: 500;
 }
 
+.item-name.badge-error {
+  color: #ef4444;
+}
+
 .item-actions {
   display: flex;
   gap: 0.25rem;
@@ -397,6 +401,11 @@
 
 .resolution-warn {
   color: #d97706;
+}
+
+.resolution-error {
+  color: #ef4444;
+  font-weight: 600;
 }
 
 /* ====== Dirty Indicator ====== */

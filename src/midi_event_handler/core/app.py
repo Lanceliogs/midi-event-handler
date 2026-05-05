@@ -19,7 +19,7 @@ from midi_event_handler.core.events.indexer import MidiEventIndex
 from midi_event_handler.core.midi.listener import MidiListener
 from midi_event_handler.core.midi.outputs import MidiOutputManager
 from midi_event_handler.core.midi.utils import get_ports_status
-from midi_event_handler.core.exceptions import MidiAppError
+from midi_event_handler.core.exceptions import MidiAppError, port_collision
 from midi_event_handler.tools.connection import ConnectionManager
 
 log = logging.getLogger(__name__)
@@ -139,6 +139,18 @@ class MidiApp:
         # Step 0: Check for mapping errors (e.g. duplicate event names)
         if self._mapping_error:
             result.add_error(self._mapping_error)
+            return result
+
+        # Step 0b: Check for port collisions (multiple inputs resolving to same port)
+        resolved_map: Dict[str, List[str]] = defaultdict(list)
+        for listener in self.listeners:
+            if listener.port_name:
+                resolved_map[listener.port_name].append(listener.friendly_port_name)
+        for resolved, friendly_names in resolved_map.items():
+            if len(friendly_names) > 1:
+                log.error(f"[Start] Port collision: {friendly_names} -> {resolved}")
+                result.add_error(port_collision(friendly_names, resolved))
+        if not result.success:
             return result
 
         # Step 1: Try to open all input ports

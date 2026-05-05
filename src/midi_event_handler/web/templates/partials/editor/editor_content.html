@@ -11,6 +11,7 @@
             <div class="config-grid">
                 <!-- Inputs -->
                 <div class="config-column">
+                    {% set dup_inputs = mapping.duplicate_inputs() %}
                     <div class="config-header">
                         <h3>Inputs</h3>
                         <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Add input' }}"
@@ -23,7 +24,7 @@
                     <ul class="config-list" id="inputs-list">
                         {% for input in mapping.inputs %}
                         <li class="config-item">
-                            <span class="item-name">{{ input }}</span>
+                            <span class="item-name {{ 'badge-error' if input in dup_inputs else '' }}">{{ input }}</span>
                             <div class="item-actions">
                                 <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Edit' }}"
                                         hx-get="/meh/ui/editor/input/{{ input }}"
@@ -47,6 +48,7 @@
 
                 <!-- Outputs -->
                 <div class="config-column">
+                    {% set dup_outputs = mapping.duplicate_outputs() %}
                     <div class="config-header">
                         <h3>Outputs</h3>
                         <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Add output' }}"
@@ -59,7 +61,7 @@
                     <ul class="config-list" id="outputs-list">
                         {% for output in mapping.outputs %}
                         <li class="config-item">
-                            <span class="item-name">{{ output }}</span>
+                            <span class="item-name {{ 'badge-error' if output in dup_outputs else '' }}">{{ output }}</span>
                             <div class="item-actions">
                                 <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Edit' }}"
                                         hx-get="/meh/ui/editor/output/{{ output }}"
@@ -83,6 +85,7 @@
 
                 <!-- Event Types -->
                 <div class="config-column">
+                    {% set dup_event_types = mapping.duplicate_event_types() %}
                     <div class="config-header">
                         <h3>Event Types</h3>
                         <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Add event type' }}"
@@ -95,7 +98,7 @@
                     <ul class="config-list" id="event-types-list">
                         {% for etype in mapping.event_types %}
                         <li class="config-item">
-                            <span class="item-name">{{ etype }}</span>
+                            <span class="item-name {{ 'badge-error' if etype in dup_event_types else '' }}">{{ etype }}</span>
                             <div class="item-actions">
                                 <button type="button" class="btn-icon edit-btn" title="{{ 'Stop app to edit' if app_running else 'Edit' }}"
                                         hx-get="/meh/ui/editor/event-type/{{ etype }}"

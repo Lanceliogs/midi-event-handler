@@ -12,9 +12,15 @@
            name="name" 
            value="{{ current_name or '' }}"
            autocomplete="off"
-           required>
+           required
+           hx-get="/meh/ui/editor/check-event-type"
+           hx-trigger="input changed delay:300ms"
+           hx-target="#type-resolution"
+           hx-include="this"
+           hx-vals='{"original_name": "{{ original_name or '' }}"}'>
     {% if original_name %}
     <input type="hidden" name="original_name" value="{{ original_name }}">
     {% endif %}
 </div>
+<div id="type-resolution" class="port-resolution"></div>
 {% endcall %}

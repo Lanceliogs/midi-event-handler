@@ -59,10 +59,22 @@ class Mapping:
         """Get list of all event names."""
         return [e.name for e in self.events]
 
-    def duplicate_event_names(self) -> List[str]:
-        """Return names that appear more than once."""
-        counts = Counter(e.name for e in self.events)
+    def _duplicates(self, items: List[str]) -> List[str]:
+        """Return items that appear more than once."""
+        counts = Counter(items)
         return sorted(name for name, count in counts.items() if count > 1)
+
+    def duplicate_inputs(self) -> List[str]:
+        return self._duplicates(self.inputs)
+
+    def duplicate_outputs(self) -> List[str]:
+        return self._duplicates(self.outputs)
+
+    def duplicate_event_types(self) -> List[str]:
+        return self._duplicates(self.event_types)
+
+    def duplicate_event_names(self) -> List[str]:
+        return self._duplicates([e.name for e in self.events])
 
     def __eq__(self, other: "Mapping") -> bool:
         """Compare mappings for equality."""

@@ -19,6 +19,7 @@ class ErrorCode(Enum):
     PORT_NOT_FOUND = "port_not_found"
     PORT_BUSY = "port_busy"
     PORT_OPEN_FAILED = "port_open_failed"
+    PORT_COLLISION = "port_collision"
 
     # Configuration errors
     NO_EVENTS = "no_events"
@@ -37,6 +38,7 @@ SHORT_MESSAGES: Dict[ErrorCode, str] = {
     ErrorCode.PORT_NOT_FOUND: "Port '{port}' not found",
     ErrorCode.PORT_BUSY: "Port '{port}' is busy",
     ErrorCode.PORT_OPEN_FAILED: "Cannot open port '{port}'",
+    ErrorCode.PORT_COLLISION: "Port collision: {inputs} resolve to the same port",
     ErrorCode.NO_EVENTS: "No events configured",
     ErrorCode.NO_INPUTS: "No input ports configured",
     ErrorCode.NO_OUTPUTS: "No output ports configured",
@@ -89,6 +91,20 @@ To fix this:
 1. Unplug the MIDI device and plug it back in
 2. Check if the device works in other applications
 3. Try restarting the application
+""".strip(),
+    ErrorCode.PORT_COLLISION: """
+Multiple configured inputs resolve to the same MIDI port.
+
+Inputs: {inputs}
+Resolved port: {resolved}
+
+This happens when input names partially match the same device. Each input must resolve to a different MIDI port.
+
+To fix this:
+1. Open the Editor page
+2. Rename or remove one of the conflicting inputs
+3. Make sure each input name matches a different MIDI device
+4. Save your mapping
 """.strip(),
     ErrorCode.NO_EVENTS: """
 No events are configured in your mapping.
@@ -237,6 +253,15 @@ def port_open_failed(port: str, port_type: str, error: str) -> MidiAppError:
         port=port,
         port_type=port_type,
         error=error,
+    )
+
+
+def port_collision(inputs: list, resolved: str) -> MidiAppError:
+    """Create a PORT_COLLISION error."""
+    return MidiAppError(
+        ErrorCode.PORT_COLLISION,
+        inputs=", ".join(f"'{n}'" for n in inputs),
+        resolved=resolved,
     )
 
 
