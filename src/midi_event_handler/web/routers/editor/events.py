@@ -303,7 +303,7 @@ async def record_midi(request: Request):
 
     except MidiAppError as e:
         return Response(
-            content=f'{{"error": "{e.short_message}"}}',
+            content=json.dumps({"error": e.short_message}),
             media_type="application/json",
             status_code=400,
         )

@@ -23,7 +23,7 @@ def get_latest_release_asset(current_version: str = "v0.0.0"):
 
     include_prereleases = get_updates_config().get("prereleases", False)
 
-    response = requests.get(API_URL_ALL, headers=headers)
+    response = requests.get(API_URL_ALL, headers=headers, timeout=(5, 15))
     response.raise_for_status()
     releases = response.json()
 
@@ -52,7 +52,7 @@ def get_latest_release_asset(current_version: str = "v0.0.0"):
 
 def download_with_progress_tray(url, output_path, update_progress):
     headers = {"Accept": "application/octet-stream"}
-    with requests.get(url, headers=headers, stream=True) as r:
+    with requests.get(url, headers=headers, stream=True, timeout=(5, 30)) as r:
         r.raise_for_status()
         total = int(r.headers.get("content-length", 0))
         downloaded = 0
