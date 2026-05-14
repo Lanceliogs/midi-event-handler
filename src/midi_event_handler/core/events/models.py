@@ -55,8 +55,20 @@ class MidiEvent:
     end_messages: list[MidiMessage] = field(default_factory=list)
     duration_min: int | None = None
     duration_max: int | None = None
+    #: Serialized when set (including ``0``). ``None`` = omit from YAML; compare via :attr:`priority` as ``0``.
+    _priority: int | None = None
     fallback_event: str | None = None
     comment: str | None = None
+
+    @property
+    def priority(self) -> int:
+        """Effective priority for runtime rules; ``0`` when not set in YAML."""
+        return 0 if self._priority is None else self._priority
+
+    @priority.setter
+    def priority(self, value: int | None) -> None:
+        """``None`` clears stored priority (omitted from export); integer persists (including ``0``)."""
+        self._priority = None if value is None else int(value)
 
     @classmethod
     def from_dict(cls, data: dict) -> "MidiEvent":
@@ -73,6 +85,11 @@ class MidiEvent:
         start = [MidiMessage(**m) for m in data.get("start_messages", [])]
         end = [MidiMessage(**m) for m in data.get("end_messages", [])]
 
+        stored_priority = None
+        if "priority" in data:
+            pv = data.get("priority")
+            stored_priority = int(pv) if pv is not None else None
+
         return cls(
             name=data.get("name", ""),
             type=data.get("type", ""),
@@ -81,6 +98,7 @@ class MidiEvent:
             end_messages=end,
             duration_min=data.get("duration_min"),
             duration_max=data.get("duration_max"),
+            _priority=stored_priority,
             fallback_event=data.get("fallback_event"),
             comment=data.get("comment"),
         )
@@ -104,6 +122,8 @@ class MidiEvent:
             d["duration_min"] = self.duration_min
         if self.duration_max is not None:
             d["duration_max"] = self.duration_max
+        if self._priority is not None:
+            d["priority"] = self._priority
         if self.fallback_event:
             d["fallback_event"] = self.fallback_event
         if self.comment:

@@ -104,6 +104,9 @@ class TestMidiEvent:
         assert event.duration_max is None
         assert event.fallback_event is None
         assert event.comment is None
+        assert event._priority is None
+        assert event.priority == 0
+        assert "priority" not in event.to_dict()
 
     def test_create_full_event(self):
         chord = MidiChord(notes=[60, 64], port="input1")
@@ -188,3 +191,42 @@ class TestMidiEvent:
         assert d["type"] == "light"
         assert d["trigger"]["notes"] == [60]
         assert d["trigger"]["port"] == "input1"
+
+    def test_to_dict_without_priority_key_when_unspecified(self):
+        chord = MidiChord(notes=[60], port="input1")
+        event = MidiEvent(name="test", type="light", chord=chord)
+        assert "priority" not in event.to_dict()
+
+    def test_to_dict_includes_explicit_priority_zero(self):
+        chord = MidiChord(notes=[60], port="input1")
+        event = MidiEvent(name="test", type="light", chord=chord, _priority=0)
+        assert event.to_dict().get("priority") == 0
+
+    def test_priority_property_and_setter(self):
+        chord = MidiChord(notes=[60], port="input1")
+        event = MidiEvent(name="test", type="light", chord=chord)
+        assert event.priority == 0
+        event.priority = None
+        assert event._priority is None
+        event.priority = 5
+        assert event._priority == 5
+        assert event.priority == 5
+
+    def test_from_dict_omitted_priority_vs_explicit(self):
+        base = {"name": "x", "type": "light", "trigger": {"port": "input1", "notes": [60]}}
+
+        e1 = MidiEvent.from_dict({**base})
+        assert e1._priority is None
+        assert e1.priority == 0
+        assert "priority" not in e1.to_dict()
+
+        e2 = MidiEvent.from_dict({**base, "priority": 3})
+        assert e2._priority == 3
+        assert e2.to_dict().get("priority") == 3
+
+        e3 = MidiEvent.from_dict({**base, "priority": 0})
+        assert e3._priority == 0
+        assert e3.to_dict().get("priority") == 0
+
+        e4 = MidiEvent.from_dict({**base, "priority": None})
+        assert e4._priority is None

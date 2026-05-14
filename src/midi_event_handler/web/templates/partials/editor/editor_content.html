@@ -232,6 +232,10 @@
                             <span class="event-badge-value">{{ event.duration_min or 0 }}s → {{ event.duration_max or '∞' }}s</span>
                         </span>
                         {% endif %}
+                        <span class="event-badge event-badge-priority {% if event._priority is none %}badge-muted{% endif %}">
+                            <span class="event-badge-label">Priority</span>
+                            <span class="event-badge-value">{% if event._priority is none %}0{% else %}{{ event._priority }}{% endif %}</span>
+                        </span>
                         {% if event.fallback_event %}
                         <span class="event-badge event-badge-fallback {{ 'badge-error' if not fallback_valid else '' }}">
                             <span class="event-badge-label">Fallback</span>
