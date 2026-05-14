@@ -103,7 +103,7 @@ class MidiEventHandler:
         self.midiout.send_multiple(self.event.end_messages)
         self._event_started_at = None
 
-        # Should happen ONLY if an event with high priority opened the lock
+        # Should happen if an event with high priority opened the lock or None got injected
         if self._min_duration_task and not self._min_duration_task.done():
             self._min_duration_task.cancel()
         # Will happen if the full duration is not expanded
@@ -140,12 +140,14 @@ class MidiEventHandler:
         if next_event is None or self.event is None:
             return False
         if next_event == self.event:
+            log.info(f"[DISCARD] CURRENT == NEXT - {next_event}")
             return True
         if not self.locked:
             return False
         if next_event.priority > self.event.priority:
             self.locked = False
             return False
+        log.info(f"[DISCARD] Locked and low priority (NEXT:{next_event.priority} <= CURRENT:{self.event.priority})")
         return True
 
     async def _schedule_fallback_event(self):
@@ -189,7 +191,6 @@ class MidiEventHandler:
                 next_event = await self.event_queue.get()
                 _log_event_state("NEXT", next_event)
                 if self._should_discard_next_event(next_event):
-                    _log_event_state("DISCARDED", next_event)
                     continue
                 if self.event:
                     await self._end_current_event()
