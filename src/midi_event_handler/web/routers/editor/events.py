@@ -140,6 +140,16 @@ async def event_save(request: Request):
     except (json.JSONDecodeError, ValueError, TypeError) as e:
         log.warning(f"Failed to parse end_messages: {e}")
 
+    priority_raw = form.get("priority", "").strip()
+    stored_priority: int | None
+    if not priority_raw:
+        stored_priority = None
+    else:
+        try:
+            stored_priority = int(float(priority_raw))
+        except ValueError:
+            raise HTTPException(status_code=400, detail="priority must be a number")
+
     event = MidiEvent(
         name=name,
         type=form.get("type", "").strip(),
@@ -151,6 +161,7 @@ async def event_save(request: Request):
         end_messages=end_messages,
         duration_min=int(form.get("duration_min") or 0) or None,
         duration_max=int(form.get("duration_max") or 0) or None,
+        _priority=stored_priority,
         fallback_event=form.get("fallback_event", "").strip() or None,
         comment=form.get("comment", "").strip() or None,
     )

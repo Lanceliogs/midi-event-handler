@@ -14,10 +14,8 @@ import logging
 
 log = logging.getLogger(__name__)
 
-TASK_YIELD_DELAY = 0.001
 
-
-def _log_event_state(flag: str, event: MidiEvent):
+def _log_event_state(flag: str, event: MidiEvent | None):
     log.info(f"[{flag.upper()}] {event}")
 
 
@@ -105,7 +103,7 @@ class MidiEventHandler:
         self.midiout.send_multiple(self.event.end_messages)
         self._event_started_at = None
 
-        # Should NOT happen
+        # Should happen ONLY if an event with high priority opened the lock
         if self._min_duration_task and not self._min_duration_task.done():
             self._min_duration_task.cancel()
         # Will happen if the full duration is not expanded
@@ -123,10 +121,8 @@ class MidiEventHandler:
         if self.event.duration_min:
             self.locked = True
             self._min_duration_task = asyncio.create_task(self._unlock_after_min_duration())
-            await asyncio.sleep(TASK_YIELD_DELAY)
         if self.event.duration_max:
             self._fallback_scheduler_task = asyncio.create_task(self._schedule_fallback_event())
-            await asyncio.sleep(TASK_YIELD_DELAY)
         _log_event_state("STARTED", self.event)
 
         await notify_event_change(self.event.name, "start")
@@ -137,6 +133,20 @@ class MidiEventHandler:
         await asyncio.sleep(self.event.duration_min)
         self.locked = False
         log.info(f"[UNLOCK] Event unlocked after {self.event.duration_min} seconds")
+
+    def _should_discard_next_event(self, next_event: MidiEvent | None) -> bool:
+        # Idle (no current): always take the next item. None in the queue: manual stop / placeholder — never discard here.
+        # Priority and duplicate checks only apply when both sides are real events.
+        if next_event is None or self.event is None:
+            return False
+        if next_event == self.event:
+            return True
+        if not self.locked:
+            return False
+        if next_event.priority > self.event.priority:
+            self.locked = False
+            return False
+        return True
 
     async def _schedule_fallback_event(self):
         try:
@@ -176,9 +186,9 @@ class MidiEventHandler:
         self.event = None
         try:
             while True:
-                next_event: MidiEvent = await self.event_queue.get()
+                next_event = await self.event_queue.get()
                 _log_event_state("NEXT", next_event)
-                if self.locked or (next_event and next_event == self.event):
+                if self._should_discard_next_event(next_event):
                     _log_event_state("DISCARDED", next_event)
                     continue
                 if self.event:
